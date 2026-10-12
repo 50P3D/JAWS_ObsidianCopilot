@@ -218,3 +218,12 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Node / Obsidian plugin
+node_modules/
+main.js
+*.log
+
+# Local data and models (keep samples small, document the rest)
+eval/datasets/raw/
+*.gguf

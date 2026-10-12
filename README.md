@@ -42,6 +42,25 @@ Note text: *"The Treaty of Versailles was signed in 1920."*
 
 ---
 
+## How it works in plain English
+
+Here is what happens when you select a sentence and click check, step by step.
+
+1. **You highlight some text** in your note and run the NoteCheck command.
+2. **NoteCheck cleans the text.** It ignores things that are not claims, such as code, maths and the hidden settings at the top of a note.
+3. **It picks out the individual facts.** A sentence like "Einstein was born in 1879 in Ulm and won the Nobel Prize in 1921" becomes separate claims that can each be checked on their own.
+4. **It throws away what can't be checked.** Opinions, to-do reminders and things only your lecturer said can't be proven from Wikipedia, so they are skipped.
+5. **It rewrites each claim so it makes sense alone.** "He was born in 1879" becomes "Albert Einstein was born in 1879", because the checker will not see the rest of your note.
+6. **It looks the claim up on Wikipedia.** It searches, picks the right article when a name has several meanings (Mercury the planet or the metal), cuts the article into small pieces and ranks which pieces are most useful.
+7. **It checks how much to trust that article.** It looks at warning banners, recent edits that nobody has reviewed and how often the page gets undone by other editors. This gives a High, Medium or Low badge with reasons.
+8. **The local AI reads the evidence and decides.** It compares the Wikipedia passage with your claim and answers Supported, Refuted or Not Enough Info. If your claim is wrong, it suggests a fix.
+9. **You see the result in a side panel.** Each claim shows the verdict, the exact passage, a link to the exact version of the Wikipedia page used and the trust badge.
+10. **Optional second opinion.** If you choose to, Claude can look at a verdict through the MCP server and say whether it agrees. Nothing goes to Claude unless you set this up.
+
+Planned extra step: if the evidence is weak (the AI says Not Enough Info), NoteCheck rewrites its search and tries again, up to two more times, before giving up.
+
+---
+
 ## Architecture
 
 Everything runs on the user's machine except the Wikimedia lookups and the opt-in Claude review.
@@ -92,6 +111,45 @@ Dashed boxes are the only places data leaves the machine.
 | 4 | Query generation and retrieval | Builds search queries from entities, disambiguates pages (Mercury the planet or the element), then searches, chunks and reranks passages. | Evidence passages and revision IDs |
 | 5 | Reliability scoring | Scores each evidence revision with transparent rules (see below). | Badge and reasons |
 | 6 | Verification | The LLM labels each claim and proposes a correction when it is refuted. | Verdict and fix |
+
+### Shared data format (the "claim card")
+
+Four people are building four different parts, so the parts need to agree on what they hand to each other. Think of it as a form that every part fills in or reads. If we all agree on the form now, each person can build and test their own part with fake data, without waiting for anyone else.
+
+Each claim travels through the system as one "claim card". Each stage adds to the card:
+
+| Added by | Fields | In plain English |
+|---|---|---|
+| Claim extraction (Jonathan) | `claim_id`, `original_text`, `claim` | The fact, rewritten so it stands alone, and where it came from in the note |
+| Retrieval (Aadhavan) | `evidence[]` with `passage`, `page_title`, `revision_id`, `url` | The Wikipedia paragraphs found, and the exact page version they came from |
+| Reliability (Nathanael) | `reliability` with `badge` and `reasons[]` | High, Medium or Low trust, and why |
+| Verification (Jonathan) | `verdict`, `explanation`, `suggested_fix` | Supported, Refuted or Not Enough Info, and why |
+
+Example of a finished card:
+
+```json
+{
+  "claim_id": "c1",
+  "original_text": "The Treaty of Versailles was signed in 1920.",
+  "claim": "The Treaty of Versailles was signed in 1920.",
+  "evidence": [
+    {
+      "passage": "The treaty was signed on 28 June 1919 ...",
+      "page_title": "Treaty of Versailles",
+      "revision_id": 0,
+      "url": "https://en.wikipedia.org/w/index.php?oldid=0"
+    }
+  ],
+  "reliability": { "badge": "High", "reasons": ["stable article", "well cited"] },
+  "verdict": "Refuted",
+  "explanation": "The passage gives the date as 28 June 1919.",
+  "suggested_fix": "Change 1920 to 1919."
+}
+```
+
+The `revision_id` of `0` above is a placeholder. The real format lives in `src/contract/` as a TypeScript type, plus a few example cards in `src/contract/examples/` that everyone can use as fake data.
+
+**Rule:** changing the format affects everyone, so it only changes through a pull request that all four of us approve.
 
 ### Reliability scoring
 
@@ -195,13 +253,21 @@ Thresholds are tuned on a small development set first. The test set is not used 
 
 ### Planned changes after instructor feedback
 
-These come from the review of our proposal and still need team agreement before they go in the evaluation plan:
+These come from the review of our proposal. The owners below are proposed and the team should confirm them.
 
-- **Benchmark `qwen3.5:9b` early** on fact-checking or a related task before committing to it.
-- **Treat FEVER as possibly contaminated.** It was published in 2017 and modern models may have trained on it, so a good score alone is weak evidence.
-- **Generate extra test claims with Claude.** Take true Wikipedia facts and have Claude rewrite them as plausible falsehoods with an explanation of why each is false, in the style of MiniCheck-type datasets. The explanation also makes Claude a better judge.
-- **Keep the judge and the system under test from different model families.** Claude judging Qwen is fine. The same model judging itself would not be.
-- **Balance the dataset.** Report how often the checker flags true statements as well as how often it misses false ones.
+| Step | In plain English | Owner | Where it lives |
+|---|---|---|---|
+| Benchmark `qwen3.5:9b` early | Before building everything on this model, test whether it can actually do fact-checking. Compare it with `qwen3.5:4b`. | Jonathan | `src/llm/benchmarks/` |
+| Treat FEVER as possibly contaminated | FEVER dates from 2017, so the model may have seen the answers in training. A good score alone proves little, so write this limit down in the results. | Nathanael | `eval/` |
+| Generate extra test claims with Claude | Take true Wikipedia facts and ask Claude to rewrite each as a believable falsehood, plus a note on why it is false. This is how modern fact-checking test sets are often built. | Aadhavan | `tools/claim-generator/` |
+| Check the generated claims | Spot check a sample by hand so we do not trust bad test data. | Nathanael | `eval/` |
+| Keep the judge and the system under test from different model families | Claude judging Qwen is fine. The same model marking its own work is not. | Nathanael | `eval/` |
+| Balance the dataset | Use about as many true claims as false ones. Report how often the checker wrongly flags true statements as well as how often it misses false ones. | Nathanael | `eval/` |
+| Tune on a dev set, test once | Adjust thresholds on a small practice set. Run the final test set only at the end. | Nathanael | `eval/` |
+| Orchestrator with retry | The small controller that runs the steps in order and retries the search when evidence is weak. | Jonathan | `src/orchestrator/` |
+| Interface contract (claim card) | The shared form every part reads and writes. | Whole team, drafted by Aadhavan | `src/contract/` |
+
+Retrieval choices (keyword, embeddings or hybrid) stay with Aadhavan, who should record the decision and the comparison in `src/retrieval/NOTES.md`.
 
 ---
 
@@ -223,21 +289,56 @@ Stubbed components will be listed here as they appear.
 
 ## Repository layout
 
-> **TODO (team):** replace with the real layout once agreed. Suggested split by owner:
+Each person owns their own folders. You only edit files in your own folders. Everything else is read only for you, unless you go through a pull request.
 
 ```
 notecheck/
 ├── src/
-│   ├── plugin/        # Obsidian UI, commands, results panel
-│   ├── pipeline/      # extraction, retrieval, verification
-│   ├── reliability/   # reliability scorer
-│   └── mcp/           # MCP server
-├── eval/              # harness, baselines, datasets, results
-├── docs/
-│   ├── architecture.png
-│   └── ai-use-log.md
-└── README.md
+│   ├── retrieval/       # Aadhavan: Wikipedia search, disambiguation, chunking, reranking
+│   ├── llm/             # Jonathan: claim extraction, verification prompts, model benchmarks
+│   ├── orchestrator/    # Jonathan: runs the steps in order, retries weak searches
+│   ├── reliability/     # Nathanael: trust badge scoring
+│   ├── plugin/          # Medapati: Obsidian UI, commands, results panel
+│   ├── mcp/             # Medapati: MCP server
+│   └── contract/        # Shared: the claim card format and example cards (changes need all four approvals)
+├── eval/                # Nathanael: harness, baselines, datasets, results
+├── tools/
+│   └── claim-generator/ # Aadhavan: Claude-generated test claims
+├── docs/                # Shared: architecture.png, ai-use-log.md (see rules below)
+├── .github/CODEOWNERS   # Tells GitHub who must review each folder
+└── README.md            # Shared: changes through a pull request
 ```
+
+---
+
+## Working together
+
+Separate folders stop most conflicts before they start. These habits handle the rest.
+
+**Folders**
+- Edit only your own folders. If you need a change in someone else's folder, ask them or open a pull request that they approve.
+- The shared files are `src/contract/`, `README.md`, `package.json`, `package-lock.json` and `docs/`. Tell the group chat before you change one, and keep the change small.
+
+**Branches and pull requests**
+- Never push straight to `main`. Make a branch for each task, named `yourname/what-it-does` (for example `aadhavan/hybrid-search`).
+- Open a pull request when the task works. One teammate reads it before it merges. A change to a shared file needs a review from the owner of the part it affects.
+- Keep pull requests small. A change that touches ten files is hard to review and easy to break.
+- Delete the branch after merging.
+
+**Staying in sync**
+- Pull the latest `main` before you start work each day and before you open a pull request.
+- Commit small and often, with a message that says what changed and why ("Add disambiguation for ambiguous page titles", not "fix stuff").
+- Commit under your own name and email. The checkpoint checks that every member has commits.
+- If two people end up editing the same file, stop and talk before either of you merges. Do not fix a merge conflict by guessing.
+
+**Keep the repo clean**
+- Never commit secrets such as API keys or `.env` files. Put them in `.env` and keep it in `.gitignore`. Rotate any key that slips through.
+- Do not commit large files such as model weights or full datasets. Commit a small sample and a script or note that explains how to download the rest.
+- Do not commit built output (`main.js` from a build, `node_modules/`). Add them to `.gitignore`.
+- Run the build and tests before you push, so `main` always works.
+
+**Fake data until the real thing arrives**
+- Build against the example cards in `src/contract/examples/`. If your part depends on someone else's, use fake data and list the part as stubbed in the status table.
 
 ## Team
 
