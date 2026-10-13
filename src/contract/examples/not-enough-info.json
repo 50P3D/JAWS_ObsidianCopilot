@@ -1,0 +1,23 @@
+{
+  "claim_id": "c3",
+  "original_text": "Marie Curie's favourite colour was green.",
+  "claim": "Marie Curie's favourite colour was green.",
+  "source_span": { "start": 95, "end": 136 },
+  "evidence": [
+    {
+      "passage": "Marie Curie was a Polish and naturalised-French physicist and chemist who conducted pioneering research on radioactivity.",
+      "page_title": "Marie Curie",
+      "revision_id": 333333333,
+      "revision_timestamp": "2026-10-01T03:20:00Z",
+      "url": "https://en.wikipedia.org/w/index.php?title=Marie_Curie&oldid=333333333",
+      "retrieval_score": 0.34
+    }
+  ],
+  "reliability": {
+    "badge": "High",
+    "reasons": ["stable article", "well cited"]
+  },
+  "verdict": "Not Enough Info",
+  "explanation": "The retrieved passages do not mention her favourite colour, so the claim can be neither confirmed nor refuted.",
+  "stubbed": ["reliability"]
+}

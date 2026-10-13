@@ -1,0 +1,26 @@
+{
+  "claim_id": "c1",
+  "original_text": "The Treaty of Versailles was signed in 1920.",
+  "claim": "The Treaty of Versailles was signed in 1920.",
+  "source_span": { "start": 0, "end": 44 },
+  "evidence": [
+    {
+      "passage": "The treaty was signed on 28 June 1919, exactly five years after the assassination of Archduke Franz Ferdinand.",
+      "page_title": "Treaty of Versailles",
+      "revision_id": 111111111,
+      "revision_timestamp": "2026-09-30T08:15:00Z",
+      "url": "https://en.wikipedia.org/w/index.php?title=Treaty_of_Versailles&oldid=111111111",
+      "section": "Signing",
+      "retrieval_score": 0.91,
+      "highlight": { "start": 0, "end": 36 }
+    }
+  ],
+  "reliability": {
+    "badge": "High",
+    "reasons": ["stable article", "well cited", "no maintenance tags"]
+  },
+  "verdict": "Refuted",
+  "explanation": "The passage gives the signing date as 28 June 1919, not 1920.",
+  "suggested_fix": "The Treaty of Versailles was signed in 1919.",
+  "model_used": "qwen3.5:9b"
+}

@@ -1,0 +1,24 @@
+{
+  "claim_id": "c2",
+  "original_text": "Pluto was reclassified as a dwarf planet in 2006.",
+  "claim": "Pluto was reclassified as a dwarf planet in 2006.",
+  "source_span": { "start": 45, "end": 94 },
+  "evidence": [
+    {
+      "passage": "In 2006, the International Astronomical Union formally defined the term planet and reclassified Pluto as a dwarf planet.",
+      "page_title": "Pluto",
+      "revision_id": 222222222,
+      "revision_timestamp": "2026-10-05T12:40:00Z",
+      "url": "https://en.wikipedia.org/w/index.php?title=Pluto&oldid=222222222",
+      "section": "Classification",
+      "retrieval_score": 0.88,
+      "highlight": { "start": 0, "end": 119 }
+    }
+  ],
+  "reliability": {
+    "badge": "Medium",
+    "reasons": ["recent edit not yet reviewed", "high edit volume"]
+  },
+  "verdict": "Supported",
+  "explanation": "The passage says the International Astronomical Union reclassified Pluto as a dwarf planet in 2006."
+}
