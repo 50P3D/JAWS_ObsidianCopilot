@@ -1,0 +1,22 @@
+[
+  { "claim": "The Treaty of Versailles was signed in 1920.", "expected_pages": ["Treaty of Versailles"], "must_contain": "1919", "note": "false claim, wrong year; lookalike treaties exist" },
+  { "claim": "Pluto was reclassified as a dwarf planet in 2006.", "expected_pages": ["Pluto"], "must_contain": "2006" },
+  { "claim": "The Eiffel Tower was completed in 1899.", "expected_pages": ["Eiffel Tower"], "must_contain": "1889", "note": "false claim, wrong year" },
+  { "claim": "Albert Einstein was born in 1879 in Ulm.", "expected_pages": ["Albert Einstein"], "must_contain": "1879" },
+  { "claim": "Marie Curie won Nobel Prizes in both Physics and Chemistry.", "expected_pages": ["Marie Curie"], "must_contain": "Chemistry" },
+  { "claim": "The Berlin Wall fell in 1991.", "expected_pages": ["Berlin Wall"], "must_contain": "1989", "note": "false claim, wrong year" },
+  { "claim": "Mount Everest is the tallest mountain above sea level.", "expected_pages": ["Mount Everest"], "must_contain": "highest" },
+  { "claim": "World War II ended in 1946.", "expected_pages": ["World War II"], "must_contain": "1945", "note": "false claim, wrong year" },
+  { "claim": "Apollo 11 landed humans on the Moon in 1969.", "expected_pages": ["Apollo 11"], "must_contain": "1969" },
+  { "claim": "Charles Darwin published On the Origin of Species in 1895.", "expected_pages": ["On the Origin of Species", "Charles Darwin"], "must_contain": "1859", "note": "false claim; title starts with a word the query builder trims" },
+  { "claim": "The Great Fire of London happened in 1666.", "expected_pages": ["Great Fire of London"], "must_contain": "1666" },
+  { "claim": "Mercury is the closest planet to the Sun.", "expected_pages": ["Mercury (planet)"], "must_contain": "Solar System", "note": "disambiguation test: Mercury is also an element and a Roman god" },
+  { "claim": "The Magna Carta was sealed in 1215.", "expected_pages": ["Magna Carta"], "must_contain": "1215" },
+  { "claim": "The Titanic sank in 1912 after hitting an iceberg.", "expected_pages": ["Titanic", "RMS Titanic"], "must_contain": "1912" },
+  { "claim": "Singapore became independent in 1965.", "expected_pages": ["Singapore", "History of Singapore", "Independence of Singapore"], "must_contain": "1965" },
+  { "claim": "Tim Berners-Lee invented the World Wide Web in 1989.", "expected_pages": ["Tim Berners-Lee", "World Wide Web"], "must_contain": "1989" },
+  { "claim": "The Western Roman Empire fell in 476 AD.", "expected_pages": ["Fall of the Western Roman Empire", "Western Roman Empire", "Roman Empire"], "must_contain": "476" },
+  { "claim": "Water boils at 100 degrees Celsius at sea level.", "expected_pages": ["Boiling point", "Boiling", "Water", "Properties of water"], "must_contain": "100", "note": "no capitalised words, so only the content-words query runs" },
+  { "claim": "Neil Armstrong was the first person to walk on the Moon.", "expected_pages": ["Neil Armstrong"], "must_contain": "first" },
+  { "claim": "The French Revolution began in 1799.", "expected_pages": ["French Revolution"], "must_contain": "1789", "note": "false claim, wrong year" }
+]
