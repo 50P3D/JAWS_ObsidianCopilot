@@ -1,7 +1,7 @@
 # NATHANAEL.md: Nathanael's progress log
 
 Area: **evaluation harness and baselines** (`eval/`). The reliability scorer (`src/reliability/`) is also Nathanael's and has **not been started**.
-Branch: not created yet. All work below is uncommitted on `main`.
+Branch: steven-eval
 Last updated: 17 October 2026.
 
 ## AI disclaimer
@@ -15,6 +15,12 @@ Nathanael directed the work and asked for the evaluator first, with a plan based
 - this file
 
 Nathanael has not yet reviewed the code line by line or run it on his own machine. Do that before committing. (Testing and review will be done by next commits)
+
+## Additional notes (from me)
+
+I think there could be fine-tuning or better information scraper to improve the model's accuracy, correctness, and helpfulness. The model (Qwen 3.5:9b) tends to hallucinate a bit if used without any training whatsoever. However, it still shows some promising features for a small model like this.
+
+I will be waiting for test cases later, if we have the chance to finetune it.
 
 ## What the evaluator does
 
