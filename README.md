@@ -36,8 +36,8 @@ Inline autocomplete (ghost text from a small local model) and an automated Claud
 
 Note text: *"The Treaty of Versailles was signed in 1920."*
 
-| Claim | Verdict | Evidence and suggested fix | Reliability |
-|---|---|---|---|
+| Claim                               | Verdict | Evidence and suggested fix                                                                              | Reliability                                           |
+| ----------------------------------- | ------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
 | Treaty of Versailles signed in 1920 | Refuted | Passage states it was signed on 28 June 1919 (revision link shown). Suggested fix: change 1920 to 1919. | High: stable article, well cited, no maintenance tags |
 
 ---
@@ -103,14 +103,14 @@ Dashed boxes are the only places data leaves the machine.
 
 ### Pipeline stages
 
-| # | Stage | What it does | Output |
-|---|---|---|---|
-| 1 | Preprocess | Skips frontmatter, code blocks and LaTeX. Keeps wikilinks as context. | Clean text |
-| 2 | Claim extraction | Splits text into atomic claims and filters out opinions, reminders and course-specific content that Wikipedia cannot verify. | Claims as JSON |
-| 3 | Decontextualisation | Rewrites each claim to stand alone using the note title, headings and nearby sentences (for example, replacing "he" with the person's name). | Self-contained claims |
-| 4 | Query generation and retrieval | Builds search queries from entities, disambiguates pages (Mercury the planet or the element), then searches, chunks and reranks passages. | Evidence passages and revision IDs |
-| 5 | Reliability scoring | Scores each evidence revision with transparent rules (see below). | Badge and reasons |
-| 6 | Verification | The LLM labels each claim and proposes a correction when it is refuted. | Verdict and fix |
+| # | Stage                          | What it does                                                                                                                                 | Output                             |
+| - | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| 1 | Preprocess                     | Skips frontmatter, code blocks and LaTeX. Keeps wikilinks as context.                                                                        | Clean text                         |
+| 2 | Claim extraction               | Splits text into atomic claims and filters out opinions, reminders and course-specific content that Wikipedia cannot verify.                 | Claims as JSON                     |
+| 3 | Decontextualisation            | Rewrites each claim to stand alone using the note title, headings and nearby sentences (for example, replacing "he" with the person's name). | Self-contained claims              |
+| 4 | Query generation and retrieval | Builds search queries from entities, disambiguates pages (Mercury the planet or the element), then searches, chunks and reranks passages.    | Evidence passages and revision IDs |
+| 5 | Reliability scoring            | Scores each evidence revision with transparent rules (see below).                                                                            | Badge and reasons                  |
+| 6 | Verification                   | The LLM labels each claim and proposes a correction when it is refuted.                                                                      | Verdict and fix                    |
 
 ### Shared data format (the "claim card")
 
@@ -118,12 +118,12 @@ Four people are building four different parts, so the parts need to agree on wha
 
 Each claim travels through the system as one "claim card". Each stage adds to the card:
 
-| Added by | Fields | In plain English |
-|---|---|---|
-| Claim extraction (Jonathan) | `claim_id`, `original_text`, `claim` | The fact, rewritten so it stands alone, and where it came from in the note |
-| Retrieval (Aadhavan) | `evidence[]` with `passage`, `page_title`, `revision_id`, `url` | The Wikipedia paragraphs found, and the exact page version they came from |
-| Reliability (Nathanael) | `reliability` with `badge` and `reasons[]` | High, Medium or Low trust, and why |
-| Verification (Jonathan) | `verdict`, `explanation`, `suggested_fix` | Supported, Refuted or Not Enough Info, and why |
+| Added by                    | Fields                                                                    | In plain English                                                           |
+| --------------------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Claim extraction (Jonathan) | `claim_id`, `original_text`, `claim`                                | The fact, rewritten so it stands alone, and where it came from in the note |
+| Retrieval (Aadhavan)        | `evidence[]` with `passage`, `page_title`, `revision_id`, `url` | The Wikipedia paragraphs found, and the exact page version they came from  |
+| Reliability (Nathanael)     | `reliability` with `badge` and `reasons[]`                          | High, Medium or Low trust, and why                                         |
+| Verification (Jonathan)     | `verdict`, `explanation`, `suggested_fix`                           | Supported, Refuted or Not Enough Info, and why                             |
 
 Example of a finished card:
 
@@ -163,28 +163,28 @@ The scorer is rule-based on purpose, so every badge can be explained and the cos
 
 ### Techniques used
 
-| Technique | Used for | Why |
-|---|---|---|
-| RAG over Wikipedia | Grounding verdicts | Small local models hallucinate. A cited passage makes each verdict checkable. |
-| Structured JSON output | Claim extraction | Gives a clear unit to verify and to measure. |
-| FEVER labels | Verdicts | Lets us benchmark directly. |
-| Rule-based reliability scoring | Flagging weak evidence | Transparent and cheap. |
-| MCP tool integration | Claude as independent reviewer | Standard protocol. Keeps the reviewer separate from the model being judged. |
+| Technique                      | Used for                       | Why                                                                           |
+| ------------------------------ | ------------------------------ | ----------------------------------------------------------------------------- |
+| RAG over Wikipedia             | Grounding verdicts             | Small local models hallucinate. A cited passage makes each verdict checkable. |
+| Structured JSON output         | Claim extraction               | Gives a clear unit to verify and to measure.                                  |
+| FEVER labels                   | Verdicts                       | Lets us benchmark directly.                                                   |
+| Rule-based reliability scoring | Flagging weak evidence         | Transparent and cheap.                                                        |
+| MCP tool integration           | Claude as independent reviewer | Standard protocol. Keeps the reviewer separate from the model being judged.   |
 
 ---
 
 ## Tech stack
 
-| Component | Choice |
-|---|---|
-| Model runtime | Ollama (local, OpenAI-compatible API) |
+| Component                         | Choice                                                    |
+| --------------------------------- | --------------------------------------------------------- |
+| Model runtime                     | Ollama (local, OpenAI-compatible API)                     |
 | Extraction and verification model | `qwen3.5:9b` (fallback `qwen3.5:4b` on 8 GB machines) |
-| Embeddings | `nomic-embed-text` |
-| Plugin | TypeScript, Obsidian plugin API |
-| Evidence source | MediaWiki Action API, Wikimedia Lift Wing |
-| MCP server | MCP TypeScript SDK |
-| Baseline checker | Bespoke-MiniCheck |
-| Judge and test generation | Claude (via Claude Desktop or the API) |
+| Embeddings                        | `nomic-embed-text`                                      |
+| Plugin                            | TypeScript, Obsidian plugin API                           |
+| Evidence source                   | MediaWiki Action API, Wikimedia Lift Wing                 |
+| MCP server                        | MCP TypeScript SDK                                        |
+| Baseline checker                  | Bespoke-MiniCheck                                         |
+| Judge and test generation         | Claude (via Claude Desktop or the API)                    |
 
 ---
 
@@ -243,11 +243,11 @@ Then add the server to Claude Desktop's MCP config so Claude can call `fact_chec
 
 We measure whether grounding in Wikipedia beats an ungrounded model, whether the cited evidence is relevant and whether the reliability flags catch bad revisions.
 
-| Feature | Metric | Test data | Baseline | Success target |
-|---|---|---|---|---|
-| Fact-check verdicts | Macro-F1 over 3 labels | 300 FEVER dev claims plus 50 claims from our own notes | Qwen without RAG, Bespoke-MiniCheck | At least 10 points above the no-RAG baseline |
-| Evidence quality | Share of cited passages that support the verdict (two human raters) | 50 sampled verdicts | None | 80% or higher |
-| Reliability flags | Precision and recall of Low flags | 50 reverted and 50 stable revisions | Flag nothing | Both at least 0.7 |
+| Feature             | Metric                                                              | Test data                                              | Baseline                            | Success target                               |
+| ------------------- | ------------------------------------------------------------------- | ------------------------------------------------------ | ----------------------------------- | -------------------------------------------- |
+| Fact-check verdicts | Macro-F1 over 3 labels                                              | 300 FEVER dev claims plus 50 claims from our own notes | Qwen without RAG, Bespoke-MiniCheck | At least 10 points above the no-RAG baseline |
+| Evidence quality    | Share of cited passages that support the verdict (two human raters) | 50 sampled verdicts                                    | None                                | 80% or higher                                |
+| Reliability flags   | Precision and recall of Low flags                                   | 50 reverted and 50 stable revisions                    | Flag nothing                        | Both at least 0.7                            |
 
 Thresholds are tuned on a small development set first. The test set is not used for tuning.
 
@@ -255,17 +255,17 @@ Thresholds are tuned on a small development set first. The test set is not used 
 
 These come from the review of our proposal. The owners below are proposed and the team should confirm them.
 
-| Step | In plain English | Owner | Where it lives |
-|---|---|---|---|
-| Benchmark `qwen3.5:9b` early | Before building everything on this model, test whether it can actually do fact-checking. Compare it with `qwen3.5:4b`. | Jonathan | `src/llm/benchmarks/` |
-| Treat FEVER as possibly contaminated | FEVER dates from 2017, so the model may have seen the answers in training. A good score alone proves little, so write this limit down in the results. | Nathanael | `eval/` |
-| Generate extra test claims with Claude | Take true Wikipedia facts and ask Claude to rewrite each as a believable falsehood, plus a note on why it is false. This is how modern fact-checking test sets are often built. | Aadhavan | `tools/claim-generator/` |
-| Check the generated claims | Spot check a sample by hand so we do not trust bad test data. | Nathanael | `eval/` |
-| Keep the judge and the system under test from different model families | Claude judging Qwen is fine. The same model marking its own work is not. | Nathanael | `eval/` |
-| Balance the dataset | Use about as many true claims as false ones. Report how often the checker wrongly flags true statements as well as how often it misses false ones. | Nathanael | `eval/` |
-| Tune on a dev set, test once | Adjust thresholds on a small practice set. Run the final test set only at the end. | Nathanael | `eval/` |
-| Orchestrator with retry | The small controller that runs the steps in order and retries the search when evidence is weak. | Jonathan | `src/orchestrator/` |
-| Interface contract (claim card) | The shared form every part reads and writes. | Whole team, drafted by Aadhavan | `src/contract/` |
+| Step                                                                   | In plain English                                                                                                                                                                | Owner                           | Where it lives             |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | -------------------------- |
+| Benchmark `qwen3.5:9b` early                                         | Before building everything on this model, test whether it can actually do fact-checking. Compare it with `qwen3.5:4b`.                                                        | Jonathan                        | `src/llm/benchmarks/`    |
+| Treat FEVER as possibly contaminated                                   | FEVER dates from 2017, so the model may have seen the answers in training. A good score alone proves little, so write this limit down in the results.                           | Nathanael                       | `eval/`                  |
+| Generate extra test claims with Claude                                 | Take true Wikipedia facts and ask Claude to rewrite each as a believable falsehood, plus a note on why it is false. This is how modern fact-checking test sets are often built. | Aadhavan                        | `tools/claim-generator/` |
+| Check the generated claims                                             | Spot check a sample by hand so we do not trust bad test data.                                                                                                                   | Nathanael                       | `eval/`                  |
+| Keep the judge and the system under test from different model families | Claude judging Qwen is fine. The same model marking its own work is not.                                                                                                        | Nathanael                       | `eval/`                  |
+| Balance the dataset                                                    | Use about as many true claims as false ones. Report how often the checker wrongly flags true statements as well as how often it misses false ones.                              | Nathanael                       | `eval/`                  |
+| Tune on a dev set, test once                                           | Adjust thresholds on a small practice set. Run the final test set only at the end.                                                                                              | Nathanael                       | `eval/`                  |
+| Orchestrator with retry                                                | The small controller that runs the steps in order and retries the search when evidence is weak.                                                                                 | Jonathan                        | `src/orchestrator/`      |
+| Interface contract (claim card)                                        | The shared form every part reads and writes.                                                                                                                                    | Whole team, drafted by Aadhavan | `src/contract/`          |
 
 Retrieval choices (keyword, embeddings or hybrid) stay with Aadhavan, who should record the decision and the comparison in `src/retrieval/NOTES.md`.
 
@@ -275,15 +275,15 @@ Retrieval choices (keyword, embeddings or hybrid) stay with Aadhavan, who should
 
 Checkpoint due **18 October 2026**.
 
-| Target | State |
-|---|---|
-| Core feature: select text, extract claims, retrieve, show verdicts and revision links in the side panel | TODO |
-| Reliability scorer: maintenance tags and recent-edit signals | TODO |
-| Lift Wing revert-risk call | TODO (working or documented as stubbed) |
-| MCP server exposing `fact_check` | TODO |
-| First evaluation round on 50 FEVER claims with failures documented | TODO |
-| Setup README and commits from every member | In progress |
-| AI use disclosure log | See [`docs/ai-use-log.md`](docs/ai-use-log.md) |
+| Target                                                                                                  | State                                           |
+| ------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| Core feature: select text, extract claims, retrieve, show verdicts and revision links in the side panel | TODO                                            |
+| Reliability scorer: maintenance tags and recent-edit signals                                            | TODO                                            |
+| Lift Wing revert-risk call                                                                              | TODO (working or documented as stubbed)         |
+| MCP server exposing `fact_check`                                                                      | TODO                                            |
+| First evaluation round on 50 FEVER claims with failures documented                                      | TODO                                            |
+| Setup README and commits from every member                                                              | In progress                                     |
+| AI use disclosure log                                                                                   | See [`docs/ai-use-log.md`](docs/ai-use-log.md) |
 
 Stubbed components will be listed here as they appear.
 
@@ -316,49 +316,54 @@ notecheck/
 Separate folders stop most conflicts before they start. These habits handle the rest.
 
 **Folders**
+
 - Edit only your own folders. If you need a change in someone else's folder, ask them or open a pull request that they approve.
 - The shared files are `src/contract/`, `README.md`, `package.json`, `package-lock.json` and `docs/`. Tell the group chat before you change one, and keep the change small.
 
 **Branches and pull requests**
+
 - Never push straight to `main`. Make a branch for each task, named `yourname/what-it-does` (for example `aadhavan/hybrid-search`).
 - Open a pull request when the task works. One teammate reads it before it merges. A change to a shared file needs a review from the owner of the part it affects.
 - Keep pull requests small. A change that touches ten files is hard to review and easy to break.
 - Delete the branch after merging.
 
 **Staying in sync**
+
 - Pull the latest `main` before you start work each day and before you open a pull request.
 - Commit small and often, with a message that says what changed and why ("Add disambiguation for ambiguous page titles", not "fix stuff").
 - Commit under your own name and email. The checkpoint checks that every member has commits.
 - If two people end up editing the same file, stop and talk before either of you merges. Do not fix a merge conflict by guessing.
 
 **Keep the repo clean**
+
 - Never commit secrets such as API keys or `.env` files. Put them in `.env` and keep it in `.gitignore`. Rotate any key that slips through.
 - Do not commit large files such as model weights or full datasets. Commit a small sample and a script or note that explains how to download the rest.
 - Do not commit built output (`main.js` from a build, `node_modules/`). Add them to `.gitignore`.
 - Run the build and tests before you push, so `main` always works.
 
 **Fake data until the real thing arrives**
+
 - Build against the example cards in `src/contract/examples/`. If your part depends on someone else's, use fake data and list the part as stubbed in the status table.
 
 ## Team
 
-| Member | Area |
-|---|---|
-| Anna Aadhavan | Retrieval: Wikipedia search, disambiguation, chunking, reranking. Holds the Claude access. |
-| Jonathan Ho | LLM stages: claim extraction, verification prompts, structured JSON |
-| Nathanael Steven Chiang | Reliability scorer, evaluation harness and baselines |
-| Medapati Williams Smith | Obsidian plugin UI and MCP server |
+| Member                  | Area                                                                                       |
+| ----------------------- | ------------------------------------------------------------------------------------------ |
+| Anna Aadhavan           | Retrieval: Wikipedia search, disambiguation, chunking, reranking. Holds the Claude access. |
+| Jonathan Ho             | LLM stages: claim extraction, verification prompts, structured JSON                        |
+| Nathanael Steven Chiang | Reliability scorer, evaluation harness and baselines                                       |
+| Medapati Williams Smith | Obsidian plugin UI and MCP server                                                          |
 
 ## Risks and responsible AI
 
-| Risk | Mitigation |
-|---|---|
-| Wikipedia is not ground truth and can be vandalised or one-sided | Reliability flags, pinned revision links and evidence always shown so users can judge |
-| Users over-trust verdicts | The model answers Not Enough Info rather than guessing. The UI presents verdicts as an aid, not a ruling. |
-| Bias flags could unfairly label people | We score articles and revisions only. We never profile or label individual editors. |
-| Notes leave the device during Claude review | Local by default. The Claude review is opt-in and clearly labelled. |
-| Wikipedia content licensing | Evidence is attributed with links, as CC BY-SA requires |
-| Weak hardware limits model quality | Models are configurable and we report results per model size |
+| Risk                                                             | Mitigation                                                                                                |
+| ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Wikipedia is not ground truth and can be vandalised or one-sided | Reliability flags, pinned revision links and evidence always shown so users can judge                     |
+| Users over-trust verdicts                                        | The model answers Not Enough Info rather than guessing. The UI presents verdicts as an aid, not a ruling. |
+| Bias flags could unfairly label people                           | We score articles and revisions only. We never profile or label individual editors.                       |
+| Notes leave the device during Claude review                      | Local by default. The Claude review is opt-in and clearly labelled.                                       |
+| Wikipedia content licensing                                      | Evidence is attributed with links, as CC BY-SA requires                                                   |
+| Weak hardware limits model quality                               | Models are configurable and we report results per model size                                              |
 
 ## AI use disclosure
 
