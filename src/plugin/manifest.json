@@ -1,0 +1,9 @@
+{
+  "id": "notecheck",
+  "name": "NoteCheck",
+  "version": "0.1.0",
+  "minAppVersion": "1.5.0",
+  "description": "Fact-check your notes against Wikipedia with a local LLM.",
+  "author": "Team JAWS",
+  "isDesktopOnly": true
+}

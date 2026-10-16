@@ -1,0 +1,26 @@
+{
+  "name": "notecheck",
+  "version": "0.1.0",
+  "private": true,
+  "description": "NoteCheck: fact-check Obsidian notes with a local LLM, grounded in Wikipedia",
+  "type": "module",
+  "scripts": {
+    "smoke": "tsx src/retrieval/smoke.ts",
+    "test": "tsx --test src/retrieval/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "mcp": "tsx src/mcp/index.ts",
+    "smoke:mcp": "tsx src/mcp/smoke.ts",
+    "build:plugin": "node src/plugin/esbuild.config.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "esbuild": "^0.24.0",
+    "obsidian": "^1.7.2",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}
