@@ -227,3 +227,9 @@ main.js
 # Local data and models (keep samples small, document the rest)
 eval/datasets/raw/
 *.gguf
+
+# Proposal document, for AI context if needed
+project-proposal.pdf
+
+# Results from evaluation
+eval/results
