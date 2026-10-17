@@ -3,17 +3,18 @@
  *
  *   1. extract claims      (src/llm/extract.ts)
  *   2. retrieve evidence   (src/retrieval/retrieve.ts)
- *   3. score reliability   (stubbed until src/reliability/ is ready)
+ *   3. score reliability   (src/reliability/)
  *   4. verify              (src/llm/verify.ts)
  *
  * When a claim comes back Not Enough Info, the search is rewritten and tried again,
  * up to maxRetries more times.
  */
 
-import type { ClaimCard, FactCheckRequest, FactCheckResponse, Reliability } from "../contract/claimCard";
+import type { ClaimCard, FactCheckRequest, FactCheckResponse } from "../contract/claimCard";
 import { extractClaims } from "../llm/extract";
 import { chatJson, type LlmOptions } from "../llm/ollama";
 import { verifyClaim } from "../llm/verify";
+import { mergeStubbed, scoreEvidence } from "../reliability";
 import { retrieveEvidence } from "../retrieval/retrieve";
 
 export interface PipelineOptions {
@@ -26,12 +27,6 @@ export interface PipelineOptions {
   /** Progress messages, for the smoke script or a loading message in the plugin. */
   log?: (msg: string) => void;
 }
-
-/** Placeholder until the reliability scorer is merged. Cards say so in `stubbed`. */
-const STUB_RELIABILITY: Reliability = {
-  badge: "Medium",
-  reasons: ["Placeholder: reliability scorer not connected yet"],
-};
 
 const REWRITE_SYSTEM = `You write Wikipedia search queries. Given a claim and the queries already tried, write one new short query (2 to 6 words) that is more likely to find the Wikipedia article that confirms or denies the claim. Use the main article's likely title where you can.`;
 
@@ -55,8 +50,9 @@ async function checkOne(card: ClaimCard, llm: LlmOptions, maxRetries: number, lo
     log(`${card.claim_id}: searching "${query}"`);
 
     const evidence = await retrieveEvidence(query);
+    const rel = await scoreEvidence(evidence);
     const checked = await verifyClaim(
-      { ...card, evidence, reliability: STUB_RELIABILITY, stubbed: ["reliability"] },
+      { ...card, evidence, reliability: rel.reliability, stubbed: mergeStubbed(card.stubbed, rel.stubbed) },
       llm,
     );
     first ??= checked;

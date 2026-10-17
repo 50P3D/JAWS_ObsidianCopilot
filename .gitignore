@@ -233,3 +233,8 @@ project-proposal.pdf
 
 # Results from evaluation
 eval/results
+
+# AI cache if there is any
+.kiro
+.claude
+.gemini
