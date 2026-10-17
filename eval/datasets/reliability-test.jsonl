@@ -1,0 +1,103 @@
+// Reliability revisions, split=test, n=100 (50 reverted, 50 stable), seed=201, one revision per article.
+// Source: enwiki list=recentchanges (rcnamespace=0, rcshow=!bot, rctype=edit, rcprop=ids|title|timestamp|tags, up to 2000 per pool). Reverted: rctag=mw-reverted. Stable: 7 to 30 days old (rcstart=2026-10-10T18:58:40.427Z, rcend=2026-09-17T18:58:40.427Z), no mw-reverted/mw-rollback/mw-undo/mw-manual-revert tags.
+// Fetched 2026-10-17T18:58:40Z, pool sha256 31b90061ee906d27982008ac830e494493addd3c67e135601c61b991daba871d. Regenerate: npx tsx eval/scripts/prepareRevisions.ts
+{"id":"rev-1380703797","rev_id":1380703797,"page_title":"Flying car","timestamp":"2026-10-17T09:59:09Z","reverted":true,"split":"test"}
+{"id":"rev-1379559470","rev_id":1379559470,"page_title":"Stuff (Holly McNarland album)","timestamp":"2026-10-10T18:36:25Z","reverted":false,"split":"test"}
+{"id":"rev-1380684236","rev_id":1380684236,"page_title":"List of Irish heads of government","timestamp":"2026-10-17T06:51:09Z","reverted":true,"split":"test"}
+{"id":"rev-1379560403","rev_id":1379560403,"page_title":"Wani Kayrie","timestamp":"2026-10-10T18:44:01Z","reverted":false,"split":"test"}
+{"id":"rev-1380690851","rev_id":1380690851,"page_title":"Planet (series)","timestamp":"2026-10-17T07:49:48Z","reverted":true,"split":"test"}
+{"id":"rev-1379561375","rev_id":1379561375,"page_title":"Metropolitan College of New York","timestamp":"2026-10-10T18:51:31Z","reverted":false,"split":"test"}
+{"id":"rev-1380700517","rev_id":1380700517,"page_title":"Austrian Airlines","timestamp":"2026-10-17T09:23:54Z","reverted":true,"split":"test"}
+{"id":"rev-1379559450","rev_id":1379559450,"page_title":"Ankit Baiyanpuria","timestamp":"2026-10-10T18:36:12Z","reverted":false,"split":"test"}
+{"id":"rev-1380700585","rev_id":1380700585,"page_title":"Microplastics and human health","timestamp":"2026-10-17T09:24:28Z","reverted":true,"split":"test"}
+{"id":"rev-1379558167","rev_id":1379558167,"page_title":"NGC 3077","timestamp":"2026-10-10T18:25:42Z","reverted":false,"split":"test"}
+{"id":"rev-1380716103","rev_id":1380716103,"page_title":"Galatasaray S.K. (football)","timestamp":"2026-10-17T11:58:08Z","reverted":true,"split":"test"}
+{"id":"rev-1379561952","rev_id":1379561952,"page_title":"1 Timothy 2:12","timestamp":"2026-10-10T18:55:36Z","reverted":false,"split":"test"}
+{"id":"rev-1380684491","rev_id":1380684491,"page_title":"Karimba","timestamp":"2026-10-17T06:53:52Z","reverted":true,"split":"test"}
+{"id":"rev-1379562248","rev_id":1379562248,"page_title":"List of elections in 1876","timestamp":"2026-10-10T18:57:23Z","reverted":false,"split":"test"}
+{"id":"rev-1380733262","rev_id":1380733262,"page_title":"Katie Hobbs","timestamp":"2026-10-17T14:31:06Z","reverted":true,"split":"test"}
+{"id":"rev-1379561159","rev_id":1379561159,"page_title":"Feđa Dudić","timestamp":"2026-10-10T18:49:51Z","reverted":false,"split":"test"}
+{"id":"rev-1380747186","rev_id":1380747186,"page_title":"List of concept albums","timestamp":"2026-10-17T16:29:07Z","reverted":true,"split":"test"}
+{"id":"rev-1379560534","rev_id":1379560534,"page_title":"Tanatswa Nyakuhwa","timestamp":"2026-10-10T18:44:57Z","reverted":false,"split":"test"}
+{"id":"rev-1380744104","rev_id":1380744104,"page_title":"Dame Gruev","timestamp":"2026-10-17T16:02:38Z","reverted":true,"split":"test"}
+{"id":"rev-1379560264","rev_id":1379560264,"page_title":"Walk with Israel","timestamp":"2026-10-10T18:42:48Z","reverted":false,"split":"test"}
+{"id":"rev-1380758689","rev_id":1380758689,"page_title":"LB&SCR E2 class","timestamp":"2026-10-17T18:09:42Z","reverted":true,"split":"test"}
+{"id":"rev-1379560400","rev_id":1379560400,"page_title":"Beauty and the Beast (1987 TV series)","timestamp":"2026-10-10T18:43:59Z","reverted":false,"split":"test"}
+{"id":"rev-1380710861","rev_id":1380710861,"page_title":"Phil Hamer","timestamp":"2026-10-17T11:13:14Z","reverted":true,"split":"test"}
+{"id":"rev-1379560008","rev_id":1379560008,"page_title":"P.S. I Love You (film)","timestamp":"2026-10-10T18:40:33Z","reverted":false,"split":"test"}
+{"id":"rev-1380682555","rev_id":1380682555,"page_title":"Climate of China","timestamp":"2026-10-17T06:32:48Z","reverted":true,"split":"test"}
+{"id":"rev-1379561792","rev_id":1379561792,"page_title":"History of American newspapers","timestamp":"2026-10-10T18:54:31Z","reverted":false,"split":"test"}
+{"id":"rev-1380709852","rev_id":1380709852,"page_title":"Bradamante","timestamp":"2026-10-17T11:03:26Z","reverted":true,"split":"test"}
+{"id":"rev-1379560735","rev_id":1379560735,"page_title":"League of Social Democrats of Vojvodina","timestamp":"2026-10-10T18:46:21Z","reverted":false,"split":"test"}
+{"id":"rev-1380744223","rev_id":1380744223,"page_title":"West Virginia","timestamp":"2026-10-17T16:03:51Z","reverted":true,"split":"test"}
+{"id":"rev-1379560634","rev_id":1379560634,"page_title":"Jerk (music genre)","timestamp":"2026-10-10T18:45:35Z","reverted":false,"split":"test"}
+{"id":"rev-1380752837","rev_id":1380752837,"page_title":"SSU Politehnica Timișoara","timestamp":"2026-10-17T17:20:11Z","reverted":true,"split":"test"}
+{"id":"rev-1379559456","rev_id":1379559456,"page_title":"Nol Heijerman","timestamp":"2026-10-10T18:36:16Z","reverted":false,"split":"test"}
+{"id":"rev-1380736950","rev_id":1380736950,"page_title":"List of Irish flat horse races","timestamp":"2026-10-17T15:00:39Z","reverted":true,"split":"test"}
+{"id":"rev-1379560726","rev_id":1379560726,"page_title":"Luftwaffe raid on Poltava","timestamp":"2026-10-10T18:46:20Z","reverted":false,"split":"test"}
+{"id":"rev-1380723804","rev_id":1380723804,"page_title":"Connecticut Route 59","timestamp":"2026-10-17T13:14:52Z","reverted":true,"split":"test"}
+{"id":"rev-1379560557","rev_id":1379560557,"page_title":"Oops!... I Did It Again (song)","timestamp":"2026-10-10T18:45:05Z","reverted":false,"split":"test"}
+{"id":"rev-1380725139","rev_id":1380725139,"page_title":"British Rail Class 197","timestamp":"2026-10-17T13:26:43Z","reverted":true,"split":"test"}
+{"id":"rev-1379558714","rev_id":1379558714,"page_title":"VK Šabac","timestamp":"2026-10-10T18:30:27Z","reverted":false,"split":"test"}
+{"id":"rev-1380751075","rev_id":1380751075,"page_title":"Geordie Greep","timestamp":"2026-10-17T17:03:57Z","reverted":true,"split":"test"}
+{"id":"rev-1379559976","rev_id":1379559976,"page_title":"House of Brothers","timestamp":"2026-10-10T18:40:18Z","reverted":false,"split":"test"}
+{"id":"rev-1380707358","rev_id":1380707358,"page_title":"Lambda","timestamp":"2026-10-17T10:36:30Z","reverted":true,"split":"test"}
+{"id":"rev-1379561921","rev_id":1379561921,"page_title":"Sali Mali","timestamp":"2026-10-10T18:55:22Z","reverted":false,"split":"test"}
+{"id":"rev-1380747300","rev_id":1380747300,"page_title":"House of Évreux","timestamp":"2026-10-17T16:30:12Z","reverted":true,"split":"test"}
+{"id":"rev-1379560186","rev_id":1379560186,"page_title":"Thích Nhất Hạnh","timestamp":"2026-10-10T18:42:08Z","reverted":false,"split":"test"}
+{"id":"rev-1380755050","rev_id":1380755050,"page_title":"Electric light","timestamp":"2026-10-17T17:40:10Z","reverted":true,"split":"test"}
+{"id":"rev-1379559164","rev_id":1379559164,"page_title":"Progress M-10","timestamp":"2026-10-10T18:34:13Z","reverted":false,"split":"test"}
+{"id":"rev-1380757235","rev_id":1380757235,"page_title":"Embassy of China, London","timestamp":"2026-10-17T17:58:16Z","reverted":true,"split":"test"}
+{"id":"rev-1379558592","rev_id":1379558592,"page_title":"Middle Creek High School","timestamp":"2026-10-10T18:29:09Z","reverted":false,"split":"test"}
+{"id":"rev-1380710007","rev_id":1380710007,"page_title":"Bhadur Hussain","timestamp":"2026-10-17T11:04:56Z","reverted":true,"split":"test"}
+{"id":"rev-1379560767","rev_id":1379560767,"page_title":"2026 Wuhan Open – Singles","timestamp":"2026-10-10T18:46:40Z","reverted":false,"split":"test"}
+{"id":"rev-1380753736","rev_id":1380753736,"page_title":"Mark Aldanov","timestamp":"2026-10-17T17:27:49Z","reverted":true,"split":"test"}
+{"id":"rev-1379559071","rev_id":1379559071,"page_title":"2026–27 La Liga","timestamp":"2026-10-10T18:33:26Z","reverted":false,"split":"test"}
+{"id":"rev-1380758848","rev_id":1380758848,"page_title":"Begum Akbar Jehan Abdullah","timestamp":"2026-10-17T18:10:49Z","reverted":true,"split":"test"}
+{"id":"rev-1379562402","rev_id":1379562402,"page_title":"Atkinson Film-Arts","timestamp":"2026-10-10T18:58:21Z","reverted":false,"split":"test"}
+{"id":"rev-1380712074","rev_id":1380712074,"page_title":"Ravi Kishan","timestamp":"2026-10-17T11:23:47Z","reverted":true,"split":"test"}
+{"id":"rev-1379560394","rev_id":1379560394,"page_title":"Shemini (parashah)","timestamp":"2026-10-10T18:43:55Z","reverted":false,"split":"test"}
+{"id":"rev-1380759783","rev_id":1380759783,"page_title":"Ediga","timestamp":"2026-10-17T18:18:28Z","reverted":true,"split":"test"}
+{"id":"rev-1379561764","rev_id":1379561764,"page_title":"Jared Shuster","timestamp":"2026-10-10T18:54:20Z","reverted":false,"split":"test"}
+{"id":"rev-1380761566","rev_id":1380761566,"page_title":"Resident Evil (film series)","timestamp":"2026-10-17T18:31:20Z","reverted":true,"split":"test"}
+{"id":"rev-1379558885","rev_id":1379558885,"page_title":"2026–27 Newport County A.F.C. season","timestamp":"2026-10-10T18:31:59Z","reverted":false,"split":"test"}
+{"id":"rev-1380714698","rev_id":1380714698,"page_title":"Arleen Auger","timestamp":"2026-10-17T11:45:35Z","reverted":true,"split":"test"}
+{"id":"rev-1379559332","rev_id":1379559332,"page_title":"River Purwell","timestamp":"2026-10-10T18:35:09Z","reverted":false,"split":"test"}
+{"id":"rev-1380733014","rev_id":1380733014,"page_title":"Hurricane Beryl tornado outbreak","timestamp":"2026-10-17T14:29:33Z","reverted":true,"split":"test"}
+{"id":"rev-1379561268","rev_id":1379561268,"page_title":"World Backgammon Championship","timestamp":"2026-10-10T18:50:45Z","reverted":false,"split":"test"}
+{"id":"rev-1380697963","rev_id":1380697963,"page_title":"Darshan filmography","timestamp":"2026-10-17T08:54:07Z","reverted":true,"split":"test"}
+{"id":"rev-1379559326","rev_id":1379559326,"page_title":"Kevin Michael Richardson","timestamp":"2026-10-10T18:35:07Z","reverted":false,"split":"test"}
+{"id":"rev-1380762578","rev_id":1380762578,"page_title":"List of reptiles of Brazil","timestamp":"2026-10-17T18:40:53Z","reverted":true,"split":"test"}
+{"id":"rev-1379560935","rev_id":1379560935,"page_title":"2026 ITF Men's World Tennis Tour (October–December)","timestamp":"2026-10-10T18:48:06Z","reverted":false,"split":"test"}
+{"id":"rev-1380686947","rev_id":1380686947,"page_title":"Tennessee Titans","timestamp":"2026-10-17T07:11:17Z","reverted":true,"split":"test"}
+{"id":"rev-1379558787","rev_id":1379558787,"page_title":"Pacific Rim","timestamp":"2026-10-10T18:31:03Z","reverted":false,"split":"test"}
+{"id":"rev-1380695469","rev_id":1380695469,"page_title":"Herman Santiago","timestamp":"2026-10-17T08:29:05Z","reverted":true,"split":"test"}
+{"id":"rev-1379560130","rev_id":1379560130,"page_title":"2027 Copa Libertadores","timestamp":"2026-10-10T18:41:41Z","reverted":false,"split":"test"}
+{"id":"rev-1380728582","rev_id":1380728582,"page_title":"The Road Not Taken","timestamp":"2026-10-17T13:56:39Z","reverted":true,"split":"test"}
+{"id":"rev-1379559624","rev_id":1379559624,"page_title":"Area studies","timestamp":"2026-10-10T18:37:53Z","reverted":false,"split":"test"}
+{"id":"rev-1380690533","rev_id":1380690533,"page_title":"Nicaragua","timestamp":"2026-10-17T07:46:46Z","reverted":true,"split":"test"}
+{"id":"rev-1379562269","rev_id":1379562269,"page_title":"2014 British Grand Prix","timestamp":"2026-10-10T18:57:30Z","reverted":false,"split":"test"}
+{"id":"rev-1380757006","rev_id":1380757006,"page_title":"Chongqing","timestamp":"2026-10-17T17:56:34Z","reverted":true,"split":"test"}
+{"id":"rev-1379562360","rev_id":1379562360,"page_title":"VK Novi Beograd","timestamp":"2026-10-10T18:58:05Z","reverted":false,"split":"test"}
+{"id":"rev-1380725992","rev_id":1380725992,"page_title":"World Baseball Classic","timestamp":"2026-10-17T13:33:13Z","reverted":true,"split":"test"}
+{"id":"rev-1379560906","rev_id":1379560906,"page_title":"Agfa","timestamp":"2026-10-10T18:47:52Z","reverted":false,"split":"test"}
+{"id":"rev-1380709159","rev_id":1380709159,"page_title":"Windmill","timestamp":"2026-10-17T10:55:42Z","reverted":true,"split":"test"}
+{"id":"rev-1379558756","rev_id":1379558756,"page_title":"2026 in Georgia (U.S. state)","timestamp":"2026-10-10T18:30:45Z","reverted":false,"split":"test"}
+{"id":"rev-1380684752","rev_id":1380684752,"page_title":"Keibul Lamjao National Park","timestamp":"2026-10-17T06:56:31Z","reverted":true,"split":"test"}
+{"id":"rev-1379562222","rev_id":1379562222,"page_title":"Nedd Fechan","timestamp":"2026-10-10T18:57:10Z","reverted":false,"split":"test"}
+{"id":"rev-1380731875","rev_id":1380731875,"page_title":"Sonic Adventure 2","timestamp":"2026-10-17T14:21:45Z","reverted":true,"split":"test"}
+{"id":"rev-1379561029","rev_id":1379561029,"page_title":"Janet Lee Carey","timestamp":"2026-10-10T18:48:54Z","reverted":false,"split":"test"}
+{"id":"rev-1380683834","rev_id":1380683834,"page_title":"Sex shop","timestamp":"2026-10-17T06:46:40Z","reverted":true,"split":"test"}
+{"id":"rev-1379559403","rev_id":1379559403,"page_title":"Csoma family","timestamp":"2026-10-10T18:35:49Z","reverted":false,"split":"test"}
+{"id":"rev-1380729287","rev_id":1380729287,"page_title":"Tornado outbreak sequence of June 14–19, 2023","timestamp":"2026-10-17T14:01:48Z","reverted":true,"split":"test"}
+{"id":"rev-1379559193","rev_id":1379559193,"page_title":"Gontenschwil","timestamp":"2026-10-10T18:34:26Z","reverted":false,"split":"test"}
+{"id":"rev-1380736488","rev_id":1380736488,"page_title":"Jailer 2","timestamp":"2026-10-17T14:56:48Z","reverted":true,"split":"test"}
+{"id":"rev-1379561431","rev_id":1379561431,"page_title":"2026–27 FC Barcelona season","timestamp":"2026-10-10T18:51:55Z","reverted":false,"split":"test"}
+{"id":"rev-1380733985","rev_id":1380733985,"page_title":"Islamic Golden Age","timestamp":"2026-10-17T14:36:38Z","reverted":true,"split":"test"}
+{"id":"rev-1379559553","rev_id":1379559553,"page_title":"Lelíček in the Services of Sherlock Holmes","timestamp":"2026-10-10T18:37:19Z","reverted":false,"split":"test"}
+{"id":"rev-1380688496","rev_id":1380688496,"page_title":"University of Kalyani","timestamp":"2026-10-17T07:23:17Z","reverted":true,"split":"test"}
+{"id":"rev-1379559628","rev_id":1379559628,"page_title":"Miss Grand Ivory Coast","timestamp":"2026-10-10T18:37:54Z","reverted":false,"split":"test"}
+{"id":"rev-1380750142","rev_id":1380750142,"page_title":"Jordan Barrett","timestamp":"2026-10-17T16:56:01Z","reverted":true,"split":"test"}
+{"id":"rev-1379561058","rev_id":1379561058,"page_title":"Fox Theatre (Brooklyn)","timestamp":"2026-10-10T18:49:05Z","reverted":false,"split":"test"}
+{"id":"rev-1380695084","rev_id":1380695084,"page_title":"Pathum Nissanka","timestamp":"2026-10-17T08:25:47Z","reverted":true,"split":"test"}
+{"id":"rev-1379559626","rev_id":1379559626,"page_title":"Lathyrus biflorus","timestamp":"2026-10-10T18:37:52Z","reverted":false,"split":"test"}
