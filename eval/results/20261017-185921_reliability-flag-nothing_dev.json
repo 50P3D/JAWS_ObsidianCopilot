@@ -1,0 +1,553 @@
+{
+  "run_id": "20261017-185921_reliability-flag-nothing_dev",
+  "started_at": "2026-10-17T18:59:21.696Z",
+  "finished_at": "2026-10-17T18:59:21.706Z",
+  "git_commit": "9013bb2-dirty",
+  "system": {
+    "name": "flag-nothing",
+    "liftwing": false
+  },
+  "dataset": {
+    "path": "eval/datasets/reliability-dev.jsonl",
+    "sha256": "0dbe65fd4da51400841ed37af223bc15f0ff20947e0e0d6b3676ef6aac7cd828",
+    "split": "dev",
+    "count": 40
+  },
+  "settings": {
+    "argv": [
+      "--system",
+      "flag-nothing"
+    ],
+    "system": "flag-nothing",
+    "dataset": "eval/datasets/reliability-dev.jsonl",
+    "split": "dev",
+    "final": false,
+    "limit": null,
+    "liftwing_flag": null,
+    "liftwing_env": null,
+    "risk_low": null,
+    "out": "eval/results"
+  },
+  "predictions": [
+    {
+      "id": "rev-1380746986",
+      "rev_id": 1380746986,
+      "page_title": "Rara National Park",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1379561360",
+      "rev_id": 1379561360,
+      "page_title": "Jigsaw SitThailand",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1380683364",
+      "rev_id": 1380683364,
+      "page_title": "Something Special (TV series)",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1379561020",
+      "rev_id": 1379561020,
+      "page_title": "Hurricane Isaias (2026)",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1380748973",
+      "rev_id": 1380748973,
+      "page_title": "Ottoman–Safavid War (1623–1639)",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1379559206",
+      "rev_id": 1379559206,
+      "page_title": "Egmont Imagination",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1380749520",
+      "rev_id": 1380749520,
+      "page_title": "Black Sun (symbol)",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1379562284",
+      "rev_id": 1379562284,
+      "page_title": "Kyle Rittenhouse",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1380720225",
+      "rev_id": 1380720225,
+      "page_title": "Athletics at the World School Sport Games",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1379558923",
+      "rev_id": 1379558923,
+      "page_title": "Science and technology in the My Little Pony: Friendship Is Magic fandom",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1380728891",
+      "rev_id": 1380728891,
+      "page_title": "OsamaSon discography",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1379558725",
+      "rev_id": 1379558725,
+      "page_title": "2026–27 Premier League",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1380689181",
+      "rev_id": 1380689181,
+      "page_title": "Mozeza Ashraf Monalisa",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1379559289",
+      "rev_id": 1379559289,
+      "page_title": "Pakistani cricket team in England in 2026",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1380724046",
+      "rev_id": 1380724046,
+      "page_title": "Kingdom of Serbia",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1379561643",
+      "rev_id": 1379561643,
+      "page_title": "Brickyard 400",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1380762149",
+      "rev_id": 1380762149,
+      "page_title": "Puberty blocker",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1379559055",
+      "rev_id": 1379559055,
+      "page_title": "Phusa Ram",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1380731812",
+      "rev_id": 1380731812,
+      "page_title": "Pokémon Concierge",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1379559298",
+      "rev_id": 1379559298,
+      "page_title": "2026–27 Kategoria Superiore",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1380758888",
+      "rev_id": 1380758888,
+      "page_title": "Nikita Mears",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1379559910",
+      "rev_id": 1379559910,
+      "page_title": "Guntur Police Commissionerate",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1380720183",
+      "rev_id": 1380720183,
+      "page_title": "Miles Gloriosus (play)",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1379558202",
+      "rev_id": 1379558202,
+      "page_title": "2026 Internazionali di Sicilia – Singles",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1380723636",
+      "rev_id": 1380723636,
+      "page_title": "2026 UCI Track Cycling World Championships",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1379561030",
+      "rev_id": 1379561030,
+      "page_title": "Anthony Gordon (footballer)",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1380688315",
+      "rev_id": 1380688315,
+      "page_title": "Oikophobia",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1379561968",
+      "rev_id": 1379561968,
+      "page_title": "Francesca Albanese",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1380722189",
+      "rev_id": 1380722189,
+      "page_title": "Peter Hänggi",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1379562287",
+      "rev_id": 1379562287,
+      "page_title": "Justin Hoh",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1380688874",
+      "rev_id": 1380688874,
+      "page_title": "Rise and Fall (Indian TV series)",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1379558971",
+      "rev_id": 1379558971,
+      "page_title": "Rajamahendravaram Police Commissionerate",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1380699422",
+      "rev_id": 1380699422,
+      "page_title": "Commitment scheme",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1379558478",
+      "rev_id": 1379558478,
+      "page_title": "ORACLE (teletext)",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1380740686",
+      "rev_id": 1380740686,
+      "page_title": "Buni",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1379561129",
+      "rev_id": 1379561129,
+      "page_title": "Marlene Belfort",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1380691272",
+      "rev_id": 1380691272,
+      "page_title": "WXMI",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1379558458",
+      "rev_id": 1379558458,
+      "page_title": "Reach Out Worldwide",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1380754872",
+      "rev_id": 1380754872,
+      "page_title": "Nazlı Ecevit",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    },
+    {
+      "id": "rev-1379561451",
+      "rev_id": 1379561451,
+      "page_title": "2026 Internazionali di Tennis Città di Rovereto – Singles",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Baseline: no revision is ever flagged"
+      ],
+      "rules": [],
+      "ms": 0
+    }
+  ]
+}
