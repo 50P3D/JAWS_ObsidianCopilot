@@ -1,0 +1,1475 @@
+{
+  "run_id": "20261017-185933_reliability-revert-risk-only_dev",
+  "started_at": "2026-10-17T18:59:33.378Z",
+  "finished_at": "2026-10-17T19:00:32.091Z",
+  "git_commit": "9013bb2-dirty",
+  "system": {
+    "name": "revert-risk-only",
+    "thresholds": {
+      "revertRiskLow": 0.7,
+      "revertRiskMedium": 0.4,
+      "recentEditHours": 24,
+      "revertsInWindow": 3,
+      "inlineIssues": 10,
+      "citationCoverage": 0.5,
+      "unavailableCap": 2
+    },
+    "liftwing": true
+  },
+  "dataset": {
+    "path": "eval/datasets/reliability-dev.jsonl",
+    "sha256": "0dbe65fd4da51400841ed37af223bc15f0ff20947e0e0d6b3676ef6aac7cd828",
+    "split": "dev",
+    "count": 40
+  },
+  "settings": {
+    "argv": [
+      "--system",
+      "revert-risk-only"
+    ],
+    "system": "revert-risk-only",
+    "dataset": "eval/datasets/reliability-dev.jsonl",
+    "split": "dev",
+    "final": false,
+    "limit": null,
+    "liftwing_flag": null,
+    "liftwing_env": null,
+    "risk_low": null,
+    "out": "eval/results"
+  },
+  "predictions": [
+    {
+      "id": "rev-1380746986",
+      "rev_id": 1380746986,
+      "page_title": "Rara National Park",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.22 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 1
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 1,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.2232481688261032
+        },
+        "citations": {
+          "coverage": 1,
+          "prose": 3,
+          "cited": 3,
+          "refCount": 9
+        }
+      },
+      "ms": 1653
+    },
+    {
+      "id": "rev-1379561360",
+      "rev_id": 1379561360,
+      "page_title": "Jigsaw SitThailand",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.06 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 1,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.062259454280138016
+        },
+        "citations": {
+          "coverage": 0.8333333333333334,
+          "prose": 6,
+          "cited": 5,
+          "refCount": 7
+        }
+      },
+      "ms": 941
+    },
+    {
+      "id": "rev-1380683364",
+      "rev_id": 1380683364,
+      "page_title": "Something Special (TV series)",
+      "gold_reverted": true,
+      "badge": "Low",
+      "predicted_low": true,
+      "reasons": [
+        "This revision has a high predicted chance of being reverted (0.83)"
+      ],
+      "rules": [
+        "revert-risk-high"
+      ],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 1
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 27,
+          "revertsInWindow": 1,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.8310708999633789
+        },
+        "citations": {
+          "coverage": 0.6,
+          "prose": 5,
+          "cited": 3,
+          "refCount": 16
+        }
+      },
+      "ms": 3637
+    },
+    {
+      "id": "rev-1379561020",
+      "rev_id": 1379561020,
+      "page_title": "Hurricane Isaias (2026)",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.21 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 332,
+          "revertsInWindow": 21,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.20669521391391754
+        },
+        "citations": {
+          "coverage": 1,
+          "prose": 7,
+          "cited": 7,
+          "refCount": 115
+        }
+      },
+      "ms": 2446
+    },
+    {
+      "id": "rev-1380748973",
+      "rev_id": 1380748973,
+      "page_title": "Ottoman–Safavid War (1623–1639)",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.61 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 6,
+          "revertsInWindow": 1,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.6106234192848206
+        },
+        "citations": {
+          "coverage": 1,
+          "prose": 7,
+          "cited": 7,
+          "refCount": 52
+        }
+      },
+      "ms": 1146
+    },
+    {
+      "id": "rev-1379559206",
+      "rev_id": 1379559206,
+      "page_title": "Egmont Imagination",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.25 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 1,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.25335392355918884
+        },
+        "citations": {
+          "coverage": 0.8333333333333334,
+          "prose": 6,
+          "cited": 5,
+          "refCount": 8
+        }
+      },
+      "ms": 696
+    },
+    {
+      "id": "rev-1380749520",
+      "rev_id": 1380749520,
+      "page_title": "Black Sun (symbol)",
+      "gold_reverted": true,
+      "badge": "Low",
+      "predicted_low": true,
+      "reasons": [
+        "This revision has a high predicted chance of being reverted (0.93)"
+      ],
+      "rules": [
+        "revert-risk-high"
+      ],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 3,
+          "revertsInWindow": 1,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.9267297983169556
+        },
+        "citations": {
+          "coverage": 0.9230769230769231,
+          "prose": 13,
+          "cited": 12,
+          "refCount": 21
+        }
+      },
+      "ms": 1285
+    },
+    {
+      "id": "rev-1379562284",
+      "rev_id": 1379562284,
+      "page_title": "Kyle Rittenhouse",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.36 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 4,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.35945165157318115
+        },
+        "citations": {
+          "coverage": 0.9375,
+          "prose": 32,
+          "cited": 30,
+          "refCount": 153
+        }
+      },
+      "ms": 1618
+    },
+    {
+      "id": "rev-1380720225",
+      "rev_id": 1380720225,
+      "page_title": "Athletics at the World School Sport Games",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.15 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 1,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.15237732231616974
+        },
+        "citations": {
+          "coverage": 1,
+          "prose": 1,
+          "cited": 1,
+          "refCount": 1
+        }
+      },
+      "ms": 1770
+    },
+    {
+      "id": "rev-1379558923",
+      "rev_id": 1379558923,
+      "page_title": "Science and technology in the My Little Pony: Friendship Is Magic fandom",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.04 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 20,
+          "revertsInWindow": 1,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.0421493761241436
+        },
+        "citations": {
+          "unavailable": true,
+          "cause": "no prose paragraphs"
+        }
+      },
+      "ms": 1051
+    },
+    {
+      "id": "rev-1380728891",
+      "rev_id": 1380728891,
+      "page_title": "OsamaSon discography",
+      "gold_reverted": true,
+      "badge": "Low",
+      "predicted_low": true,
+      "reasons": [
+        "This revision has a high predicted chance of being reverted (0.97)"
+      ],
+      "rules": [
+        "revert-risk-high"
+      ],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 25,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.9681240320205688
+        },
+        "citations": {
+          "coverage": 1,
+          "prose": 1,
+          "cited": 1,
+          "refCount": 18
+        }
+      },
+      "ms": 640
+    },
+    {
+      "id": "rev-1379558725",
+      "rev_id": 1379558725,
+      "page_title": "2026–27 Premier League",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.30 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 162,
+          "revertsInWindow": 8,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.297140508890152
+        },
+        "citations": {
+          "coverage": 0.8,
+          "prose": 5,
+          "cited": 4,
+          "refCount": 126
+        }
+      },
+      "ms": 2085
+    },
+    {
+      "id": "rev-1380689181",
+      "rev_id": 1380689181,
+      "page_title": "Mozeza Ashraf Monalisa",
+      "gold_reverted": true,
+      "badge": "Low",
+      "predicted_low": true,
+      "reasons": [
+        "This revision has a high predicted chance of being reverted (0.81)"
+      ],
+      "rules": [
+        "revert-risk-high"
+      ],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 1,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.8070446252822876
+        },
+        "citations": {
+          "coverage": 1,
+          "prose": 2,
+          "cited": 2,
+          "refCount": 15
+        }
+      },
+      "ms": 784
+    },
+    {
+      "id": "rev-1379559289",
+      "rev_id": 1379559289,
+      "page_title": "Pakistani cricket team in England in 2026",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.13 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 28,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.1256982982158661
+        },
+        "citations": {
+          "coverage": 1,
+          "prose": 4,
+          "cited": 4,
+          "refCount": 22
+        }
+      },
+      "ms": 1116
+    },
+    {
+      "id": "rev-1380724046",
+      "rev_id": 1380724046,
+      "page_title": "Kingdom of Serbia",
+      "gold_reverted": true,
+      "badge": "Low",
+      "predicted_low": true,
+      "reasons": [
+        "This revision has a high predicted chance of being reverted (0.81)"
+      ],
+      "rules": [
+        "revert-risk-high"
+      ],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 14,
+          "revertsInWindow": 2,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.8090935945510864
+        },
+        "citations": {
+          "coverage": 0.4666666666666667,
+          "prose": 30,
+          "cited": 14,
+          "refCount": 23
+        }
+      },
+      "ms": 1527
+    },
+    {
+      "id": "rev-1379561643",
+      "rev_id": 1379561643,
+      "page_title": "Brickyard 400",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.43 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 4,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.43202438950538635
+        },
+        "citations": {
+          "coverage": 0.39655172413793105,
+          "prose": 58,
+          "cited": 23,
+          "refCount": 128
+        }
+      },
+      "ms": 769
+    },
+    {
+      "id": "rev-1380762149",
+      "rev_id": 1380762149,
+      "page_title": "Puberty blocker",
+      "gold_reverted": true,
+      "badge": "Low",
+      "predicted_low": true,
+      "reasons": [
+        "This revision has a high predicted chance of being reverted (0.73)"
+      ],
+      "rules": [
+        "revert-risk-high"
+      ],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 1
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 8,
+          "revertsInWindow": 3,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.7317538261413574
+        },
+        "citations": {
+          "coverage": 0.9692307692307692,
+          "prose": 65,
+          "cited": 63,
+          "refCount": 352
+        }
+      },
+      "ms": 583
+    },
+    {
+      "id": "rev-1379559055",
+      "rev_id": 1379559055,
+      "page_title": "Phusa Ram",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.37 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 3,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.36547601222991943
+        },
+        "citations": {
+          "coverage": 1,
+          "prose": 4,
+          "cited": 4,
+          "refCount": 13
+        }
+      },
+      "ms": 786
+    },
+    {
+      "id": "rev-1380731812",
+      "rev_id": 1380731812,
+      "page_title": "Pokémon Concierge",
+      "gold_reverted": true,
+      "badge": "Low",
+      "predicted_low": true,
+      "reasons": [
+        "This revision has a high predicted chance of being reverted (0.93)"
+      ],
+      "rules": [
+        "revert-risk-high"
+      ],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 2,
+          "revertsInWindow": 1,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.9276799559593201
+        },
+        "citations": {
+          "coverage": 1,
+          "prose": 12,
+          "cited": 12,
+          "refCount": 54
+        }
+      },
+      "ms": 1173
+    },
+    {
+      "id": "rev-1379559298",
+      "rev_id": 1379559298,
+      "page_title": "2026–27 Kategoria Superiore",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.11 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 44,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.10727774351835251
+        },
+        "citations": {
+          "coverage": 0.5,
+          "prose": 2,
+          "cited": 1,
+          "refCount": 3
+        }
+      },
+      "ms": 1753
+    },
+    {
+      "id": "rev-1380758888",
+      "rev_id": 1380758888,
+      "page_title": "Nikita Mears",
+      "gold_reverted": true,
+      "badge": "Low",
+      "predicted_low": true,
+      "reasons": [
+        "This revision has a high predicted chance of being reverted (0.79)"
+      ],
+      "rules": [
+        "revert-risk-high"
+      ],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 1,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.7921614646911621
+        },
+        "citations": {
+          "coverage": 0.8333333333333334,
+          "prose": 12,
+          "cited": 10,
+          "refCount": 61
+        }
+      },
+      "ms": 986
+    },
+    {
+      "id": "rev-1379559910",
+      "rev_id": 1379559910,
+      "page_title": "Guntur Police Commissionerate",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.21 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 56,
+          "revertsInWindow": 1,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.21339347958564758
+        },
+        "citations": {
+          "unavailable": true,
+          "cause": "no prose paragraphs"
+        }
+      },
+      "ms": 937
+    },
+    {
+      "id": "rev-1380720183",
+      "rev_id": 1380720183,
+      "page_title": "Miles Gloriosus (play)",
+      "gold_reverted": true,
+      "badge": "Low",
+      "predicted_low": true,
+      "reasons": [
+        "This revision has a high predicted chance of being reverted (0.91)"
+      ],
+      "rules": [
+        "revert-risk-high"
+      ],
+      "signals": {
+        "maintenance": {
+          "banners": [
+            "unreferenced",
+            "more_citations"
+          ],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 3,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.9111282825469971
+        },
+        "citations": {
+          "coverage": 0.45454545454545453,
+          "prose": 22,
+          "cited": 10,
+          "refCount": 23
+        }
+      },
+      "ms": 1579
+    },
+    {
+      "id": "rev-1379558202",
+      "rev_id": 1379558202,
+      "page_title": "2026 Internazionali di Sicilia – Singles",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.11 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 58,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.11409725248813629
+        },
+        "citations": {
+          "coverage": 1,
+          "prose": 1,
+          "cited": 1,
+          "refCount": 1
+        }
+      },
+      "ms": 883
+    },
+    {
+      "id": "rev-1380723636",
+      "rev_id": 1380723636,
+      "page_title": "2026 UCI Track Cycling World Championships",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.17 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 35,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.16624531149864197
+        },
+        "citations": {
+          "unavailable": true,
+          "cause": "no prose paragraphs"
+        }
+      },
+      "ms": 2363
+    },
+    {
+      "id": "rev-1379561030",
+      "rev_id": 1379561030,
+      "page_title": "Anthony Gordon (footballer)",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.59 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 34,
+          "revertsInWindow": 5,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.5906203389167786
+        },
+        "citations": {
+          "coverage": 0.9375,
+          "prose": 16,
+          "cited": 15,
+          "refCount": 115
+        }
+      },
+      "ms": 2220
+    },
+    {
+      "id": "rev-1380688315",
+      "rev_id": 1380688315,
+      "page_title": "Oikophobia",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.24 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 8,
+          "revertsInWindow": 2,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.24050746858119965
+        },
+        "citations": {
+          "coverage": 1,
+          "prose": 6,
+          "cited": 6,
+          "refCount": 20
+        }
+      },
+      "ms": 1221
+    },
+    {
+      "id": "rev-1379561968",
+      "rev_id": 1379561968,
+      "page_title": "Francesca Albanese",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.63 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 22,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.6345513463020325
+        },
+        "citations": {
+          "coverage": 0.8108108108108109,
+          "prose": 37,
+          "cited": 30,
+          "refCount": 136
+        }
+      },
+      "ms": 3592
+    },
+    {
+      "id": "rev-1380722189",
+      "rev_id": 1380722189,
+      "page_title": "Peter Hänggi",
+      "gold_reverted": true,
+      "badge": "Low",
+      "predicted_low": true,
+      "reasons": [
+        "This revision has a high predicted chance of being reverted (0.84)"
+      ],
+      "rules": [
+        "revert-risk-high"
+      ],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 1
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 17,
+          "revertsInWindow": 3,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.8375751972198486
+        },
+        "citations": {
+          "coverage": 0.8,
+          "prose": 5,
+          "cited": 4,
+          "refCount": 11
+        }
+      },
+      "ms": 850
+    },
+    {
+      "id": "rev-1379562287",
+      "rev_id": 1379562287,
+      "page_title": "Justin Hoh",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.11 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 4,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.1100587323307991
+        },
+        "citations": {
+          "coverage": 0.9230769230769231,
+          "prose": 13,
+          "cited": 12,
+          "refCount": 33
+        }
+      },
+      "ms": 1483
+    },
+    {
+      "id": "rev-1380688874",
+      "rev_id": 1380688874,
+      "page_title": "Rise and Fall (Indian TV series)",
+      "gold_reverted": true,
+      "badge": "Low",
+      "predicted_low": true,
+      "reasons": [
+        "This revision has a high predicted chance of being reverted (0.71)"
+      ],
+      "rules": [
+        "revert-risk-high"
+      ],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 138,
+          "revertsInWindow": 14,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.7059333324432373
+        },
+        "citations": {
+          "coverage": 0.5,
+          "prose": 2,
+          "cited": 1,
+          "refCount": 4
+        }
+      },
+      "ms": 1283
+    },
+    {
+      "id": "rev-1379558971",
+      "rev_id": 1379558971,
+      "page_title": "Rajamahendravaram Police Commissionerate",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.19 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 42,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.1855960190296173
+        },
+        "citations": {
+          "coverage": 0.5,
+          "prose": 2,
+          "cited": 1,
+          "refCount": 3
+        }
+      },
+      "ms": 1571
+    },
+    {
+      "id": "rev-1380699422",
+      "rev_id": 1380699422,
+      "page_title": "Commitment scheme",
+      "gold_reverted": true,
+      "badge": "Low",
+      "predicted_low": true,
+      "reasons": [
+        "This revision has a high predicted chance of being reverted (0.95)"
+      ],
+      "rules": [
+        "revert-risk-high"
+      ],
+      "signals": {
+        "maintenance": {
+          "banners": [
+            "more_citations",
+            "cleanup"
+          ],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 1,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.9470778703689575
+        },
+        "citations": {
+          "coverage": 0.28,
+          "prose": 50,
+          "cited": 14,
+          "refCount": 33
+        }
+      },
+      "ms": 2029
+    },
+    {
+      "id": "rev-1379558478",
+      "rev_id": 1379558478,
+      "page_title": "ORACLE (teletext)",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.22 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [
+            "more_citations"
+          ],
+          "inlineIssues": 2
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 2,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.2195507138967514
+        },
+        "citations": {
+          "coverage": 0.6666666666666666,
+          "prose": 9,
+          "cited": 6,
+          "refCount": 17
+        }
+      },
+      "ms": 1368
+    },
+    {
+      "id": "rev-1380740686",
+      "rev_id": 1380740686,
+      "page_title": "Buni",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.43 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [
+            "more_citations",
+            "cleanup"
+          ],
+          "inlineIssues": 2
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 15,
+          "revertsInWindow": 3,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.42871472239494324
+        },
+        "citations": {
+          "coverage": 1,
+          "prose": 2,
+          "cited": 2,
+          "refCount": 6
+        }
+      },
+      "ms": 1142
+    },
+    {
+      "id": "rev-1379561129",
+      "rev_id": 1379561129,
+      "page_title": "Marlene Belfort",
+      "gold_reverted": false,
+      "badge": "Low",
+      "predicted_low": true,
+      "reasons": [
+        "This revision has a high predicted chance of being reverted (0.83)"
+      ],
+      "rules": [
+        "revert-risk-high"
+      ],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 2,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.8345109820365906
+        },
+        "citations": {
+          "coverage": 1,
+          "prose": 1,
+          "cited": 1,
+          "refCount": 35
+        }
+      },
+      "ms": 2327
+    },
+    {
+      "id": "rev-1380691272",
+      "rev_id": 1380691272,
+      "page_title": "WXMI",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.67 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [
+            "more_citations"
+          ],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 4,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.6651459336280823
+        },
+        "citations": {
+          "coverage": 0.42857142857142855,
+          "prose": 7,
+          "cited": 3,
+          "refCount": 39
+        }
+      },
+      "ms": 1705
+    },
+    {
+      "id": "rev-1379558458",
+      "rev_id": 1379558458,
+      "page_title": "Reach Out Worldwide",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.41 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 2,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.4132021963596344
+        },
+        "citations": {
+          "coverage": 1,
+          "prose": 1,
+          "cited": 1,
+          "refCount": 13
+        }
+      },
+      "ms": 1110
+    },
+    {
+      "id": "rev-1380754872",
+      "rev_id": 1380754872,
+      "page_title": "Nazlı Ecevit",
+      "gold_reverted": true,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.35 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 2,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.3508678376674652
+        },
+        "citations": {
+          "coverage": 1,
+          "prose": 4,
+          "cited": 4,
+          "refCount": 42
+        }
+      },
+      "ms": 1429
+    },
+    {
+      "id": "rev-1379561451",
+      "rev_id": 1379561451,
+      "page_title": "2026 Internazionali di Tennis Città di Rovereto – Singles",
+      "gold_reverted": false,
+      "badge": "High",
+      "predicted_low": false,
+      "reasons": [
+        "Predicted revert risk 0.04 is below 0.7"
+      ],
+      "rules": [],
+      "signals": {
+        "maintenance": {
+          "banners": [],
+          "inlineIssues": 0
+        },
+        "editActivity": {
+          "ageHours": 0,
+          "isLatest": true,
+          "editsInWindow": 6,
+          "revertsInWindow": 0,
+          "pendingReview": null
+        },
+        "revertRisk": {
+          "probability": 0.04100722819566727
+        },
+        "citations": {
+          "coverage": 1,
+          "prose": 1,
+          "cited": 1,
+          "refCount": 1
+        }
+      },
+      "ms": 1160
+    }
+  ]
+}
