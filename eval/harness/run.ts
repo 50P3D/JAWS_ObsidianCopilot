@@ -20,12 +20,12 @@
  * Runs are sequential on purpose: Ollama serves one model at a time on a laptop.
  */
 
-import { execSync } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
 import { relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { flagBool, flagNumber, parseArgs } from "./cli";
 import { assertSplitAllowed, loadDataset, logTestRun } from "./dataset";
+import { gitCommit } from "./git";
 import { renderReport, summaryLine } from "./report";
 import { createSystem, SYSTEM_NAMES } from "./systems";
 import type { Prediction, RunFile, Split } from "./types";
@@ -33,16 +33,6 @@ import type { Prediction, RunFile, Split } from "./types";
 const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
 const defaultDataset = fileURLToPath(new URL("../datasets/fever-dev.jsonl", import.meta.url));
 const defaultOut = fileURLToPath(new URL("../results/", import.meta.url));
-
-function gitCommit(): string | null {
-  try {
-    const sha = execSync("git rev-parse --short HEAD", { cwd: repoRoot, stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
-    const dirty = execSync("git status --porcelain", { cwd: repoRoot, stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
-    return dirty ? `${sha}-dirty` : sha;
-  } catch {
-    return null;
-  }
-}
 
 const stamp = (d: Date) => d.toISOString().replace(/[-:]/g, "").replace(/\..+/, "").replace("T", "-");
 const slug = (s: string) => s.replace(/[^a-zA-Z0-9.]+/g, "-").replace(/^-|-$/g, "");

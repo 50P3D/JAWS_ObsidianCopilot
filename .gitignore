@@ -232,4 +232,9 @@ eval/datasets/raw/
 project-proposal.pdf
 
 # Results from evaluation
-eval/results
+# eval/results
+
+# AI cache if there is any
+.kiro
+.claude
+.gemini

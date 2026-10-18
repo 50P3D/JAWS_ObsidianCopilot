@@ -1,0 +1,43 @@
+// Reliability revisions, split=dev, n=40 (20 reverted, 20 stable), seed=201, one revision per article.
+// Source: enwiki list=recentchanges (rcnamespace=0, rcshow=!bot, rctype=edit, rcprop=ids|title|timestamp|tags, up to 2000 per pool). Reverted: rctag=mw-reverted. Stable: 7 to 30 days old (rcstart=2026-10-10T18:58:40.427Z, rcend=2026-09-17T18:58:40.427Z), no mw-reverted/mw-rollback/mw-undo/mw-manual-revert tags.
+// Fetched 2026-10-17T18:58:40Z, pool sha256 31b90061ee906d27982008ac830e494493addd3c67e135601c61b991daba871d. Regenerate: npx tsx eval/scripts/prepareRevisions.ts
+{"id":"rev-1380746986","rev_id":1380746986,"page_title":"Rara National Park","timestamp":"2026-10-17T16:27:20Z","reverted":true,"split":"dev"}
+{"id":"rev-1379561360","rev_id":1379561360,"page_title":"Jigsaw SitThailand","timestamp":"2026-10-10T18:51:24Z","reverted":false,"split":"dev"}
+{"id":"rev-1380683364","rev_id":1380683364,"page_title":"Something Special (TV series)","timestamp":"2026-10-17T06:41:49Z","reverted":true,"split":"dev"}
+{"id":"rev-1379561020","rev_id":1379561020,"page_title":"Hurricane Isaias (2026)","timestamp":"2026-10-10T18:48:49Z","reverted":false,"split":"dev"}
+{"id":"rev-1380748973","rev_id":1380748973,"page_title":"Ottoman–Safavid War (1623–1639)","timestamp":"2026-10-17T16:44:43Z","reverted":true,"split":"dev"}
+{"id":"rev-1379559206","rev_id":1379559206,"page_title":"Egmont Imagination","timestamp":"2026-10-10T18:34:31Z","reverted":false,"split":"dev"}
+{"id":"rev-1380749520","rev_id":1380749520,"page_title":"Black Sun (symbol)","timestamp":"2026-10-17T16:50:07Z","reverted":true,"split":"dev"}
+{"id":"rev-1379562284","rev_id":1379562284,"page_title":"Kyle Rittenhouse","timestamp":"2026-10-10T18:57:34Z","reverted":false,"split":"dev"}
+{"id":"rev-1380720225","rev_id":1380720225,"page_title":"Athletics at the World School Sport Games","timestamp":"2026-10-17T12:38:31Z","reverted":true,"split":"dev"}
+{"id":"rev-1379558923","rev_id":1379558923,"page_title":"Science and technology in the My Little Pony: Friendship Is Magic fandom","timestamp":"2026-10-10T18:32:17Z","reverted":false,"split":"dev"}
+{"id":"rev-1380728891","rev_id":1380728891,"page_title":"OsamaSon discography","timestamp":"2026-10-17T13:58:53Z","reverted":true,"split":"dev"}
+{"id":"rev-1379558725","rev_id":1379558725,"page_title":"2026–27 Premier League","timestamp":"2026-10-10T18:30:33Z","reverted":false,"split":"dev"}
+{"id":"rev-1380689181","rev_id":1380689181,"page_title":"Mozeza Ashraf Monalisa","timestamp":"2026-10-17T07:32:10Z","reverted":true,"split":"dev"}
+{"id":"rev-1379559289","rev_id":1379559289,"page_title":"Pakistani cricket team in England in 2026","timestamp":"2026-10-10T18:34:52Z","reverted":false,"split":"dev"}
+{"id":"rev-1380724046","rev_id":1380724046,"page_title":"Kingdom of Serbia","timestamp":"2026-10-17T13:17:06Z","reverted":true,"split":"dev"}
+{"id":"rev-1379561643","rev_id":1379561643,"page_title":"Brickyard 400","timestamp":"2026-10-10T18:53:30Z","reverted":false,"split":"dev"}
+{"id":"rev-1380762149","rev_id":1380762149,"page_title":"Puberty blocker","timestamp":"2026-10-17T18:36:34Z","reverted":true,"split":"dev"}
+{"id":"rev-1379559055","rev_id":1379559055,"page_title":"Phusa Ram","timestamp":"2026-10-10T18:33:18Z","reverted":false,"split":"dev"}
+{"id":"rev-1380731812","rev_id":1380731812,"page_title":"Pokémon Concierge","timestamp":"2026-10-17T14:21:14Z","reverted":true,"split":"dev"}
+{"id":"rev-1379559298","rev_id":1379559298,"page_title":"2026–27 Kategoria Superiore","timestamp":"2026-10-10T18:34:56Z","reverted":false,"split":"dev"}
+{"id":"rev-1380758888","rev_id":1380758888,"page_title":"Nikita Mears","timestamp":"2026-10-17T18:11:09Z","reverted":true,"split":"dev"}
+{"id":"rev-1379559910","rev_id":1379559910,"page_title":"Guntur Police Commissionerate","timestamp":"2026-10-10T18:39:53Z","reverted":false,"split":"dev"}
+{"id":"rev-1380720183","rev_id":1380720183,"page_title":"Miles Gloriosus (play)","timestamp":"2026-10-17T12:38:05Z","reverted":true,"split":"dev"}
+{"id":"rev-1379558202","rev_id":1379558202,"page_title":"2026 Internazionali di Sicilia – Singles","timestamp":"2026-10-10T18:25:58Z","reverted":false,"split":"dev"}
+{"id":"rev-1380723636","rev_id":1380723636,"page_title":"2026 UCI Track Cycling World Championships","timestamp":"2026-10-17T13:13:14Z","reverted":true,"split":"dev"}
+{"id":"rev-1379561030","rev_id":1379561030,"page_title":"Anthony Gordon (footballer)","timestamp":"2026-10-10T18:48:54Z","reverted":false,"split":"dev"}
+{"id":"rev-1380688315","rev_id":1380688315,"page_title":"Oikophobia","timestamp":"2026-10-17T07:21:33Z","reverted":true,"split":"dev"}
+{"id":"rev-1379561968","rev_id":1379561968,"page_title":"Francesca Albanese","timestamp":"2026-10-10T18:55:41Z","reverted":false,"split":"dev"}
+{"id":"rev-1380722189","rev_id":1380722189,"page_title":"Peter Hänggi","timestamp":"2026-10-17T12:57:17Z","reverted":true,"split":"dev"}
+{"id":"rev-1379562287","rev_id":1379562287,"page_title":"Justin Hoh","timestamp":"2026-10-10T18:57:36Z","reverted":false,"split":"dev"}
+{"id":"rev-1380688874","rev_id":1380688874,"page_title":"Rise and Fall (Indian TV series)","timestamp":"2026-10-17T07:28:04Z","reverted":true,"split":"dev"}
+{"id":"rev-1379558971","rev_id":1379558971,"page_title":"Rajamahendravaram Police Commissionerate","timestamp":"2026-10-10T18:32:40Z","reverted":false,"split":"dev"}
+{"id":"rev-1380699422","rev_id":1380699422,"page_title":"Commitment scheme","timestamp":"2026-10-17T09:13:03Z","reverted":true,"split":"dev"}
+{"id":"rev-1379558478","rev_id":1379558478,"page_title":"ORACLE (teletext)","timestamp":"2026-10-10T18:28:04Z","reverted":false,"split":"dev"}
+{"id":"rev-1380740686","rev_id":1380740686,"page_title":"Buni","timestamp":"2026-10-17T15:31:05Z","reverted":true,"split":"dev"}
+{"id":"rev-1379561129","rev_id":1379561129,"page_title":"Marlene Belfort","timestamp":"2026-10-10T18:49:39Z","reverted":false,"split":"dev"}
+{"id":"rev-1380691272","rev_id":1380691272,"page_title":"WXMI","timestamp":"2026-10-17T07:53:33Z","reverted":true,"split":"dev"}
+{"id":"rev-1379558458","rev_id":1379558458,"page_title":"Reach Out Worldwide","timestamp":"2026-10-10T18:27:50Z","reverted":false,"split":"dev"}
+{"id":"rev-1380754872","rev_id":1380754872,"page_title":"Nazlı Ecevit","timestamp":"2026-10-17T17:38:33Z","reverted":true,"split":"dev"}
+{"id":"rev-1379561451","rev_id":1379561451,"page_title":"2026 Internazionali di Tennis Città di Rovereto – Singles","timestamp":"2026-10-10T18:52:05Z","reverted":false,"split":"dev"}
