@@ -16,7 +16,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
-import { mockFactCheck } from "./mockPipeline.js";
+import { factCheck } from "../orchestrator/index.js";
 import { retrieveEvidence } from "../retrieval/retrieve.js";
 
 // ---------------------------------------------------------------------------
@@ -47,14 +47,8 @@ server.tool(
       .describe("Headings in the note for context"),
   },
   async ({ text, note_title, headings }) => {
-    // TODO: Replace with orchestrator pipeline call when src/orchestrator/ is ready.
-    // The orchestrator will use note_title and headings to contextualise claims
-    // before handing them to retrieval + verification. For now both are unused.
-    void note_title;
-    void headings;
-
     try {
-      const response = await mockFactCheck(text);
+      const response = await factCheck({ text, note_title, headings });
 
       return {
         content: [

@@ -13,7 +13,8 @@ Rules:
 - Use only the passages. Ignore anything you know from elsewhere.
 - Supported: a passage clearly says the claim is true. Different wording is fine.
 - Refuted: a passage clearly contradicts the claim, for example a different date, place or number.
-- Not Enough Info: the passages do not settle it either way. When unsure, choose this.
+- Not Enough Info: the passages do not settle it either way. Only choose this when the evidence is truly irrelevant or missing.
+- If a passage partially addresses the claim (e.g., mentions the entity and topic but not the specific fact), prefer Supported or Refuted based on the closest match.
 - explanation: one or two plain sentences pointing to what the passage says.
 - suggested_fix: only when Refuted, the claim rewritten to match the passage. Otherwise an empty string.`;
 

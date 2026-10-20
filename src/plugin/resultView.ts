@@ -16,6 +16,9 @@ import type { ClaimCard, Evidence, Verdict, ReliabilityBadge } from "../contract
 export const VIEW_TYPE_NOTECHECK = "notecheck-results";
 
 export class NoteCheckResultView extends ItemView {
+  /** Callback invoked when the user clicks "Apply fix" on a refuted card. */
+  onApplyFix: ((card: ClaimCard) => void) | null = null;
+
   constructor(leaf: WorkspaceLeaf) {
     super(leaf);
   }
@@ -132,6 +135,14 @@ export class NoteCheckResultView extends ItemView {
       const fixEl = cardEl.createEl("div", { cls: "notecheck-suggested-fix" });
       fixEl.createEl("strong", { text: "Suggested fix: " });
       fixEl.createEl("span", { text: card.suggested_fix });
+
+      if (this.onApplyFix) {
+        const btn = fixEl.createEl("button", {
+          text: "Apply fix",
+          cls: "notecheck-apply-fix-btn",
+        });
+        btn.addEventListener("click", () => this.onApplyFix!(card));
+      }
     }
 
     // ── Evidence section (collapsible) ─────────────────────────

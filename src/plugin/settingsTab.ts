@@ -91,5 +91,44 @@ export class NoteCheckSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
+
+    // ── Live fact-checking toggle ────────────────────────────────
+    new Setting(containerEl)
+      .setName("Enable live fact-checking")
+      .setDesc(
+        "Automatically fact-check the current paragraph as you type. " +
+        "Results appear as inline highlights in the editor. " +
+        "Requires Ollama to be running."
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.enableLiveCheck)
+          .onChange(async (value) => {
+            this.plugin.settings.enableLiveCheck = value;
+            await this.plugin.saveSettings();
+            // Notify plugin to start/stop live checker
+            this.plugin.onLiveCheckSettingChange(value);
+          })
+      );
+
+    // ── Live check debounce ──────────────────────────────────────
+    new Setting(containerEl)
+      .setName("Live check debounce (ms)")
+      .setDesc(
+        "Wait this many milliseconds after typing stops before running a live check. " +
+        "Higher values reduce API calls but increase latency."
+      )
+      .addText((text) =>
+        text
+          .setPlaceholder("1500")
+          .setValue(String(this.plugin.settings.liveCheckDebounceMs))
+          .onChange(async (value) => {
+            const ms = parseInt(value, 10);
+            if (!isNaN(ms) && ms >= 200) {
+              this.plugin.settings.liveCheckDebounceMs = ms;
+              await this.plugin.saveSettings();
+            }
+          })
+      );
   }
 }

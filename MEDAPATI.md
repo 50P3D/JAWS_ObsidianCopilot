@@ -66,16 +66,18 @@ A Model Context Protocol server running over `stdio` using `@modelcontextprotoco
 - [x] Verified in live Obsidian vault (`TestVault`).
 - [x] Documentation: `MEDAPATI.md`, `src/plugin/README.md`, `src/mcp/README.md`, `docs/MEDAPATI-STATUS.md`, and `docs/ai-use-log.md`.
 
-### Stubbed / Placeholder:
-- In `src/plugin/main.ts` and `src/mcp/index.ts`, `fact_check` calls mock card data from `mockData.ts` / `mockPipeline.ts`.
-- **Reason:** Awaiting Jonathan Ho's orchestrator pipeline in `src/orchestrator/`.
-- **Integration Plan:** Once Jonathan merges `src/orchestrator/`, swapping mock data for the real orchestrator call requires changing only one line in `main.ts` and `src/mcp/index.ts`.
+### Integrated:
+- [x] Plugin calls `factCheck()` from `src/orchestrator/index.js` — no mock data.
+- [x] MCP `fact_check` calls `factCheck()` — no mock data.
+- [x] Apply-fix button on refuted cards writes `suggested_fix` back into the note.
+- [x] Plugin settings (Ollama URL, model, Wikimedia contact) reach retrieval + reliability via `configure*()`.
+- [x] Headings extracted from note and passed to claim extractor for context.
 
 ---
 
 ## Next Steps (Post-Checkpoint / Towards Final Submission)
 
-1. **Connect Real Orchestrator**: Replace mock calls once `src/orchestrator/` is ready.
-2. **Apply Fix Action**: Add a button on refuted cards to replace the text in the note automatically with `suggested_fix`.
-3. **Inline Ambience (Stretch Goal)**: Implement CodeMirror 6 inline squiggly underlines on sentence pause as an experimental toggle.
+1. **End-to-end verification**: Run the plugin in `TestVault` with Ollama + `qwen3.5:9b` and confirm real verdicts.
+2. **Inline Ambience (Stretch Goal)**: Implement CodeMirror 6 inline squiggly underlines on sentence pause as an experimental toggle.
+3. **Claude review (Stretch Goal)**: Wire the `enableClaudeReview` setting to call the MCP server for a second opinion.
 

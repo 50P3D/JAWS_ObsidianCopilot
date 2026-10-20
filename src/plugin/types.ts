@@ -29,6 +29,18 @@ export interface NoteCheckSettings {
    * This is an optional quality gate — it costs API credits.
    */
   enableClaudeReview: boolean;
+
+  /**
+   * When true, NoteCheck runs fact-checking automatically as you type.
+   * Checks the current paragraph/section on each change (debounced).
+   */
+  enableLiveCheck: boolean;
+
+  /**
+   * Milliseconds to wait after typing stops before running a live check.
+   * Higher values reduce API calls but increase latency.
+   */
+  liveCheckDebounceMs: number;
 }
 
 /**
@@ -40,4 +52,6 @@ export const DEFAULT_SETTINGS: NoteCheckSettings = {
   modelName: "qwen3.5:9b",
   wikiUserAgent: "",
   enableClaudeReview: false,
+  enableLiveCheck: false,
+  liveCheckDebounceMs: 1500,
 };

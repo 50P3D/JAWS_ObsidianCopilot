@@ -6,10 +6,16 @@
   "type": "module",
   "scripts": {
     "smoke": "tsx src/retrieval/smoke.ts",
-    "test": "tsx --test src/retrieval/*.test.ts",
+    "build": "node src/plugin/esbuild.config.mjs",
+    "test": "tsx --test src/retrieval/chunk.test.ts src/retrieval/evalScore.test.ts src/retrieval/fixes.test.ts src/retrieval/query.test.ts",
+    "test:retrieval": "tsx --test src/retrieval/chunk.test.ts src/retrieval/evalScore.test.ts src/retrieval/fixes.test.ts src/retrieval/query.test.ts",
+    "test:reliability": "tsx --test src/reliability/tags.test.ts src/reliability/citations.test.ts src/reliability/history.test.ts src/reliability/combine.test.ts src/reliability/aggregate.test.ts src/reliability/signals.test.ts src/reliability/index.test.ts",
+    "test:eval": "tsx --test eval/harness/reliabilityDataset.test.ts eval/harness/revisionSampler.test.ts eval/harness/tuneReliability.test.ts eval/harness/reliabilityEval.test.ts",
+    "test:llm": "tsx --test src/llm/extract.test.ts",
     "typecheck": "tsc --noEmit",
     "mcp": "tsx src/mcp/index.ts",
     "smoke:mcp": "tsx src/mcp/smoke.ts",
+    "smoke:pipeline": "tsx src/orchestrator/smoke.ts",
     "build:plugin": "node src/plugin/esbuild.config.mjs"
   },
   "dependencies": {

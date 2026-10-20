@@ -1,0 +1,36 @@
+# CODEOWNERS for NoteCheck
+# Each line is a file pattern followed by one or more owners.
+
+# Shared files - require review from the whole team
+README.md @50P3D/notecheck-team
+package.json @50P3D/notecheck-team
+package-lock.json @50P3D/notecheck-team
+tsconfig.json @50P3D/notecheck-team
+docs/ @50P3D/notecheck-team
+
+# Contract - changes need all four approvals
+src/contract/ @50P3D/notecheck-team
+
+# Retrieval - Aadhavan
+src/retrieval/ @aadhavan
+
+# LLM stages - Jonathan
+src/llm/ @jonathan
+
+# Orchestrator - Jonathan
+src/orchestrator/ @jonathan
+
+# Reliability - Nathanael
+src/reliability/ @nathanael
+
+# Plugin UI - Medapati
+src/plugin/ @medapati
+
+# MCP server - Medapati
+src/mcp/ @medapati
+
+# Evaluation harness - Nathanael
+eval/ @nathanael
+
+# Tools - Aadhavan
+tools/ @aadhavan

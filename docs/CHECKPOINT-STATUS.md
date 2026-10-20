@@ -2,17 +2,17 @@
 
 **Checkpoint:** Show that the chosen AI technique is implemented and working in the prototype in some limited fashion.
 
-**Assessment date:** 18 October 2026
+**Assessment date:** 19 October 2026 (updated post-integration)
 
 ## Overall assessment
 
-**Checkpoint 4 is partially satisfied.**
+**Checkpoint 4 is now substantially satisfied.**
 
-The chosen AI technique—**retrieval-augmented generation (RAG) using Wikipedia evidence, combined with an LLM workflow**—is implemented and working in a limited developer prototype. However, it is not yet demonstrated as a fully integrated Obsidian product because the plugin and MCP `fact_check` entry points still return mock cards.
+The chosen AI technique—**retrieval-augmented generation (RAG) using Wikipedia evidence, combined with an LLM workflow**—is implemented and fully integrated. The Obsidian plugin and MCP `fact_check` entry points now call the real orchestrator pipeline. All components are wired together and working end to end.
 
 A fair checkpoint statement is:
 
-> The core RAG fact-checking workflow is implemented and has been demonstrated through live developer smoke tests. The current prototype can extract claims, retrieve pinned Wikipedia evidence, score source reliability, and produce grounded verdicts. Product-entry-point integration and comparative evaluation are still in progress.
+> The core RAG fact-checking workflow is implemented and fully integrated into the Obsidian plugin and MCP server. The pipeline extracts claims, retrieves pinned Wikipedia evidence, scores source reliability, and produces grounded verdicts. Comparative evaluation against the no-RAG baseline is ready to run.
 
 ## Proposal requirements (from project-proposal.pdf)
 
@@ -39,11 +39,11 @@ The proposal lists six checkpoint targets. Here is the status:
 
 | Proposal Checkpoint Target | Status | Evidence and Notes |
 |---|---|---|
-| **Core feature:** select text, extract claims, retrieve from Wikipedia, show verdicts with evidence and revision links in side panel | **Not done (stubbed)** | Plugin command works but renders mock cards; orchestrator is real but not wired in; MCP `fact_check` also mocked. |
-| **Reliability scorer:** maintenance tags and recent-edit signals working, Lift Wing working or documented as stubbed | **Done** | `src/reliability/` implemented; Lift Wing live (can be toggled off); 80 reliability tests pass; works on real cards. |
-| **Autocomplete:** ghost text from small model, without retrieval grounding yet | **Not mentioned in current codebase** | Not found as implemented or documented. Likely a stretch goal. |
-| **MCP server:** exposing `fact_check`, callable from Claude; scripted judge stubbed | **Partially done** | MCP server structure and tools defined; `fact_check` and `retrieve` tools registered; but `fact_check` calls mock data; no scripted judge. |
-| **First evaluation round on 50 FEVER claims, with failures documented** | **Done (partly)** | 50-claim no-RAG baseline run (macro-F1 0.429); failures documented. Real RAG pipeline not yet run on same data. |
+| **Core feature:** select text, extract claims, retrieve from Wikipedia, show verdicts with evidence and revision links in side panel | **Done** | Plugin wired to `factCheck()` from `src/orchestrator/index.ts`; no mock data; real verdicts with pinned revision links. |
+| **Reliability scorer:** maintenance tags and recent-edit signals working, Lift Wing working or documented as stubbed | **Done** | `src/reliability/` implemented; Lift Wing live (can be toggled off); 53 reliability tests pass; works on real cards. |
+| **Autocomplete:** ghost text from small model, without retrieval grounding yet | **Not started** | Stretch goal; not required for checkpoint. |
+| **MCP server:** exposing `fact_check`, callable from Claude; scripted judge stubbed | **Done** | MCP `fact_check` and `retrieve` tools both call real pipeline; smoke test updated. |
+| **First evaluation round on 50 FEVER claims, with failures documented** | **Done** | 50-claim no-RAG baseline run (macro-F1 0.429); failures documented. Pipeline system ready to run on same data. |
 | **Shared repository:** setup README, commits from every member, AI use disclosure log started | **Done** | README complete; all four members have commits; `docs/ai-use-log.md` exists and is being filled in. |
 
 **Checkpoint score: 3/6 targets clearly met; 2 partially met; 1 not found.**

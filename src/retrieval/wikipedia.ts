@@ -29,9 +29,23 @@ export interface WikiPage {
 let cacheOn = false;
 const cache = new Map<string, Promise<any>>();
 
-export function enableCache(on = true): void {
-  cacheOn = on;
-  if (!on) cache.clear();
+// Custom fetch function that can be overridden (e.g., for Obsidian's requestUrl)
+let customFetch: ((url: string, init?: RequestInit) => Promise<Response>) | null = null;
+
+export function setCustomFetch(fn: (url: string, init?: RequestInit) => Promise<Response>): void {
+  customFetch = fn;
+}
+
+export function clearCustomFetch(): void {
+  customFetch = null;
+}
+
+async function wikiFetch(url: string, init?: RequestInit): Promise<Response> {
+  if (customFetch) {
+    return customFetch(url, init);
+  }
+  // Fallback to global fetch (for Node.js / tests)
+  return fetch(url, init);
 }
 
 async function wikiGet(params: Record<string, string>): Promise<any> {
@@ -43,7 +57,7 @@ async function wikiGet(params: Record<string, string>): Promise<any> {
   if (cacheOn && cache.has(key)) return cache.get(key);
 
   const request = (async () => {
-    const res = await fetch(url, { headers: { "User-Agent": USER_AGENT, Accept: "application/json" } });
+    const res = await wikiFetch(url, { headers: { "User-Agent": USER_AGENT, Accept: "application/json" } });
     if (!res.ok) throw new Error(`Wikipedia API returned ${res.status} ${res.statusText}`);
     return res.json();
   })();

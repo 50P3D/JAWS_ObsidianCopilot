@@ -32,7 +32,7 @@ async function main() {
     const tools = await client.listTools();
     console.log(`   Found ${tools.tools.length} tool(s):`);
     for (const t of tools.tools) {
-      console.log(`   - [${t.name}]: ${t.description.slice(0, 60)}...`);
+      console.log(`   - [${t.name}]: ${(t.description ?? "").slice(0, 60)}...`);
     }
 
     const hasFactCheck = tools.tools.some((t) => t.name === "fact_check");
@@ -58,8 +58,11 @@ async function main() {
     }
 
     const parsed = JSON.parse(content[0].text);
-    console.log(`   - Returned ${parsed.cards?.length ?? 0} Claim Cards`);
-    for (const card of parsed.cards || []) {
+    if (!parsed.cards || parsed.cards.length === 0) {
+      throw new Error("Expected at least one Claim Card in fact_check response");
+    }
+    console.log(`   - Returned ${parsed.cards.length} Claim Cards`);
+    for (const card of parsed.cards) {
       console.log(`     • Claim: "${card.claim}" -> Verdict: [${card.verdict}] (Reliability: ${card.reliability?.badge})`);
     }
 

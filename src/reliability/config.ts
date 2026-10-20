@@ -1,9 +1,12 @@
 /**
- * Settings for the reliability scorer. Change them with environment variables, not by editing this file.
+ * Settings for the reliability scorer. Change them with environment variables
+ * or via configureReliability() at runtime (used by the plugin and orchestrator).
  * This file does not import src/retrieval/config.ts, so the two folders stay independent.
  */
 
 import type { Thresholds } from "./types";
+
+const env = (globalThis as any).process?.env ?? {};
 
 export const WIKI_API = "https://en.wikipedia.org/w/api.php";
 
@@ -11,11 +14,42 @@ export const LIFTWING_URL =
   "https://api.wikimedia.org/service/lw/inference/v1/models/revertrisk-language-agnostic:predict";
 
 /** Wikimedia asks every client to say who it is. Same variable and format as retrieval. */
-const CONTACT = process.env.NOTECHECK_CONTACT ?? "https://github.com/50P3D/JAWS_ObsidianCopilot";
-export const USER_AGENT = `NoteCheck/0.1 (SE201 student project; ${CONTACT})`;
+const DEFAULT_CONTACT = "https://github.com/50P3D/JAWS_ObsidianCopilot";
+
+let _contact = env.NOTECHECK_CONTACT ?? DEFAULT_CONTACT;
+export let USER_AGENT = `NoteCheck/0.1 (SE201 student project; ${_contact})`;
 
 /** Set NOTECHECK_LIFTWING=off to skip Lift Wing (the revert-risk signal is then Unavailable: "disabled"). */
-export const LIFTWING_ENABLED = (process.env.NOTECHECK_LIFTWING ?? "on") !== "off";
+let _liftWingEnabled = (env.NOTECHECK_LIFTWING ?? "on") !== "off";
+export let LIFTWING_ENABLED = _liftWingEnabled;
+
+/**
+ * Runtime configuration for the reliability scorer. Called by the orchestrator
+ * at the start of each fact-check run so plugin settings take effect.
+ */
+export function configureReliability(config: {
+  userAgent?: string;
+  contact?: string;
+  liftWing?: boolean;
+}): void {
+  if (config.userAgent) USER_AGENT = config.userAgent;
+  if (config.contact) {
+    _contact = config.contact;
+    USER_AGENT = `NoteCheck/0.1 (SE201 student project; ${_contact})`;
+  }
+  if (config.liftWing !== undefined) {
+    _liftWingEnabled = config.liftWing;
+    LIFTWING_ENABLED = _liftWingEnabled;
+  }
+}
+
+/** Reset all runtime config back to env/default values. Used by tests. */
+export function resetReliabilityConfig(): void {
+  _contact = env.NOTECHECK_CONTACT ?? DEFAULT_CONTACT;
+  USER_AGENT = `NoteCheck/0.1 (SE201 student project; ${_contact})`;
+  _liftWingEnabled = (env.NOTECHECK_LIFTWING ?? "on") !== "off";
+  LIFTWING_ENABLED = _liftWingEnabled;
+}
 
 /** Abort any single Wikimedia request after this long. Can be overridden per call. */
 export const REQUEST_TIMEOUT_MS = 5000;

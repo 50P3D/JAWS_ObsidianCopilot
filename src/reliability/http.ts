@@ -15,6 +15,21 @@ export interface HttpOptions {
   timeoutMs?: number;
 }
 
+/** Custom fetch function that can be overridden (e.g., for Obsidian's requestUrl) */
+let customFetch: FetchLike | null = null;
+
+export function setCustomFetch(fn: FetchLike): void {
+  customFetch = fn;
+}
+
+export function clearCustomFetch(): void {
+  customFetch = null;
+}
+
+function getFetchFn(opts?: HttpOptions): FetchLike {
+  return opts?.fetch ?? customFetch ?? ((u, init) => fetch(u, init));
+}
+
 /** Keyed by method, URL and body. Rejected promises are removed, so only successes stay. */
 const cache = new Map<string, Promise<any>>();
 
@@ -51,7 +66,7 @@ async function request(
   body: string | undefined,
   opts: HttpOptions,
 ): Promise<any> {
-  const fetchFn: FetchLike = opts.fetch ?? ((u, init) => fetch(u, init));
+  const fetchFn: FetchLike = getFetchFn(opts);
   const timeoutMs = opts.timeoutMs ?? REQUEST_TIMEOUT_MS;
   const timeoutMessage = `timeout after ${timeoutMs} ms`;
 

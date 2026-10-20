@@ -7,10 +7,29 @@ import { OLLAMA_URL, EMBED_MODEL } from "./config";
 
 const BATCH_SIZE = 32;
 
+// Custom fetch function that can be overridden (e.g., for Obsidian's requestUrl)
+let customFetch: ((url: string, init?: RequestInit) => Promise<Response>) | null = null;
+
+export function setCustomFetch(fn: (url: string, init?: RequestInit) => Promise<Response>): void {
+  customFetch = fn;
+}
+
+export function clearCustomFetch(): void {
+  customFetch = null;
+}
+
+async function ollamaFetch(url: string, init?: RequestInit): Promise<Response> {
+  if (customFetch) {
+    return customFetch(url, init);
+  }
+  // Fallback to global fetch (for Node.js / tests)
+  return fetch(url, init);
+}
+
 async function embedRaw(inputs: string[]): Promise<number[][]> {
   let res: Response;
   try {
-    res = await fetch(`${OLLAMA_URL}/api/embed`, {
+    res = await ollamaFetch(`${OLLAMA_URL}/api/embed`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       // keep_alive stops Ollama unloading the model between calls, which avoids the slow first request

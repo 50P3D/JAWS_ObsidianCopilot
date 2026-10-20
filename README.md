@@ -275,15 +275,15 @@ Retrieval choices (keyword, embeddings or hybrid) stay with Aadhavan, who should
 
 Checkpoint due **18 October 2026**.
 
-| Target                                                                                                  | State                                           |
-| ------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| Core feature: select text, extract claims, retrieve, show verdicts and revision links in the side panel | TODO                                            |
-| Reliability scorer: maintenance tags and recent-edit signals                                            | TODO                                            |
-| Lift Wing revert-risk call                                                                              | TODO (working or documented as stubbed)         |
-| MCP server exposing `fact_check`                                                                      | TODO                                            |
-| First evaluation round on 50 FEVER claims with failures documented                                      | TODO                                            |
-| Setup README and commits from every member                                                              | In progress                                     |
-| AI use disclosure log                                                                                   | See [`docs/ai-use-log.md`](docs/ai-use-log.md) |
+| Target                                                                                                  | State                                                  |
+| ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| Core feature: select text, extract claims, retrieve, show verdicts and revision links in the side panel | **Done** — plugin wired to real orchestrator    |
+| Reliability scorer: maintenance tags and recent-edit signals                                            | **Done** — merged into pipeline, 53 tests pass  |
+| Lift Wing revert-risk call                                                                              | **Done** — live, can be toggled off             |
+| MCP server exposing `fact_check`                                                                      | **Done** — wired to real pipeline               |
+| First evaluation round on 50 FEVER claims with failures documented                                      | **Done** — no-RAG baseline run (macro-F1 0.429) |
+| Setup README and commits from every member                                                              | **Done**                                         |
+| AI use disclosure log                                                                                   | See [`docs/ai-use-log.md`](docs/ai-use-log.md)        |
 
 Stubbed components will be listed here as they appear.
 

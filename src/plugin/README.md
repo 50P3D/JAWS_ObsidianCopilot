@@ -14,7 +14,6 @@ src/plugin/
 ├── resultView.ts        # Custom ItemView ("notecheck-results") rendering Claim Cards
 ├── settingsTab.ts       # Settings tab (Ollama URL, model name, Wikimedia contact agent)
 ├── types.ts             # Settings interfaces and defaults
-├── mockData.ts          # Embedded mock cards from src/contract/examples/ for unblocked testing
 ├── styles.css           # Styling for verdict pills, trust badges, collapsible evidence
 ├── manifest.json        # Obsidian community plugin manifest
 ├── esbuild.config.mjs   # Bundler script compiling TypeScript to CommonJS (main.js)
@@ -81,6 +80,7 @@ This creates:
 | Plugin lifecycle & command | **Complete** | Registered with Obsidian API |
 | Settings tab | **Complete** | Persists settings via Obsidian storage |
 | Results panel UI | **Complete** | Full ClaimCard renderer with CSS badges |
-| Mock data pipeline | **Complete** | Tested against all 3 example contract cards |
-| Orchestrator integration | *Stubbed / Placeholder* | Ready to call `src/orchestrator/` once Jonathan completes the pipeline |
+| Orchestrator integration | **Complete** | Calls `factCheck()` from `src/orchestrator/index.js` |
+| Apply-fix button | **Complete** | Replaces refuted text with `suggested_fix` in the note |
+| Runtime config | **Complete** | Plugin settings reach retrieval + reliability via `configure*()` |
 

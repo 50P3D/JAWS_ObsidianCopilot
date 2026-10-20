@@ -5,8 +5,29 @@ ollamaUrl?: string;
 model?: string;
 }
 // The default Ollama URL and model can be overridden by environment variables
-export const DEFAULT_OLLAMA_URL = process.env.OLLAMA_URL ?? "http://localhost:11434"; // default ollama url
-export const DEFAULT_MODEL = process.env.OLLAMA_MODEL ?? "qwen3.5:4b"; // default model
+const env = (globalThis as any).process?.env ?? {};
+export const DEFAULT_OLLAMA_URL = env.OLLAMA_URL ?? "http://localhost:11434"; // default ollama url
+export const DEFAULT_MODEL = env.OLLAMA_MODEL ?? "qwen3.5:4b"; // default model
+
+// Custom fetch function that can be overridden (e.g., for Obsidian's requestUrl)
+let customFetch: ((url: string, init?: RequestInit) => Promise<Response>) | null = null;
+
+export function setCustomFetch(fn: (url: string, init?: RequestInit) => Promise<Response>): void {
+  customFetch = fn;
+}
+
+export function clearCustomFetch(): void {
+  customFetch = null;
+}
+
+async function ollamaFetch(url: string, init?: RequestInit): Promise<Response> {
+  if (customFetch) {
+    return customFetch(url, init);
+  }
+  // Fallback to global fetch (for Node.js / tests)
+  return fetch(url, init);
+}
+
 // Helper function to send a chat message to the Ollama API and get a JSON response
 export async function chatJson<T>(system: string, user: string, schema: object, opts: LlmOptions = {}): 
 Promise<T> {
@@ -18,7 +39,7 @@ Promise<T> {
     let res: Response;
     // Fetch the response from Ollama
     try {
-        res = await fetch(`${url}/api/chat`, {
+        res = await ollamaFetch(`${url}/api/chat`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
