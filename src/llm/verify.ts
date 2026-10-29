@@ -7,7 +7,7 @@
 import type { ClaimCard, Verdict } from "../contract/claimCard";
 import { chatJson, DEFAULT_MODEL, type LlmOptions } from "./ollama";
 
-const SYSTEM = `You check one claim against evidence passages from Wikipedia.
+const SYSTEM = `You check one claim against evidence passages from Wikipedia or the student's course materials.
 
 Rules:
 - Use only the passages. Ignore anything you know from elsewhere.

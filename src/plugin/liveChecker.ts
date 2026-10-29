@@ -1,25 +1,33 @@
 /**
  * Live fact-checking engine.
  *
- * Uses polling to detect editor changes, then debounces and runs fact-check
- * on the current paragraph/section. Applies inline highlights for refuted claims.
+ * Uses polling to detect editor changes, then debounces and checks the current paragraph/section.
+ * Refuted claims show up as inline suggestions (see inlineDecorations.ts).
+ *
+ * Each sentence is sent to the model once. Its result is cached by its text, so typing a new
+ * sentence only checks that sentence, and moving a paragraph around costs nothing. The sentence
+ * still being typed is left alone until it is finished. A check that is running when the user
+ * types more is allowed to finish (its results stay valid, because they are keyed by text), and
+ * the new sentences are checked straight after.
  */
 
-import { Editor, MarkdownView, Notice, Plugin, WorkspaceLeaf } from "obsidian";
+import { MarkdownView, Notice, Plugin, type App, type Editor } from "obsidian";
+import type { EditorView } from "@codemirror/view";
 import { factCheck, type FactCheckRequest } from "../orchestrator/index";
-import { extractSmartContext, type ExtractedParagraph } from "./paragraphExtractor";
-import { applyInlineHighlights, clearInlineHighlights } from "./inlineDecorations";
-import type { ClaimCard } from "../contract/claimCard";
+import { extractSmartContext } from "./paragraphExtractor";
+import { clearFindings, findingFor, setSuggestionHandlers, showFindings, type Finding } from "./inlineDecorations";
+import { checkableUnits, type Unit } from "./liveText";
+import type { ClaimCard, Evidence } from "../contract/claimCard";
 
 interface LiveCheckerState {
   /** Debounce timer ID. */
   debounceTimer: ReturnType<typeof setTimeout> | null;
-  /** Currently checking editor (to prevent concurrent checks). */
-  activeEditor: Editor | null;
-  /** Abort controller for in-flight check. */
+  /** True while a check is running. */
+  running: boolean;
+  /** An editor that changed while a check was running, to check next. */
+  pendingEditor: Editor | null;
+  /** Abort controller for the in-flight check, used when live checking is switched off. */
   abortController: AbortController | null;
-  /** Last checked text hash (to skip redundant checks). */
-  lastTextHash: string | null;
   /** Last known content for change detection. */
   lastContent: Map<Editor, string>;
   /** Whether live checking is currently enabled. */
@@ -33,14 +41,26 @@ interface LiveCheckerState {
 /** Global state for the live checker. */
 const state: LiveCheckerState = {
   debounceTimer: null,
-  activeEditor: null,
+  running: false,
+  pendingEditor: null,
   abortController: null,
-  lastTextHash: null,
   lastContent: new Map(),
   enabled: false,
   debounceMs: 1500,
   pollTimer: null,
 };
+
+/** Claim cards per sentence text. Oldest entries go first once it is full. */
+const checkedUnits = new Map<string, ClaimCard[]>();
+const MAX_CACHED_UNITS = 1000;
+/** Suggestions the user dismissed, by finding id, so they do not come back. */
+const dismissed = new Set<string>();
+
+function remember(text: string, cards: ClaimCard[]): void {
+  checkedUnits.delete(text);
+  checkedUnits.set(text, cards);
+  while (checkedUnits.size > MAX_CACHED_UNITS) checkedUnits.delete(checkedUnits.keys().next().value!);
+}
 
 /**
  * Initialize the live checker with plugin settings.
@@ -48,6 +68,7 @@ const state: LiveCheckerState = {
 export function initLiveChecker(plugin: Plugin, enabled: boolean, debounceMs: number): void {
   state.enabled = enabled;
   state.debounceMs = debounceMs;
+  setSuggestionHandlers(suggestionHandlers(plugin.app));
 
   if (enabled) {
     startPolling(plugin);
@@ -61,11 +82,13 @@ export function setLiveCheckEnabled(plugin: Plugin, enabled: boolean): void {
   state.enabled = enabled;
 
   if (enabled) {
+    setSuggestionHandlers(suggestionHandlers(plugin.app));
     startPolling(plugin);
     new Notice("NoteCheck: Live fact-checking enabled");
   } else {
     stopPolling();
-    // Clear highlights from all editors
+    state.abortController?.abort();
+    // Clear suggestions from all editors
     clearAllHighlights();
     new Notice("NoteCheck: Live fact-checking disabled");
   }
@@ -82,6 +105,21 @@ export function setLiveCheckDebounce(debounceMs: number): void {
     const plugin = (window as any).noteCheckPlugin;
     if (plugin) startPolling(plugin);
   }
+}
+
+/** What Accept, Dismiss and the evidence link do. */
+function suggestionHandlers(app: App) {
+  return {
+    // the accepted wording is known to be right, so it is not sent to the model again
+    onAccept: (_f: Finding, newText: string) => remember(newText, []),
+    onDismiss: (f: Finding) => {
+      dismissed.add(f.id);
+    },
+    openEvidence: (ev: Evidence) => {
+      if (ev.source === "course") void app.workspace.openLinkText(ev.section ? `${ev.url}#${ev.section}` : ev.url, "", true);
+      else window.open(ev.url, "_blank");
+    },
+  };
 }
 
 /**
@@ -161,26 +199,19 @@ function pollEditors(workspace: any): void {
   }
 }
 
-/**
- * Clear highlights from all editors.
- */
-function clearAllHighlights(): void {
-  for (const editor of state.lastContent.keys()) {
-    clearInlineHighlights(editor);
-  }
+/** The CodeMirror 6 view behind an Obsidian editor. */
+function editorView(editor: Editor): EditorView | undefined {
+  return (editor as any).cm as EditorView | undefined;
 }
 
 /**
- * Simple hash function for text comparison.
+ * Clear suggestions from all editors.
  */
-function hashText(text: string): string {
-  let hash = 0;
-  for (let i = 0; i < text.length; i++) {
-    const char = text.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
+function clearAllHighlights(): void {
+  for (const editor of state.lastContent.keys()) {
+    const view = editorView(editor);
+    if (view) clearFindings(view);
   }
-  return hash.toString(36);
 }
 
 /**
@@ -201,108 +232,125 @@ function onEditorChange(editor: Editor): void {
 }
 
 /**
- * Run the live fact-check on the current paragraph/section.
+ * Check new sentences around the cursor, then keep going while more edits came in meanwhile.
  */
 async function runLiveCheck(editor: Editor): Promise<void> {
-  // Prevent concurrent checks
-  if (state.activeEditor && state.activeEditor !== editor) {
+  if (state.running) {
+    state.pendingEditor = editor;
     return;
   }
+  state.running = true;
 
-  // Abort any in-flight check
-  if (state.abortController) {
-    state.abortController.abort();
-  }
-  state.abortController = new AbortController();
-
-  state.activeEditor = editor;
-
+  let next: Editor | null = editor;
   try {
-    // Extract context around cursor
-    const context = extractSmartContext(editor);
-    if (!context) {
-      clearInlineHighlights(editor);
-      return;
+    while (next && state.enabled) {
+      state.pendingEditor = null;
+      await checkNewSentences(next);
+      next = state.pendingEditor;
     }
-
-    // Skip if text hasn't changed significantly
-    const textHash = hashText(context.text);
-    if (textHash === state.lastTextHash) {
-      return;
-    }
-    state.lastTextHash = textHash;
-
-    // Skip non-checkable text
-    const trimmed = context.text.trim();
-    if (trimmed.length < 50) {
-      clearInlineHighlights(editor);
-      return;
-    }
-
-    // Get note title for decontextualization
-    const view = (editor as any).view as MarkdownView | undefined;
-    const noteTitle = view?.file?.basename;
-
-    // Build fact-check request
-    const request: FactCheckRequest = {
-      text: context.text,
-      note_title: noteTitle,
-      headings: context.headings,
-    };
-
-    // Show subtle status
-    showCheckingStatus(editor, true);
-
-    // Run fact-check pipeline with abort signal
-    const response = await factCheck(request, {
-      ollamaUrl: getOllamaUrl(),
-      model: getModelName(),
-      userAgent: getWikiUserAgent(),
-      signal: state.abortController.signal,
-      log: (msg) => console.log(`[NoteCheck Live] ${msg}`),
-    });
-
-    // Check if aborted
-    if (state.abortController.signal.aborted) return;
-
-    // Apply inline highlights for refuted claims
-    // Adjust source_spans to be relative to full document
-    const adjustedCards = adjustCardSpans(response.cards, context.startOffset);
-    applyInlineHighlights(editor, adjustedCards, (window as any).noteCheckPlugin);
-
-    // Update status
-    const refutedCount = adjustedCards.filter((c) => c.verdict === "Refuted").length;
-    if (refutedCount > 0) {
-      showCheckingStatus(editor, false, `${refutedCount} issue${refutedCount > 1 ? "s" : ""} found`);
-    } else {
-      showCheckingStatus(editor, false, "No issues");
-    }
-
   } catch (err) {
-    if (err instanceof Error && err.name === "AbortError") return;
-    console.error("[NoteCheck Live] Fact-check failed:", err);
-    showCheckingStatus(editor, false, "Check failed");
+    if (!(err instanceof Error && err.name === "AbortError")) {
+      console.error("[NoteCheck Live] Fact-check failed:", err);
+      showCheckingStatus(editor, false, "Check failed");
+    }
   } finally {
-    state.activeEditor = null;
+    state.running = false;
     state.abortController = null;
   }
 }
 
-/**
- * Adjust claim card source_spans from paragraph-relative to document-relative.
- */
-function adjustCardSpans(cards: ClaimCard[], paragraphStartOffset: number): ClaimCard[] {
-  return cards.map((card) => {
-    if (!card.source_span) return card;
+/** The block around the cursor, with its true start in the document (the extracted text is trimmed). */
+function locateContext(editor: Editor): { text: string; base: number; headings: string[] } | null {
+  const context = extractSmartContext(editor);
+  if (!context) return null;
+  const base = editor.getValue().indexOf(context.text, context.startOffset);
+  return base < 0 ? null : { text: context.text, base, headings: context.headings };
+}
 
-    return {
-      ...card,
-      source_span: {
-        start: card.source_span.start + paragraphStartOffset,
-        end: card.source_span.end + paragraphStartOffset,
-      },
+/** Which unit each card came from: the one containing its original text, else the most similar one. */
+function assignCards(units: Unit[], cards: ClaimCard[]): ClaimCard[][] {
+  const out: ClaimCard[][] = units.map(() => []);
+  const wordsOf = (s: string) => new Set(s.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []);
+  for (const card of cards) {
+    const original = card.original_text?.trim() ?? "";
+    let i = original ? units.findIndex((u) => u.text.includes(original)) : -1;
+    if (i < 0) {
+      const target = wordsOf(original || card.claim);
+      let best = 0;
+      units.forEach((u, j) => {
+        const overlap = [...wordsOf(u.text)].filter((w) => target.has(w)).length;
+        if (overlap > best) {
+          best = overlap;
+          i = j;
+        }
+      });
+    }
+    if (i >= 0) out[i].push(card);
+  }
+  return out;
+}
+
+async function checkNewSentences(editor: Editor): Promise<void> {
+  const view = editorView(editor);
+  const context = locateContext(editor);
+  if (!view || !context) return;
+
+  const cursor = editor.posToOffset(editor.getCursor());
+  const fresh = checkableUnits(context.text, context.base, cursor).filter((u) => !checkedUnits.has(u.text));
+
+  if (fresh.length > 0) {
+    showCheckingStatus(editor, true, `Checking ${fresh.length} sentence${fresh.length > 1 ? "s" : ""}…`);
+    const plugin = (window as any).noteCheckPlugin;
+    const file = plugin?.app?.workspace.getActiveViewOfType(MarkdownView)?.file;
+
+    const request: FactCheckRequest = {
+      text: fresh.map((u) => u.text).join("\n"),
+      note_title: file?.basename,
+      headings: context.headings,
     };
-  });
+
+    // Same options as the command (including the course index), when the plugin is loaded
+    const base = plugin?.pipelineOptions
+      ? await plugin.pipelineOptions(file?.path)
+      : { ollamaUrl: getOllamaUrl(), model: getModelName(), userAgent: getWikiUserAgent() };
+    state.abortController = new AbortController();
+    const response = await factCheck(request, {
+      ...base,
+      signal: state.abortController.signal,
+      log: (msg) => console.log(`[NoteCheck Live] ${msg}`),
+    });
+    if (state.abortController.signal.aborted || !state.enabled) return;
+
+    assignCards(fresh, response.cards).forEach((cards, i) => {
+      // a claim that could not be checked (Wikipedia or Ollama not answering) is tried again next time
+      if (cards.some((c) => c.explanation?.startsWith("Could not check"))) return;
+      remember(fresh[i].text, cards);
+    });
+  }
+
+  render(editor, view);
+}
+
+/** Show the cached suggestions for the block around the cursor, at their current positions. */
+function render(editor: Editor, view: EditorView): void {
+  // positions are worked out again from the current text, because the user may have typed meanwhile
+  const context = locateContext(editor);
+  if (!context) return;
+
+  const findings: Finding[] = [];
+  for (const unit of checkableUnits(context.text, context.base, -1)) {
+    for (const card of checkedUnits.get(unit.text) ?? []) {
+      const f = findingFor(card, unit);
+      if (f && !dismissed.has(f.id)) findings.push(f);
+    }
+  }
+  showFindings(view, context.base, context.base + context.text.length, findings);
+
+  if (findings.length > 0) {
+    showCheckingStatus(editor, false, `${findings.length} suggestion${findings.length > 1 ? "s" : ""}`);
+  } else {
+    showCheckingStatus(editor, false, "No issues");
+  }
 }
 
 /**
@@ -334,7 +382,7 @@ function showCheckingStatus(editor: Editor, checking: boolean, message?: string)
   }
 
   if (checking) {
-    statusEl.textContent = "NoteCheck: Checking…";
+    statusEl.textContent = `NoteCheck: ${message ?? "Checking…"}`;
     statusEl.style.color = "var(--text-accent)";
     statusEl.style.borderColor = "var(--interactive-accent)";
   } else {
@@ -387,5 +435,5 @@ export function triggerLiveCheckOnActiveEditor(): void {
  * Check if live checking is currently running.
  */
 export function isLiveChecking(): boolean {
-  return state.activeEditor !== null;
+  return state.running;
 }

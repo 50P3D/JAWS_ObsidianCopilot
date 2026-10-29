@@ -41,6 +41,15 @@ export interface NoteCheckSettings {
    * Higher values reduce API calls but increase latency.
    */
   liveCheckDebounceMs: number;
+
+  /**
+   * Vault folder holding course materials (lecture notes, readings), for example "Courses/SE201".
+   * Claims are checked against these files before Wikipedia. Empty turns course checking off.
+   */
+  courseFolder: string;
+
+  /** When true, only the course folder is used and Wikipedia is never searched. */
+  courseOnly: boolean;
 }
 
 /**
@@ -54,4 +63,6 @@ export const DEFAULT_SETTINGS: NoteCheckSettings = {
   enableClaudeReview: false,
   enableLiveCheck: false,
   liveCheckDebounceMs: 1500,
+  courseFolder: "",
+  courseOnly: false,
 };

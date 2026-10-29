@@ -69,7 +69,7 @@ export class NoteCheckResultView extends ItemView {
 
     const wrapper = container.createEl("div", { cls: "notecheck-loading" });
     wrapper.createEl("div", { cls: "notecheck-spinner" });
-    wrapper.createEl("p", { text: "Checking claims against Wikipedia…" });
+    wrapper.createEl("p", { text: "Checking claims…" });
   }
 
   /**
@@ -191,6 +191,18 @@ export class NoteCheckResultView extends ItemView {
           text: ` (score: ${ev.retrieval_score.toFixed(2)})`,
           cls: "notecheck-evidence-score",
         });
+      }
+
+      // Course passages link back to the file in the vault, at the passage's heading
+      if (ev.source === "course") {
+        meta.prepend(createSpan({ text: "Course material · ", cls: "notecheck-evidence-source" }));
+        const link = item.createEl("a", { text: "Open in course notes →", href: "#", cls: "notecheck-evidence-link" });
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          const target = ev.section ? `${ev.url}#${ev.section}` : ev.url;
+          this.app.workspace.openLinkText(target, "", true);
+        });
+        continue;
       }
 
       // Clickable link to the exact Wikipedia revision

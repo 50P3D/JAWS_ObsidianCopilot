@@ -1,281 +1,313 @@
 /**
- * Inline decorations for NoteCheck fact-check results.
+ * Inline suggestions in the editor, like tracked changes.
  *
- * Uses Obsidian's Editor.markText and Editor.setGutterMarker APIs
- * which work with the underlying CodeMirror instance.
+ * A refuted claim gets a wavy underline. The wrong words are struck through and the suggested
+ * words appear right after them, so "signed in ~~1920~~ 1919" reads at a glance. Clicking either
+ * opens a card with the explanation, the evidence and Accept / Dismiss buttons.
+ *
+ * Obsidian's editor is CodeMirror 6, so this is a CM6 state field registered with
+ * registerEditorExtension. The field maps every suggestion through each edit, so suggestions stay
+ * on the right words while the user types elsewhere, and a suggestion is dropped as soon as its
+ * own sentence is edited (the live checker then checks the new wording).
  */
 
-import { Editor, EditorRange } from "obsidian";
-import type { ClaimCard } from "../contract/claimCard";
+import { StateEffect, StateField, type ChangeDesc, type Extension } from "@codemirror/state";
+import { Decoration, EditorView, WidgetType, type DecorationSet } from "@codemirror/view";
+import type { ClaimCard, Evidence } from "../contract/claimCard";
+import { minimalEdit, type TextEdit, type Unit } from "./liveText";
 
-/** Unique class prefix for NoteCheck decorations. */
-const NOTECHECK_DECO_CLASS = "notecheck-inline";
-
-/** Decoration type for the red background highlight on refuted text. */
-const HIGHLIGHT_CLASS = `${NOTECHECK_DECO_CLASS}-highlight`;
-
-/** Gutter name for NoteCheck markers. */
-const GUTTER_NAME = "notecheck-gutter";
-
-/** Data stored on each decoration for click handling. */
-interface DecorationData {
-  claimId: string;
+/** One suggestion on screen. All positions are document offsets. */
+export interface Finding {
+  /** Sentence text plus claim, so the same suggestion keeps its id across re-renders. */
+  id: string;
+  /** The refuted text. */
+  from: number;
+  to: number;
+  /** The whole sentence it sits in. Editing anywhere in it drops the suggestion. */
+  unitFrom: number;
+  unitTo: number;
+  /** The inline change, or null when the fix could not be placed word by word. */
+  edit: TextEdit | null;
   card: ClaimCard;
-  startOffset: number;
-  endOffset: number;
-  highlightRef?: any;  // markText return value
-  gutterRef?: any;     // setGutterMarker return value
 }
 
-/** Map from editor to its active NoteCheck decorations. */
-const editorDecorations = new WeakMap<Editor, Map<string, DecorationData>>();
+export interface SuggestionHandlers {
+  /** After Accept. `newText` is the sentence as it reads after the edit. */
+  onAccept(finding: Finding, newText: string): void;
+  onDismiss(finding: Finding): void;
+  openEvidence(evidence: Evidence): void;
+}
 
-/**
- * Apply inline highlights and gutter markers for refuted claims.
- *
- * @param editor The Obsidian editor instance.
- * @param cards Claim cards from the fact-check pipeline (only Refuted ones are highlighted).
- * @param plugin Plugin instance (for apply fix).
- */
-export function applyInlineHighlights(
-  editor: Editor,
-  cards: ClaimCard[],
-  _plugin: any
-): void {
-  // Clear existing highlights for this editor
-  clearInlineHighlights(editor);
+let handlers: SuggestionHandlers | null = null;
 
-  const refutedCards = cards.filter((c) => c.verdict === "Refuted" && c.source_span);
-  if (refutedCards.length === 0) return;
+export function setSuggestionHandlers(h: SuggestionHandlers | null): void {
+  handlers = h;
+}
 
-  const decorationMap = new Map<string, DecorationData>();
+/** The suggestion for one refuted card in a sentence, or null when the card is not refuted. */
+export function findingFor(card: ClaimCard, unit: Unit): Finding | null {
+  if (card.verdict !== "Refuted") return null;
+  const original = card.original_text?.trim() ?? "";
+  const at = original ? unit.text.indexOf(original) : -1;
+  const from = at >= 0 ? unit.from + at : unit.from;
+  const text = at >= 0 ? original : unit.text;
+  const edit = card.suggested_fix ? minimalEdit(text, card.claim, card.suggested_fix) : null;
+  return {
+    id: `${unit.text}\u0000${card.claim}`,
+    from,
+    to: from + text.length,
+    unitFrom: unit.from,
+    unitTo: unit.to,
+    edit: edit && { from: from + edit.from, to: from + edit.to, insert: edit.insert },
+    card,
+  };
+}
 
-  for (const card of refutedCards) {
-    const span = card.source_span!;
-    // Convert character offsets to editor positions
-    const startPos = editor.offsetToPos(span.start);
-    const endPos = editor.offsetToPos(span.end);
+// ── State ──────────────────────────────────────────────────────────
 
-    // Create a range for the highlight
-    const range: EditorRange = { from: startPos, to: endPos };
+const replaceFindings = StateEffect.define<{ from: number; to: number; findings: Finding[] }>();
+const removeFinding = StateEffect.define<string>();
+const clearAll = StateEffect.define<null>();
 
-    // Add highlight decoration (red background) using Obsidian's markText
-    const highlightRef = (editor as any).markText?.(range.from, range.to, {
-      className: HIGHLIGHT_CLASS,
-      inclusiveLeft: false,
-      inclusiveRight: false,
-    });
+function mapFinding(f: Finding, changes: ChangeDesc): Finding | null {
+  let touched = false;
+  changes.iterChangedRanges((fromA, toA) => {
+    if (fromA < f.unitTo && toA > f.unitFrom) touched = true;
+  });
+  if (touched) return null;
+  const m = (pos: number, assoc: number) => changes.mapPos(pos, assoc);
+  return {
+    ...f,
+    from: m(f.from, 1),
+    to: m(f.to, -1),
+    unitFrom: m(f.unitFrom, 1),
+    unitTo: m(f.unitTo, -1),
+    edit: f.edit && { from: m(f.edit.from, 1), to: m(f.edit.to, -1), insert: f.edit.insert },
+  };
+}
 
-    // Add gutter marker using Obsidian's setGutterMarker
-    const gutterRef = (editor as any).setGutterMarker?.(range.from.line, GUTTER_NAME, createGutterElement(card));
+const findingsField = StateField.define<Finding[]>({
+  create: () => [],
+  update(value, tr) {
+    let out = tr.docChanged
+      ? value.map((f) => mapFinding(f, tr.changes)).filter((f): f is Finding => f !== null)
+      : value;
+    for (const e of tr.effects) {
+      if (e.is(replaceFindings)) {
+        const { from, to, findings } = e.value;
+        out = [...out.filter((f) => f.unitTo <= from || f.unitFrom >= to), ...findings];
+      } else if (e.is(removeFinding)) {
+        out = out.filter((f) => f.id !== e.value);
+      } else if (e.is(clearAll)) {
+        out = [];
+      }
+    }
+    return out;
+  },
+  provide: (field) => EditorView.decorations.from(field, buildDecorations),
+});
 
-    // Store decoration data for cleanup
-    const decoId = `${card.claim_id}-${span.start}-${span.end}`;
-    decorationMap.set(decoId, {
-      claimId: card.claim_id,
-      card,
-      startOffset: span.start,
-      endOffset: span.end,
-      highlightRef,
-      gutterRef,
-    });
+// ── Decorations ────────────────────────────────────────────────────
+
+const removedMark = Decoration.mark({ class: "notecheck-live-remove" });
+
+class SuggestionWidget extends WidgetType {
+  constructor(readonly finding: Finding) {
+    super();
   }
 
-  editorDecorations.set(editor, decorationMap);
+  eq(other: SuggestionWidget): boolean {
+    return other.finding.id === this.finding.id && other.finding.edit?.insert === this.finding.edit?.insert;
+  }
+
+  toDOM(view: EditorView): HTMLElement {
+    const { edit, id } = this.finding;
+    const el = document.createElement("span");
+    el.className = edit && edit.insert ? "notecheck-live-insert" : "notecheck-live-chip";
+    el.textContent = edit ? edit.insert || "remove" : "check";
+    el.setAttribute("aria-label", "NoteCheck suggestion, click to review");
+    el.addEventListener("mousedown", (e) => {
+      e.preventDefault(); // keep the cursor where it is
+      e.stopPropagation();
+      openPopover(view, id, el);
+    });
+    // the widget can sit inside the underline, whose click handler would open the popover again
+    el.addEventListener("click", (e) => e.stopPropagation());
+    return el;
+  }
+
+  ignoreEvent(): boolean {
+    return true;
+  }
 }
 
-/**
- * Create the gutter marker element for a refuted claim.
- */
-function createGutterElement(card: ClaimCard): HTMLElement {
+function buildDecorations(findings: Finding[]): DecorationSet {
+  const ranges = [];
+  for (const f of findings) {
+    if (f.to > f.from) {
+      ranges.push(
+        Decoration.mark({ class: "notecheck-live-refuted", attributes: { "data-notecheck-id": f.id } }).range(f.from, f.to),
+      );
+    }
+    if (f.edit && f.edit.to > f.edit.from) ranges.push(removedMark.range(f.edit.from, f.edit.to));
+    const at = f.edit ? f.edit.to : f.to;
+    ranges.push(Decoration.widget({ widget: new SuggestionWidget(f), side: 1 }).range(at));
+  }
+  return Decoration.set(ranges, true);
+}
+
+const clickHandler = EditorView.domEventHandlers({
+  click(e, view) {
+    const el = (e.target as HTMLElement).closest?.("[data-notecheck-id]") as HTMLElement | null;
+    if (el?.dataset.notecheckId) openPopover(view, el.dataset.notecheckId, el);
+    return false; // the click still places the cursor
+  },
+});
+
+/** Register once with plugin.registerEditorExtension. */
+export function liveSuggestionsExtension(): Extension {
+  return [findingsField, clickHandler];
+}
+
+// ── Public API ─────────────────────────────────────────────────────
+
+/** Replace the suggestions between `from` and `to` (the block just checked). Others stay. */
+export function showFindings(view: EditorView, from: number, to: number, findings: Finding[]): void {
+  view.dispatch({ effects: replaceFindings.of({ from, to, findings }) });
+}
+
+export function clearFindings(view: EditorView): void {
+  view.dispatch({ effects: clearAll.of(null) });
+}
+
+export function countFindings(view: EditorView): number {
+  return view.state.field(findingsField, false)?.length ?? 0;
+}
+
+/** Accept the suggestion in the sentence under the cursor. Returns false when there is none. */
+export function acceptAtCursor(view: EditorView): boolean {
+  const pos = view.state.selection.main.head;
+  const f = view.state.field(findingsField, false)?.find((x) => x.edit && pos >= x.unitFrom && pos <= x.unitTo);
+  if (!f) return false;
+  accept(view, f.id);
+  return true;
+}
+
+function accept(view: EditorView, id: string): void {
+  const f = view.state.field(findingsField).find((x) => x.id === id);
+  if (!f?.edit) return;
+  const doc = view.state.doc;
+  const newText = doc.sliceString(f.unitFrom, f.edit.from) + f.edit.insert + doc.sliceString(f.edit.to, f.unitTo);
+  view.dispatch({
+    changes: { from: f.edit.from, to: f.edit.to, insert: f.edit.insert },
+    effects: removeFinding.of(id),
+    userEvent: "input.notecheck",
+  });
+  handlers?.onAccept(f, newText);
+}
+
+function dismiss(view: EditorView, id: string): void {
+  const f = view.state.field(findingsField).find((x) => x.id === id);
+  if (!f) return;
+  view.dispatch({ effects: removeFinding.of(id) });
+  handlers?.onDismiss(f);
+}
+
+// ── Popover ────────────────────────────────────────────────────────
+
+let popover: HTMLElement | null = null;
+let closeListeners: (() => void) | null = null;
+
+function closePopover(): void {
+  popover?.remove();
+  popover = null;
+  closeListeners?.();
+  closeListeners = null;
+}
+
+function openPopover(view: EditorView, id: string, anchor: HTMLElement): void {
+  closePopover();
+  const f = view.state.field(findingsField).find((x) => x.id === id);
+  if (!f) return;
+  const { card, edit } = f;
+  const ev = card.evidence?.[0];
+
   const el = document.createElement("div");
-  el.className = `${NOTECHECK_DECO_CLASS}-gutter-marker`;
-  el.setAttribute("aria-label", `NoteCheck: ${card.explanation || "Refuted claim"}`);
-  el.title = "Click for details";
+  el.className = "notecheck-live-popover";
 
-  // Red dot indicator
-  const dot = el.createEl("div", { cls: `${NOTECHECK_DECO_CLASS}-gutter-dot` });
-  dot.style.cssText = `
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #ff1744;
-    margin: 2px auto;
-    box-shadow: 0 0 4px rgba(255, 23, 68, 0.6);
-  `;
+  const head = el.createDiv({ cls: "notecheck-live-popover-head" });
+  head.createSpan({ text: "Refuted", cls: "notecheck-verdict-badge notecheck-verdict-refuted" });
+  if (ev) head.createSpan({ text: ev.source === "course" ? "by your course notes" : "by Wikipedia", cls: "notecheck-live-popover-source" });
 
-  // Click handler - show popover with details
-  el.addEventListener("click", (e) => {
-    e.stopPropagation();
-    showClaimPopover(el, card);
-  });
-
-  return el;
-}
-
-/**
- * Show a popover with claim details when gutter marker is clicked.
- */
-function showClaimPopover(anchor: HTMLElement, card: ClaimCard): void {
-  // Remove any existing popover
-  const existing = document.querySelector(`.${NOTECHECK_DECO_CLASS}-popover`);
-  existing?.remove();
-
-  const popover = document.createElement("div");
-  popover.className = `${NOTECHECK_DECO_CLASS}-popover`;
-  popover.style.cssText = `
-    position: fixed;
-    z-index: 1000;
-    background: var(--background-primary);
-    border: 1px solid var(--background-modifier-border);
-    border-radius: 8px;
-    padding: 12px;
-    max-width: 360px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-    font-size: 0.85em;
-    line-height: 1.5;
-  `;
-
-  // Verdict badge
-  const badge = popover.createEl("span", {
-    text: "Refuted",
-    cls: "notecheck-verdict-badge notecheck-verdict-refuted",
-  });
-  badge.style.marginBottom = "8px";
-
-  // Explanation
-  if (card.explanation) {
-    popover.createEl("p", {
-      text: card.explanation,
-      cls: "notecheck-explanation",
-    });
+  const change = el.createDiv({ cls: "notecheck-live-popover-change" });
+  if (edit) {
+    const old = view.state.doc.sliceString(edit.from, edit.to);
+    if (old) change.createEl("del", { text: old });
+    if (old && edit.insert) change.appendText(" → ");
+    if (edit.insert) change.createEl("ins", { text: edit.insert });
+  } else if (card.suggested_fix) {
+    change.createSpan({ text: "Suggested wording: " });
+    change.createEl("ins", { text: card.suggested_fix });
   }
 
-  // Suggested fix
-  if (card.suggested_fix) {
-    const fixEl = popover.createEl("div", { cls: "notecheck-suggested-fix" });
-    fixEl.createEl("strong", { text: "Suggested fix: " });
-    fixEl.createEl("span", { text: card.suggested_fix });
-  }
+  if (card.explanation) el.createEl("p", { text: card.explanation, cls: "notecheck-explanation" });
 
-  // Evidence summary
-  if (card.evidence && card.evidence.length > 0) {
-    const ev = card.evidence[0];
-    const evidenceEl = popover.createEl("details", { cls: "notecheck-evidence-section" });
-    evidenceEl.createEl("summary", { text: `Evidence: ${ev.page_title}` });
-    evidenceEl.createEl("blockquote", {
-      text: ev.passage.substring(0, 300) + (ev.passage.length > 300 ? "..." : ""),
-      cls: "notecheck-evidence-passage",
-    });
-    const link = evidenceEl.createEl("a", {
-      text: "View on Wikipedia →",
-      href: ev.url,
+  if (ev) {
+    const quote = ev.passage.length > 280 ? `${ev.passage.slice(0, 280)}…` : ev.passage;
+    el.createEl("blockquote", { text: quote, cls: "notecheck-evidence-passage" });
+    const link = el.createEl("a", {
+      text: `${ev.page_title}${ev.section ? ` § ${ev.section}` : ""} →`,
+      href: "#",
       cls: "notecheck-evidence-link",
     });
-    link.setAttr("target", "_blank");
-    link.setAttr("rel", "noopener noreferrer");
-  }
-
-  // Apply fix button
-  if (card.suggested_fix && card.source_span) {
-    const btn = popover.createEl("button", {
-      text: "Apply fix",
-      cls: "notecheck-apply-fix-btn",
-    });
-    btn.style.marginTop = "8px";
-    btn.addEventListener("click", () => {
-      applyFixInEditor(card);
-      popover.remove();
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      handlers?.openEvidence(ev);
     });
   }
 
-  // Close on click outside
-  const closeHandler = (e: MouseEvent) => {
-    if (!popover.contains(e.target as Node) && e.target !== anchor) {
-      popover.remove();
-      document.removeEventListener("click", closeHandler);
-    }
-  };
-  setTimeout(() => document.addEventListener("click", closeHandler), 0);
+  const buttons = el.createDiv({ cls: "notecheck-live-popover-buttons" });
+  if (edit) {
+    const ok = buttons.createEl("button", { text: "Accept", cls: "mod-cta" });
+    ok.addEventListener("click", () => {
+      accept(view, id);
+      closePopover();
+      view.focus();
+    });
+  } else if (card.suggested_fix) {
+    const copy = buttons.createEl("button", { text: "Copy wording" });
+    copy.addEventListener("click", () => {
+      void navigator.clipboard.writeText(card.suggested_fix!);
+      closePopover();
+    });
+  }
+  const no = buttons.createEl("button", { text: "Dismiss" });
+  no.addEventListener("click", () => {
+    dismiss(view, id);
+    closePopover();
+    view.focus();
+  });
 
-  // Position popover near the gutter marker
+  document.body.appendChild(el);
   const rect = anchor.getBoundingClientRect();
-  popover.style.top = `${rect.bottom + 4}px`;
-  popover.style.left = `${rect.right + 8}px`;
+  el.style.top = `${Math.min(rect.bottom + 6, window.innerHeight - el.offsetHeight - 8)}px`;
+  el.style.left = `${Math.max(8, Math.min(rect.left, window.innerWidth - el.offsetWidth - 8))}px`;
+  popover = el;
 
-  document.body.appendChild(popover);
-}
-
-/**
- * Apply the suggested fix to the editor.
- */
-function applyFixInEditor(card: ClaimCard): void {
-  if (!card.source_span || !card.suggested_fix) return;
-
-  const view = document.querySelector(".markdown-source-view.is-active") as HTMLElement;
-  if (!view) return;
-
-  const editor = (view as any).editor as Editor | undefined;
-  if (!editor) return;
-
-  const { start, end } = card.source_span;
-  const startPos = editor.offsetToPos(start);
-  const endPos = editor.offsetToPos(end);
-
-  editor.replaceRange(card.suggested_fix, startPos, endPos);
-}
-
-/**
- * Remove all NoteCheck inline highlights from an editor.
- */
-export function clearInlineHighlights(editor: Editor): void {
-  const decorations = editorDecorations.get(editor);
-  if (!decorations) return;
-
-  for (const [, data] of decorations) {
-    // Clear highlight
-    if (data.highlightRef && typeof data.highlightRef.clear === "function") {
-      try { data.highlightRef.clear(); } catch { }
-    }
-    // Clear gutter marker
-    if (data.gutterRef && typeof data.gutterRef.clear === "function") {
-      try { data.gutterRef.clear(); } catch { }
-    }
-  }
-
-  decorations.clear();
-  editorDecorations.delete(editor);
-}
-
-/**
- * Get all active decorations for an editor (for debugging/inspection).
- */
-export function getActiveDecorations(editor: Editor): DecorationData[] {
-  const decorations = editorDecorations.get(editor);
-  return decorations ? Array.from(decorations.values()) : [];
-}
-
-/**
- * Update highlights when the editor content changes.
- * Re-positions highlights based on stored character offsets.
- */
-export function updateHighlightsForEditorChange(editor: Editor): void {
-  const decorations = editorDecorations.get(editor);
-  if (!decorations || decorations.size === 0) return;
-
-  for (const [decoId, data] of decorations) {
-    try {
-      // Verify the text at the stored offset still matches
-      const currentText = editor.getRange(
-        editor.offsetToPos(data.startOffset),
-        editor.offsetToPos(data.endOffset)
-      );
-      if (currentText !== data.card.original_text) {
-        // Text changed - mark for re-check
-        data.card.source_span = undefined;
-      }
-    } catch {
-      // Position invalid - will be cleaned up on next full check
-    }
-  }
+  const onDown = (e: MouseEvent) => {
+    if (!el.contains(e.target as Node) && e.target !== anchor) closePopover();
+  };
+  const onKey = (e: KeyboardEvent) => {
+    if (e.key === "Escape") closePopover();
+  };
+  // registered on the next tick, so the click that opened the popover does not close it
+  const timer = window.setTimeout(() => {
+    document.addEventListener("mousedown", onDown, true);
+    document.addEventListener("keydown", onKey, true);
+  }, 0);
+  closeListeners = () => {
+    window.clearTimeout(timer);
+    document.removeEventListener("mousedown", onDown, true);
+    document.removeEventListener("keydown", onKey, true);
+  };
 }

@@ -14,7 +14,7 @@ import type { ClaimCard, FactCheckRequest, FactCheckResponse } from "../contract
 import { runFactCheckPipeline, type PipelineOptions } from "./pipeline";
 
 export { runFactCheckPipeline } from "./pipeline";
-export type { PipelineOptions } from "./pipeline";
+export type { CourseSource, PipelineOptions } from "./pipeline";
 export type { FactCheckRequest } from "../contract/claimCard";
 
 /**

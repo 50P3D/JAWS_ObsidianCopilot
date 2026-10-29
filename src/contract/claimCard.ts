@@ -20,18 +20,30 @@ export type Verdict = "Supported" | "Refuted" | "Not Enough Info";
 /** How much to trust a Wikipedia article revision. */
 export type ReliabilityBadge = "High" | "Medium" | "Low";
 
-/** One passage of Wikipedia text used as evidence. Filled in by retrieval. */
+/**
+ * Where a passage came from. Absent means "wikipedia", so older cards stay valid.
+ *   wikipedia  an article revision, fetched live
+ *   course     a file from the user's own course materials folder (lecture notes, readings)
+ */
+export type EvidenceSource = "wikipedia" | "course";
+
+/** One passage of evidence. Filled in by retrieval (Wikipedia) or the course index. */
 export interface Evidence {
   /** The passage text itself. */
   passage: string;
-  /** Title of the Wikipedia article, for example "Treaty of Versailles". */
+  /** Title of the Wikipedia article, for example "Treaty of Versailles". For course files, the file name. */
   page_title: string;
-  /** The exact version of the article the passage came from. Never leave this out. */
+  /**
+   * The exact version of the article the passage came from. Never leave this out.
+   * For course files, a hash of the file's contents, so a verdict still points at one version.
+   */
   revision_id: number;
   /** When that revision was saved, as an ISO date string. Useful for "as of" checks. */
   revision_timestamp?: string;
-  /** Link to that exact revision, so the user can open it. */
+  /** Link to that exact revision, so the user can open it. For course files, the vault path of the file. */
   url: string;
+  /** Where the passage came from. Absent means Wikipedia. */
+  source?: EvidenceSource;
   /** Section heading the passage sits under, if known. */
   section?: string;
   /** How well retrieval thinks the passage matches the claim (0 to 1, higher is better). */
@@ -68,7 +80,7 @@ export interface ClaimCard {
 
   /** From retrieval. Best passages first. Empty if nothing relevant was found. */
   evidence?: Evidence[];
-  /** From the reliability scorer. Describes the article and revision, never the editors. */
+  /** From the reliability scorer. Describes the article and revision, never the editors. Absent for course evidence. */
   reliability?: Reliability;
 
   /** From verification. */

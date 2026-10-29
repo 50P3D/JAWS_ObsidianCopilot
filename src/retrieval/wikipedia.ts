@@ -24,10 +24,23 @@ export interface WikiPage {
   text: string;
 }
 
-// Optional in-memory cache, off by default. A long-running plugin should not keep old articles forever.
-// The evaluation script turns it on so repeated runs do not hit Wikipedia again.
+// Optional in-memory cache, off by default. The evaluation script turns it on so repeated runs do
+// not hit Wikipedia again. The plugin turns it on with a time limit, so a long-running session
+// still picks up new revisions, and the size cap stops it keeping old articles forever.
 let cacheOn = false;
-const cache = new Map<string, Promise<any>>();
+let cacheTtlMs = Infinity;
+const MAX_CACHE_ENTRIES = 500;
+const cache = new Map<string, { at: number; value: Promise<any> }>();
+
+export function enableCache(opts: { ttlMs?: number } = {}): void {
+  cacheOn = true;
+  cacheTtlMs = opts.ttlMs ?? Infinity;
+}
+
+export function disableCache(): void {
+  cacheOn = false;
+  cache.clear();
+}
 
 // Custom fetch function that can be overridden (e.g., for Obsidian's requestUrl)
 let customFetch: ((url: string, init?: RequestInit) => Promise<Response>) | null = null;
@@ -54,16 +67,19 @@ async function wikiGet(params: Record<string, string>): Promise<any> {
   for (const [k, v] of Object.entries(all)) url.searchParams.set(k, v);
 
   const key = url.toString();
-  if (cacheOn && cache.has(key)) return cache.get(key);
+  const hit = cacheOn ? cache.get(key) : undefined;
+  if (hit && Date.now() - hit.at < cacheTtlMs) return hit.value;
 
   const request = (async () => {
-    const res = await wikiFetch(url, { headers: { "User-Agent": USER_AGENT, Accept: "application/json" } });
+    const res = await wikiFetch(key, { headers: { "User-Agent": USER_AGENT, Accept: "application/json" } });
     if (!res.ok) throw new Error(`Wikipedia API returned ${res.status} ${res.statusText}`);
     return res.json();
   })();
 
   if (cacheOn) {
-    cache.set(key, request);
+    cache.delete(key); // re-insert so the Map's order stays oldest first
+    cache.set(key, { at: Date.now(), value: request });
+    if (cache.size > MAX_CACHE_ENTRIES) cache.delete(cache.keys().next().value!);
     request.catch(() => cache.delete(key));
   }
   return request;

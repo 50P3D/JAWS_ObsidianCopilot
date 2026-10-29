@@ -51,12 +51,28 @@ export async function embedQuery(text: string): Promise<number[]> {
   return v;
 }
 
+// Passage embeddings, so checking another claim against an article already read does not embed
+// it again. Keyed by model and text. Least recently used entries go first once it is full.
+const MAX_CACHED_VECTORS = 5000;
+const vectorCache = new Map<string, number[]>();
+
 export async function embedDocuments(texts: string[]): Promise<number[][]> {
-  const out: number[][] = [];
-  for (let i = 0; i < texts.length; i += BATCH_SIZE) {
-    const batch = texts.slice(i, i + BATCH_SIZE).map((t) => `search_document: ${t}`);
-    out.push(...(await embedRaw(batch)));
+  const keys = texts.map((t) => `${EMBED_MODEL}\u0000${t}`);
+  const missing = [...new Set(keys.filter((k) => !vectorCache.has(k)))];
+
+  for (let i = 0; i < missing.length; i += BATCH_SIZE) {
+    const batch = missing.slice(i, i + BATCH_SIZE);
+    const vectors = await embedRaw(batch.map((k) => `search_document: ${k.slice(k.indexOf("\u0000") + 1)}`));
+    batch.forEach((k, j) => vectorCache.set(k, vectors[j]));
   }
+
+  const out = keys.map((k) => {
+    const v = vectorCache.get(k)!;
+    vectorCache.delete(k); // move to the newest end
+    vectorCache.set(k, v);
+    return v;
+  });
+  while (vectorCache.size > MAX_CACHED_VECTORS) vectorCache.delete(vectorCache.keys().next().value!);
   return out;
 }
 

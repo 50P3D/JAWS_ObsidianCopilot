@@ -211,24 +211,21 @@ export function getNoteTitle(editor: Editor): string | undefined {
 /**
  * Determine if a paragraph/section is worth fact-checking.
  *
- * Skips very short text, code blocks, math, frontmatter, etc.
+ * Skips very short text, code/math placeholders and frontmatter. Which sentences inside the
+ * block get checked is decided later by checkableUnits (liveText.ts), so one short sentence or
+ * a list of bullets still counts here.
  */
 export function isCheckableText(text: string): boolean {
   const trimmed = text.trim();
 
-  // Too short
-  if (trimmed.length < 50) return false;
+  // Too short to hold a claim ("The Berlin Wall fell in 1989." is 29 characters)
+  if (trimmed.length < 15) return false;
 
   // Only code/math placeholders
   if (/^(\[code\]|\[formula\]|\s)*$/.test(trimmed)) return false;
 
   // Frontmatter
   if (trimmed.startsWith("---") && trimmed.endsWith("---")) return false;
-
-  // Only bullet points or list items without substantial content
-  const lines = trimmed.split("\n");
-  const contentLines = lines.filter((l) => l.trim() && !l.trim().startsWith("- ") && !l.trim().startsWith("* "));
-  if (contentLines.length === 0) return false;
 
   return true;
 }
