@@ -110,6 +110,14 @@ or `%APPDATA%\Claude\claude_desktop_config.json` on Windows):
 
 Replace `<path-to-repo>` with the absolute path to this repository.
 
+To check claims against course materials first (Wikipedia stays the fallback), add the folder as an environment variable. The server keeps its index in `<course-folder>/.notecheck-course-index.json`.
+
+```json
+"env": { "NOTECHECK_COURSE_DIR": "<path-to-course-folder>" }
+```
+
+With the Inspector: `npx @modelcontextprotocol/inspector -e NOTECHECK_COURSE_DIR=<path> npx tsx src/mcp/index.ts`.
+
 After saving, restart Claude Desktop. The `fact_check` and `retrieve` tools
 will appear in Claude's tool list.
 
