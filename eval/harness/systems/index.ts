@@ -3,8 +3,9 @@
  *
  *   constant:<label>   always answers <label> (Supported, Refuted or NEI)
  *   no-rag             local model, no evidence             --model qwen3.5:9b --think
- *   minicheck          retrieval + Bespoke-MiniCheck        --retrieval-mode hybrid --top 3 --nei-threshold 0.5
- *   pipeline           the real orchestrator (stubbed until src/orchestrator/ exists)
+ *   minicheck          app's Wikipedia retrieval + Bespoke-MiniCheck
+ *                      --retrieval-mode hybrid --top 3 --nei-threshold 0.5 --retries 3 --rewrite-model qwen3.5:9b
+ *   pipeline           the whole app: factCheck() from src/orchestrator/
  */
 
 import { flagBool, flagNumber } from "../cli";
@@ -31,6 +32,8 @@ export function createSystem(name: string, flags: Record<string, string>): Syste
         retrievalMode: mode as "keyword" | "embedding" | "hybrid" | undefined,
         top: flagNumber(flags, "top", 3),
         neiThreshold: flagNumber(flags, "nei-threshold", 0.5),
+        retries: flagNumber(flags, "retries", 3),
+        rewriteModel: flags["rewrite-model"],
       });
     }
     case "pipeline":

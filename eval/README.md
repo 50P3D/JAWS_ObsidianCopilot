@@ -10,8 +10,10 @@ From the repo root, with Ollama running:
 npx tsx eval/scripts/prepareFever.ts                      # download FEVER dev, write balanced dev/test samples
 npx tsx eval/harness/run.ts --system constant:Supported   # floor, no model needed (checks the harness)
 npx tsx eval/harness/run.ts --system no-rag               # qwen3.5:9b with no evidence
-npx tsx eval/harness/run.ts --system minicheck            # our retrieval + Bespoke-MiniCheck
-npx tsx eval/harness/run.ts --system pipeline             # the real pipeline (stubbed until src/orchestrator/ lands)
+npx tsx eval/harness/run.ts --system minicheck            # the app's Wikipedia retrieval (with query-rewrite retries) + Bespoke-MiniCheck
+npx tsx eval/harness/run.ts --system minicheck --retries 0   # single search, no rewrite model
+npx tsx eval/harness/tuneMinicheck.ts eval/results/<minicheck dev run>.json   # pick --nei-threshold, no model calls
+npx tsx eval/harness/run.ts --system pipeline             # the whole app: factCheck() from src/orchestrator/
 npx tsx eval/harness/compare.ts eval/results/<a>.json eval/results/<b>.json
 npx tsc -p eval --noEmit                                  # typecheck the harness
 ```
@@ -70,14 +72,24 @@ npx tsx --test eval/harness/reliabilityDataset.test.ts eval/harness/revisionSamp
 |---|---|---|
 | `constant:<label>` | Always one label | Floor. On balanced data, macro-F1 is about 0.17 |
 | `no-rag` | `qwen3.5:9b`, claim only, JSON output, temperature 0, thinking off | Proposal baseline. The pipeline must beat it by 10 macro-F1 points |
-| `minicheck` | `src/retrieval` top 3 passages + `bespoke-minicheck` | Proposal baseline. MiniCheck only answers Yes or No, so No becomes Refuted if the best passage scores at least `--nei-threshold`, otherwise NEI |
+| `minicheck` | The app's Wikipedia retrieval (`harness/appRetrieval.ts`) + `bespoke-minicheck` | Proposal baseline. MiniCheck only answers Yes or No, so No becomes Refuted if the best passage scores at least `--nei-threshold`, otherwise NEI |
 | `pipeline` | `factCheck(req)` from `src/orchestrator/index.ts` | System under test. Multiple cards per claim combine as any Refuted, then Refuted; all Supported, then Supported; anything else, NEI |
 
-`minicheck` needs `ollama pull bespoke-minicheck` (a 7B model, several GB). `pipeline` needs Jonathan to export this from `src/orchestrator/index.ts`:
+### How `minicheck` retrieves, like the app
 
-```ts
-export async function factCheck(req: FactCheckRequest): Promise<FactCheckResponse>
-```
+`harness/appRetrieval.ts` copies the Wikipedia loop in `checkOne` (`src/orchestrator/pipeline.ts`):
+
+1. Search with the claim: `retrieveEvidence(claim)` (hybrid keyword + `nomic-embed-text`, 3 articles, top 3 passages, the app's defaults).
+2. If the answer is Not Enough Info, the chat model writes a new search query with the app's own `rewriteQuery` prompt, and retrieval runs again on that query. Up to `--retries` extra searches (default 3, as in the app). It stops early when the new query is empty or was already tried.
+3. The verdict is the first search that is not Not Enough Info, or the first search if all are.
+
+MiniCheck replaces the app's verifier. Claim extraction and reliability badges are skipped: FEVER claims are already single claims, and badges do not change the verdict. `pipeline` runs all of it.
+
+Which searches the app would run depends on the threshold. So `minicheck` keeps searching after every No (any score) and stops at the first Yes, saves every search in `extra.attempts`, and replays the app's loop on them. `tuneMinicheck.ts` does the same replay at each threshold, so tuning stays exact without model calls. Because of the extra searches, a run's latency is an upper bound; `extra.app_ms` is what the app's loop would take. Failures in the report list every search query with its answer and best score.
+
+Flags: `--retries N` (0 is the old single-search baseline), `--rewrite-model` (default `qwen3.5:9b`, the plugin default), `--nei-threshold`, `--retrieval-mode`, `--top`.
+
+`minicheck` needs `ollama pull bespoke-minicheck` (4.7 GB) and, with retries, the rewrite model. On an 8 GB GPU the two models do not fit together, so Ollama swaps them on each rewrite: about 20 s per extra search. A dev run takes roughly half an hour. `--rewrite-model qwen3.5:4b` is faster but no longer matches the plugin default.
 
 For a fair no-RAG comparison, `no-rag` should use the verifier's prompt with the evidence removed, once that prompt exists in `src/llm/`. Change `NO_RAG_PROMPT` and bump `PROMPT_VERSION` in `harness/systems/noRag.ts`.
 
@@ -120,7 +132,9 @@ What failed:
 - **Ambiguous titles.** "Due Date was shot in the United States" was read as being about a rapper, not the 2010 film. Retrieval and disambiguation should fix this.
 - **Negation.** "Tim Roth was not born on May 14th, 1961" is true in FEVER. The model gave the right fact and the wrong label.
 
-Not run yet: `minicheck` (model not pulled), `pipeline` (orchestrator not built).
+Later (single search, before the rewrite retries were added): `minicheck` at threshold 0.5 scored macro-F1 0.497 [0.381, 0.615], accuracy 58.0%, false-flag 35.3%, miss 0.0%. Threshold 0.8, tuned on the same 50 claims, gives 0.685 (in-sample). Report: `results/20261107-214030_minicheck_bespoke-minicheck_dev.md`.
+
+`pipeline` with `qwen3.5:9b` as the only chat model (extraction, query rewrites, verifier; `nomic-embed-text` for retrieval): macro-F1 0.485 [0.396, 0.556], accuracy 58.0%, false-flag 11.8%, miss 0.0%, 1 invalid (extraction returned no claim for "Dakota Fanning models."), median latency 10.2 s. On Supported and Refuted only, macro-F1 0.886. It never answers NEI (14 of 16 gold NEI called Refuted). Against `no-rag`: +5.6 points [-3.1, +14.6], short of the +10 target. Report: `results/20261107-220641_pipeline_qwen3.5-9b_dev.md`.
 
 ## Reliability dev round (40 revisions, 0 errors)
 
@@ -138,8 +152,8 @@ On dev the scorer's Low flag is in practice Lift Wing. Full reports: `results/20
 | Phase | Work | State |
 |---|---|---|
 | 1 | Verdict harness, FEVER dev/test, `no-rag` and `constant` baselines, first round on 50 claims | Done |
-| 1 | `minicheck` baseline | Built, not run (needs `bespoke-minicheck`) |
-| 1 | `pipeline` adapter | Built, stubbed until `src/orchestrator/` exports `factCheck` |
+| 1 | `minicheck` baseline | Single-search dev run done (macro-F1 0.497 at threshold 0.5). Now uses the app's retrieval with rewrite retries; dev run with retries pending |
+| 1 | `pipeline` adapter | Dev run done with `qwen3.5:9b` (macro-F1 0.485, +5.6 over `no-rag`) |
 | 2 | 50 claims from our own notes (`source: "notes"`) | Todo, needs the team's notes |
 | 2 | Spot check of Claude-generated claims (`source: "generated"`, `human_checked`) | Todo, after Aadhavan's `tools/claim-generator` |
 | 2 | Evidence-quality sheet for two raters, 50 sampled verdicts, with agreement (Cohen's kappa) | Todo |

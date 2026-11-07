@@ -32,7 +32,8 @@ const REWRITE_SYSTEM = `You write Wikipedia search queries. Given a claim and th
 
 const REWRITE_SCHEMA = { type: "object", properties: { query: { type: "string" } }, required: ["query"] };
 
-async function rewriteQuery(claim: string, tried: string[], llm: LlmOptions): Promise<string> {
+/** Exported so the evaluation harness (eval/harness/appRetrieval.ts) searches exactly as the app does. */
+export async function rewriteQuery(claim: string, tried: string[], llm: LlmOptions): Promise<string> {
   const user = `Claim: ${claim}\nAlready tried:\n${tried.map((q) => `- ${q}`).join("\n")}`;
   const out = await chatJson<{ query: string }>(REWRITE_SYSTEM, user, REWRITE_SCHEMA, llm);
   return out.query?.trim() ?? "";

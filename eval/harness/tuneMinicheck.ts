@@ -15,7 +15,7 @@ import { readFile } from "node:fs/promises";
 import { flagNumber, parseArgs } from "./cli";
 import { verdictMetrics } from "./metrics";
 import { f3, pct } from "./report";
-import { minicheckVerdict } from "./systems/minicheck";
+import { appVerdict, minicheckVerdict, type MiniCheckAttempt } from "./systems/minicheck";
 import type { RunFile } from "./types";
 
 async function main() {
@@ -32,10 +32,13 @@ async function main() {
   const rows: { t: number; f1: number; acc: number; ff: number; miss: number }[] = [];
   for (let t = 0; t <= 1.0001; t += step) {
     const scored = run.predictions.map((p) => {
-      const yes = (p.extra?.yes ?? null) as boolean | null;
-      const best = Number(p.extra?.best_score ?? 0);
       // Rows that errored keep their null prediction.
-      const predicted = p.error ? null : minicheckVerdict(yes, best, t);
+      if (p.error) return { gold: p.gold, predicted: null };
+      const attempts = p.extra?.attempts as MiniCheckAttempt[] | undefined;
+      // Runs with retries replay the app's search loop; older single-search runs use the first answer.
+      const predicted = attempts
+        ? appVerdict(attempts, t)
+        : minicheckVerdict((p.extra?.yes ?? null) as boolean | null, Number(p.extra?.best_score ?? 0), t);
       return { gold: p.gold, predicted };
     });
     const m = verdictMetrics(scored);
