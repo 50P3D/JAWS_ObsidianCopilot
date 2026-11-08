@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { EditorState, type TransactionSpec } from "@codemirror/state";
-import type { EditorView } from "@codemirror/view";
+import { EditorState, type Transaction, type TransactionSpec } from "@codemirror/state";
+import { keymap, type EditorView } from "@codemirror/view";
 import {
   acceptGhost,
   advanceSuggestion,
@@ -82,6 +82,63 @@ test("shouldSuggest skips maths blocks and table rows", () => {
   assert.equal(ask({ before: "| a | b | c " }), false);
 });
 
+test("shouldSuggest uses minWordsBefore from the options", () => {
+  const input = { ...base, before: "Hello there " };
+  assert.equal(shouldSuggest(input, { minWordsBefore: 2 }), true);
+  assert.equal(shouldSuggest({ ...input, before: "Hello there again " }, { minWordsBefore: 4 }), false);
+  assert.equal(shouldSuggest({ ...input, before: "Hello there again now " }, { minWordsBefore: 4 }), true);
+});
+
+test("shouldSuggest counts numbered and starred list markers as markers", () => {
+  assert.equal(ask({ before: "1. Second normal " }), false);
+  assert.equal(ask({ before: "1) Second normal " }), false);
+  assert.equal(ask({ before: "10. Second normal " }), false);
+  assert.equal(ask({ before: "10. Second normal form " }), true);
+  assert.equal(ask({ before: "* Second normal " }), false);
+  assert.equal(ask({ before: "+ Second normal " }), false);
+  assert.equal(ask({ before: "  - Second normal " }), false);
+});
+
+test("shouldSuggest treats only real headings as headings", () => {
+  assert.equal(ask({ before: "# One two three " }), false);
+  assert.equal(ask({ before: "###### One two three " }), false);
+  assert.equal(ask({ before: "   ## One two three " }), false);
+  assert.equal(ask({ before: "####### One two three " }), true);
+  assert.equal(ask({ before: "#hashtag one two " }), true);
+  assert.equal(ask({ before: "## Title\nSecond normal form removes " }), true);
+});
+
+test("shouldSuggest skips indented table rows", () => {
+  assert.equal(ask({ before: "  | a | b | c " }), false);
+});
+
+test("shouldSuggest treats ~~~ and indented fences as code blocks", () => {
+  assert.equal(ask({ before: "~~~\ncode plus more " }), false);
+  assert.equal(ask({ before: "  ```\ncode plus more " }), false);
+  assert.equal(ask({ before: "~~~\ncode\n~~~\nSecond normal form removes " }), true);
+});
+
+test("shouldSuggest ignores a fence marker that is not at the start of a line", () => {
+  assert.equal(ask({ before: "Use ``` in a note\nSecond normal form removes " }), true);
+});
+
+test("shouldSuggest allows suggestions after a closed maths block", () => {
+  assert.equal(ask({ before: "$$\na + b\n$$\nSecond normal form removes " }), true);
+  assert.equal(ask({ before: "$$\na + b\n$$\n$$\nc + d plus " }), false);
+});
+
+test("shouldSuggest treats frontmatter with trailing spaces or CRLF line endings the same", () => {
+  assert.equal(ask({ before: "---  \ntags: databases and more " }), false);
+  assert.equal(ask({ before: "---\r\ntags: databases and more " }), false);
+  assert.equal(ask({ before: "---\r\ntags: databases\r\n---\r\nSecond normal form removes " }), true);
+  assert.equal(ask({ before: "```\r\ncode\r\n```\r\nSecond normal form removes " }), true);
+});
+
+test("shouldSuggest only needs a space, not a tab, before the cursor", () => {
+  assert.equal(ask({ before: "Second normal form removes\t" }), false);
+  assert.equal(ask({ after: "\t" }), true);
+});
+
 // ── buildPrompt ────────────────────────────────────────────────────
 
 test("buildPrompt puts the text before the cursor last, unchanged", () => {
@@ -110,6 +167,54 @@ test("buildPrompt leaves out frontmatter at the top of the note", () => {
   const prompt = buildPrompt(before);
   assert.ok(!prompt.includes("Secret title"));
   assert.ok(prompt.endsWith("Second normal form removes "));
+});
+
+const instructionOnly = buildPrompt("");
+
+test("buildPrompt wraps the context in a short instruction asking for a few words", () => {
+  assert.ok(instructionOnly.length > 20 && instructionOnly.length < 300);
+  assert.match(instructionOnly, /continu/i);
+  assert.match(instructionOnly, /few words/i);
+});
+
+test("buildPrompt never sends more than maxContextChars of the note", () => {
+  const before = "alpha beta gamma delta ".repeat(100);
+  for (const max of [50, 100, 600]) {
+    const prompt = buildPrompt(before, { maxContextChars: max });
+    assert.ok(prompt.startsWith(instructionOnly));
+    assert.ok(prompt.length - instructionOnly.length <= max, `max ${max}`);
+  }
+});
+
+test("buildPrompt uses 600 characters of context by default", () => {
+  const before = "alpha beta gamma delta ".repeat(100);
+  const context = buildPrompt(before).slice(instructionOnly.length);
+  assert.ok(context.length <= 600);
+  assert.ok(context.length > 560);
+});
+
+test("buildPrompt keeps a word that starts exactly at the cut", () => {
+  assert.equal(buildPrompt("aaa bbb ccc ", { maxContextChars: 8 }).slice(instructionOnly.length), "bbb ccc ");
+});
+
+test("buildPrompt trims spaces at the start of the cut context", () => {
+  assert.equal(buildPrompt("aaa  bbb ccc ", { maxContextChars: 9 }).slice(instructionOnly.length), "bbb ccc ");
+});
+
+test("buildPrompt leaves a short note whole", () => {
+  assert.equal(buildPrompt("Short note here ").slice(instructionOnly.length), "Short note here ");
+});
+
+test("buildPrompt strips empty, CRLF and trailing-space frontmatter but only at the top", () => {
+  const body = (b: string) => buildPrompt(b).slice(instructionOnly.length);
+  assert.equal(body("---\n---\nHello there again "), "Hello there again ");
+  assert.equal(body("---\r\ntitle: x\r\n---\r\nHello there again "), "Hello there again ");
+  assert.equal(body("---  \ntitle: x\n---  \nHello there again "), "Hello there again ");
+  assert.equal(body("Intro text\n---\ntitle: x\n---\nHello there again "), "Intro text\n---\ntitle: x\n---\nHello there again ");
+});
+
+test("buildPrompt does not strip frontmatter that never closes (ghost text is not requested there)", () => {
+  assert.equal(buildPrompt("---\ntitle: x\nHello ").slice(instructionOnly.length), "---\ntitle: x\nHello ");
 });
 
 // ── cleanCompletion ────────────────────────────────────────────────
@@ -160,6 +265,94 @@ test("cleanCompletion returns nothing for empty or symbol-only replies", () => {
   for (const raw of ["", "   ", "...", "\n\n"]) assert.equal(cleanCompletion(raw, BEFORE), "");
 });
 
+test("cleanCompletion cuts at the first line even when it has no sentence end", () => {
+  assert.equal(cleanCompletion("partial dependencies\nThird normal form.", BEFORE), "partial dependencies");
+  assert.equal(cleanCompletion("partial dependencies\r\nThird normal form.", BEFORE), "partial dependencies");
+});
+
+test("cleanCompletion never returns a newline", () => {
+  for (const raw of ["a b\nc d", "a b\r\nc d", "\na b", "a b\n", "\r\nx y"]) {
+    assert.ok(!cleanCompletion(raw, BEFORE).includes("\n"), JSON.stringify(raw));
+    assert.ok(!cleanCompletion(raw, BEFORE).includes("\r"), JSON.stringify(raw));
+  }
+});
+
+test("cleanCompletion returns nothing for a reply that is only a quote mark or end punctuation", () => {
+  for (const raw of ['"', "'", "!!!", "???", "- - -", "“”"]) assert.equal(cleanCompletion(raw, BEFORE), "", JSON.stringify(raw));
+  assert.equal(cleanCompletion("...\nhello", BEFORE), "");
+});
+
+test("cleanCompletion removes single, smart and unclosed opening quotes", () => {
+  assert.equal(cleanCompletion("'partial dependencies'", BEFORE), "partial dependencies");
+  assert.equal(cleanCompletion("“partial dependencies”", BEFORE), "partial dependencies");
+  assert.equal(cleanCompletion('"partial dependencies', BEFORE), "partial dependencies");
+});
+
+test("cleanCompletion leaves quotes that are inside the reply", () => {
+  assert.equal(cleanCompletion('partial "dependencies" here', BEFORE), 'partial "dependencies" here');
+  assert.equal(cleanCompletion('the "A" and "B"', BEFORE), 'the "A" and "B"');
+});
+
+test("cleanCompletion rejects every chatty opener but keeps words that only contain them", () => {
+  for (const raw of [
+    "Sure, partial dependencies",
+    "Certainly partial dependencies",
+    "Here is partial dependencies",
+    "Here are some words",
+    "Here's partial dependencies",
+    "As an AI I cannot say",
+    "I'm sorry but no",
+    "I am sorry but no",
+    "Sorry about that",
+    "I cannot help",
+    "I can't help",
+  ]) {
+    assert.equal(cleanCompletion(raw, BEFORE), "", raw);
+  }
+  assert.equal(cleanCompletion("make sure it works", BEFORE), "make sure it works");
+  assert.equal(cleanCompletion("Surely partial dependencies", BEFORE), "Surely partial dependencies");
+  assert.equal(cleanCompletion("we are sorry to see", BEFORE), "we are sorry to see");
+});
+
+test("cleanCompletion removes an echo of all of before but keeps a two-word overlap", () => {
+  assert.equal(cleanCompletion("Second normal form removes partial dependencies.", BEFORE), "partial dependencies.");
+  assert.equal(cleanCompletion("Second normal form removes", BEFORE), "");
+  assert.equal(cleanCompletion("form removes partial dependencies", BEFORE), "form removes partial dependencies");
+});
+
+test("cleanCompletion keeps a reply that only starts like the words before the cursor", () => {
+  assert.equal(cleanCompletion("Second normal form removesome things", BEFORE), "Second normal form removesome things");
+});
+
+test("cleanCompletion compares the echo ignoring capital letters", () => {
+  assert.equal(cleanCompletion("NORMAL FORM REMOVES partial dependencies", BEFORE), "partial dependencies");
+});
+
+test("cleanCompletion stops after ! and ? and keeps repeated end marks together", () => {
+  assert.equal(cleanCompletion("is it true? maybe not", BEFORE), "is it true?");
+  assert.equal(cleanCompletion("wow! more words", BEFORE), "wow!");
+  assert.equal(cleanCompletion("wait... more words", BEFORE), "wait...");
+});
+
+test("cleanCompletion keeps exactly maxWords words and uses 12 by default", () => {
+  assert.equal(cleanCompletion("one two three four five", BEFORE, { maxWords: 5 }), "one two three four five");
+  assert.equal(cleanCompletion("one two three four five six", BEFORE, { maxWords: 5 }), "one two three four five");
+  const fifteen = "w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12 w13 w14 w15";
+  assert.equal(cleanCompletion(fifteen, BEFORE), "w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12");
+});
+
+test("cleanCompletion adds no space before closing punctuation but adds one before an opening bracket", () => {
+  const before = "Second normal form removes";
+  for (const p of [",", ";", ":", ")", "]", "}", "%"]) {
+    assert.equal(cleanCompletion(`${p} and more`, before), `${p} and more`, p);
+  }
+  assert.equal(cleanCompletion("(and more)", before), " (and more)");
+});
+
+test("cleanCompletion never adds a space to an empty note", () => {
+  assert.equal(cleanCompletion("Hello there", ""), "Hello there");
+});
+
 // ── advanceSuggestion ──────────────────────────────────────────────
 
 test("advanceSuggestion removes what the user has typed from the front", () => {
@@ -174,6 +367,14 @@ test("advanceSuggestion returns null when the typing does not match", () => {
 
 test("advanceSuggestion returns null once everything is typed", () => {
   assert.equal(advanceSuggestion("ab", "ab"), null);
+});
+
+test("advanceSuggestion keeps the whole suggestion when nothing has been typed", () => {
+  assert.equal(advanceSuggestion("ab", ""), "ab");
+});
+
+test("advanceSuggestion returns null when more was typed than suggested", () => {
+  assert.equal(advanceSuggestion("ab", "abc"), null);
 });
 
 // ── fetchCompletion ────────────────────────────────────────────────
@@ -256,14 +457,75 @@ test("fetchCompletion throws a message naming Ollama when it cannot connect", as
   await assert.rejects(fetchCompletion({ ...args, fetchFn: fn }), /Ollama/);
 });
 
+test("fetchCompletion sends a JSON content type and keeps the model loaded", async () => {
+  const { fn, calls } = fakeFetch(() => ok("x"));
+  await fetchCompletion({ ...args, fetchFn: fn });
+  assert.deepEqual(calls[0].init.headers, { "Content-Type": "application/json" });
+  assert.ok(calls[0].body.keep_alive);
+  assert.deepEqual(calls[0].body.options.stop, ["\n"]);
+});
+
+test("fetchCompletion asks for 24 tokens by default and honours maxTokens", async () => {
+  const { fn, calls } = fakeFetch(() => ok("x"));
+  await fetchCompletion({ ...args, fetchFn: fn });
+  await fetchCompletion({ ...args, opts: { maxTokens: 8 }, fetchFn: fn });
+  assert.equal(calls[0].body.options.num_predict, 24);
+  assert.equal(calls[1].body.options.num_predict, 8);
+});
+
+test("fetchCompletion keeps the token limit between 1 and 40", async () => {
+  const { fn, calls } = fakeFetch(() => ok("x"));
+  await fetchCompletion({ ...args, opts: { maxTokens: 100 }, fetchFn: fn });
+  await fetchCompletion({ ...args, opts: { maxTokens: 0 }, fetchFn: fn });
+  assert.equal(calls[0].body.options.num_predict, 40);
+  assert.equal(calls[1].body.options.num_predict, 1);
+});
+
+test("fetchCompletion passes the context options on to the prompt", async () => {
+  const { fn, calls } = fakeFetch(() => ok("x"));
+  const before = "alpha beta gamma delta ".repeat(20);
+  await fetchCompletion({ ...args, before, opts: { maxContextChars: 30 }, fetchFn: fn });
+  assert.ok(String(calls[0].body.prompt).length < buildPrompt(before).length);
+});
+
+test("fetchCompletion tolerates several trailing slashes on the URL", async () => {
+  const { fn, calls } = fakeFetch(() => ok("x"));
+  await fetchCompletion({ ...args, ollamaUrl: "http://localhost:11434//", fetchFn: fn });
+  assert.equal(calls[0].url, "http://localhost:11434/api/generate");
+});
+
+test("fetchCompletion includes the start of Ollama's error text in the error", async () => {
+  const { fn } = fakeFetch(() => new Response("model not found", { status: 404 }));
+  await assert.rejects(fetchCompletion({ ...args, fetchFn: fn }), /404.*model not found/);
+});
+
+test("fetchCompletion throws a clear error when the reply is not JSON", async () => {
+  const { fn } = fakeFetch(() => new Response("not json", { status: 200 }));
+  await assert.rejects(fetchCompletion({ ...args, fetchFn: fn }), /could not be read/);
+});
+
+test("fetchCompletion returns an empty string when the reply has no response field", async () => {
+  const { fn } = fakeFetch(() => new Response("{}", { status: 200 }));
+  assert.equal(await fetchCompletion({ ...args, fetchFn: fn }), "");
+});
+
+test("fetchCompletion returns an empty string when the request is aborted while reading the reply", async () => {
+  const res = { ok: true, status: 200, json: async () => { throw new DOMException("aborted", "AbortError"); } } as unknown as Response;
+  const { fn } = fakeFetch(() => res);
+  assert.equal(await fetchCompletion({ ...args, fetchFn: fn }), "");
+});
+
 // ── editor state: showGhost, acceptGhost, dismissGhost ─────────────
 
 // Just enough of an EditorView for the state logic: the state and dispatch
 function fakeView(doc: string, anchor = doc.length, head = anchor) {
   const view = {
     state: EditorState.create({ doc, selection: { anchor, head }, extensions: ghostTextExtension() }),
+    lastTransaction: null as Transaction | null,
     dispatch(spec: TransactionSpec) {
-      view.state = view.state.update(spec).state;
+      const tr = view.state.update(spec);
+      view.lastTransaction = tr;
+      view.state = tr.state;
     },
   };
   return view as typeof view & EditorView;
@@ -362,4 +624,110 @@ test("editing earlier in the note clears the suggestion", () => {
   showGhost(view, GHOST);
   view.dispatch({ changes: { from: 0, insert: "Note: " } });
   assert.equal(currentGhost(view), null);
+});
+
+test("an insert that replaces text at the ghost clears it", () => {
+  const view = fakeView(DOC + "zz", DOC.length);
+  showGhost(view, GHOST);
+  view.dispatch({ changes: { from: DOC.length, to: DOC.length + 2, insert: "p" }, selection: { anchor: DOC.length + 1 } });
+  assert.equal(currentGhost(view), null);
+});
+
+test("deleting the character before the ghost clears it", () => {
+  const view = fakeView(DOC);
+  showGhost(view, GHOST);
+  view.dispatch({ changes: { from: DOC.length - 1, to: DOC.length }, selection: { anchor: DOC.length - 1 } });
+  assert.equal(currentGhost(view), null);
+});
+
+test("two edits in one transaction clear the ghost", () => {
+  const view = fakeView(DOC);
+  showGhost(view, GHOST);
+  view.dispatch({ changes: [{ from: 0, insert: "x" }, { from: DOC.length, insert: "p" }], selection: { anchor: DOC.length + 2 } });
+  assert.equal(currentGhost(view), null);
+});
+
+test("typing that leaves a selection clears the ghost", () => {
+  const view = fakeView(DOC);
+  showGhost(view, GHOST);
+  view.dispatch({ changes: { from: DOC.length, insert: "p" }, selection: { anchor: DOC.length, head: DOC.length + 1 } });
+  assert.equal(currentGhost(view), null);
+});
+
+test("typing a matching letter with the cursor left behind clears the ghost", () => {
+  const view = fakeView(DOC);
+  showGhost(view, GHOST);
+  view.dispatch({ changes: { from: DOC.length, insert: "p" }, selection: { anchor: 0 } });
+  assert.equal(currentGhost(view), null);
+});
+
+test("typing or pasting several matching letters in one go moves the suggestion forward", () => {
+  const view = fakeView(DOC);
+  showGhost(view, GHOST);
+  type(view, "part");
+  assert.deepEqual(currentGhost(view), { pos: DOC.length + 4, text: "ial dependencies." });
+});
+
+test("typing all of a two-letter suggestion in one go clears it", () => {
+  const view = fakeView(DOC);
+  showGhost(view, "ab");
+  type(view, "ab");
+  assert.equal(currentGhost(view), null);
+});
+
+test("setting the cursor to where it already is keeps the ghost", () => {
+  const view = fakeView(DOC);
+  showGhost(view, GHOST);
+  view.dispatch({ selection: { anchor: DOC.length } });
+  assert.deepEqual(currentGhost(view), { pos: DOC.length, text: GHOST });
+});
+
+test("selecting text at the ghost clears it", () => {
+  const view = fakeView(DOC);
+  showGhost(view, GHOST);
+  view.dispatch({ selection: { anchor: DOC.length - 3, head: DOC.length } });
+  assert.equal(currentGhost(view), null);
+});
+
+test("accepting is recorded as an input event", () => {
+  const view = fakeView(DOC);
+  showGhost(view, GHOST);
+  acceptGhost(view);
+  assert.equal(view.lastTransaction!.isUserEvent("input"), true);
+});
+
+test("the functions are safe on an editor without the extension", () => {
+  const bare = {
+    state: EditorState.create({ doc: DOC, selection: { anchor: DOC.length } }),
+    dispatch() {
+      throw new Error("must not dispatch");
+    },
+  } as unknown as EditorView;
+  showGhost(bare, GHOST);
+  assert.equal(currentGhost(bare), null);
+  assert.equal(acceptGhost(bare), false);
+  assert.equal(dismissGhost(bare), false);
+});
+
+// Tab and Escape: look up the bindings the extension registers and call them
+function binding(view: EditorView, key: string) {
+  const all = view.state.facet(keymap).flat();
+  return all.find((b) => b.key === key);
+}
+
+test("Tab accepts the ghost and Escape dismisses it", () => {
+  const view = fakeView(DOC);
+  showGhost(view, GHOST);
+  assert.equal(binding(view, "Tab")!.run!(view), true);
+  assert.equal(view.state.doc.toString(), DOC + GHOST);
+  showGhost(view, "more");
+  assert.equal(binding(view, "Escape")!.run!(view), true);
+  assert.equal(currentGhost(view), null);
+});
+
+test("Tab and Escape do nothing and return false without a ghost, so Tab can still indent", () => {
+  const view = fakeView(DOC);
+  assert.equal(binding(view, "Tab")!.run!(view), false);
+  assert.equal(binding(view, "Escape")!.run!(view), false);
+  assert.equal(view.state.doc.toString(), DOC);
 });

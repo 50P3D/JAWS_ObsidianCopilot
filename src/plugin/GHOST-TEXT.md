@@ -51,19 +51,19 @@ Builds the text sent to the model. Rules:
 1. The text before the cursor is the last thing in the prompt, unchanged, including a trailing space.
 2. At most `maxContextChars` characters of the note are included, taken from the end.
 3. If the note is cut, the context starts at a word boundary, never inside a word. A word that does not fit is dropped.
-4. Frontmatter at the top of the note is left out.
+4. Frontmatter at the top of the note is left out. Frontmatter that never closes is not stripped (`shouldSuggest` never asks for a suggestion there, so the case does not arise).
 5. The instruction around the context is short (under 300 characters) and asks for a continuation of a few words only.
 
 ### `cleanCompletion(raw, before, opts?) -> string`
 Turns the model's raw reply into a safe suggestion, or an empty string. Rules, in order:
-1. Empty, blank or symbol-only replies give an empty string.
+1. Empty, blank or symbol-only replies give an empty string. This is judged on the first line, after quotes and spacing are dealt with, so `...` followed by a real line is still empty.
 2. Only the first line is kept.
 3. Wrapping quotes are removed.
 4. Chatty openers ("Sure", "Here is", "Here's" and similar) make the whole reply invalid, so the result is an empty string.
 5. If the reply starts by repeating the last words before the cursor (three or more), the repeated part is removed.
 6. The reply is cut after the first sentence end, where a full stop, `!` or `?` is followed by a space or the end of the text. A decimal point such as in `3.5` is not a sentence end.
 7. At most `maxWords` words are kept.
-8. Spacing: if the text before the cursor ends in whitespace, leading spaces are removed. If it does not, and the reply starts with a word, exactly one leading space is added. If the reply starts with punctuation, none is added.
+8. Spacing: if the text before the cursor ends in whitespace, leading spaces are removed. If it does not, and the reply starts with a word, exactly one leading space is added. If the reply starts with closing punctuation (`,` `;` `:` `)` `]` `}` `%`), none is added. An opening bracket or a quote counts as a word start and gets the space.
 9. The result never contains a newline.
 
 ### `advanceSuggestion(suggestion, typed) -> string | null`
@@ -72,7 +72,7 @@ Called when the user types characters. If `typed` is an exact, case-sensitive st
 ### `fetchCompletion({ before, model, ollamaUrl, opts?, signal?, fetchFn? }) -> Promise<string>`
 Asks Ollama for a suggestion and returns the cleaned text. `fetchFn` defaults to the global `fetch` and exists so tests can fake it.
 1. Sends a POST to `<ollamaUrl>/api/generate`. A trailing slash on the URL is tolerated.
-2. The JSON body has the model name, the prompt from `buildPrompt`, `stream: false`, `think: false`, a stop sequence of a newline, and a token limit between 1 and 40.
+2. The JSON body has the model name, the prompt from `buildPrompt`, `stream: false`, `think: false`, a stop sequence of a newline, and a token limit between 1 and 40 (`maxTokens` is clamped to that range).
 3. The abort signal is passed on to `fetch`.
 4. If the signal is already aborted, `fetch` is not called and the result is an empty string.
 5. If the request is aborted, the result is an empty string and nothing is thrown.
@@ -109,12 +109,12 @@ One test file, in sections that match the functions above. Each test has one rea
 
 | Section | Count | What it covers |
 |---|---|---|
-| `shouldSuggest` | 12 | One test per rule 1 to 7, plus boundary cases (two words against three, list marker, text after a closed code block or frontmatter) |
-| `buildPrompt` | 4 | Last in prompt, length cap, word-boundary cut, frontmatter |
-| `cleanCompletion` | 10 | One test per rule, plus decimal point and the repeated-words case |
-| `advanceSuggestion` | 3 | Match, mismatch and fully typed |
-| `fetchCompletion` | 8 | Request shape, cleaning, trailing slash, signal passed on, abort, pre-aborted, HTTP error, network error. Uses a fake `fetch`, so no Ollama is needed |
-| Editor state | 12 | Show, replace, ignore, accept, dismiss, type to advance, type to clear, cursor move, edit elsewhere, and that the note text never changes until accept |
+| `shouldSuggest` | 21 | One test per rule 1 to 7, plus boundary cases (two words against three, list marker, text after a closed code block or frontmatter) |
+| `buildPrompt` | 12 | Last in prompt, length cap (default and custom), word-boundary cut, short instruction, frontmatter (open, closed, CRLF, empty, only at the top) |
+| `cleanCompletion` | 23 | One test per rule, plus decimal point and the repeated-words case |
+| `advanceSuggestion` | 5 | Match, mismatch and fully typed |
+| `fetchCompletion` | 17 | Request shape, cleaning, trailing slash, signal passed on, abort, pre-aborted, HTTP error, network error. Uses a fake `fetch`, so no Ollama is needed |
+| Editor state | 26 | Show, replace, ignore, accept, dismiss, type to advance, type to clear, cursor move, edit elsewhere, that the note text never changes until accept, replacing or deleting at the ghost, multi-letter typing, the Tab and Esc key bindings, and use on an editor without the extension |
 
 Not covered by unit tests, so check by hand in Obsidian: the grey styling, the Tab and Esc keys inside a real editor, and how it behaves next to the live fact-check suggestions.
 
@@ -129,3 +129,7 @@ Not covered by unit tests, so check by hand in Obsidian: the grey styling, the T
 ## AI use
 
 The spec, the stub and the tests were written by Claude (Claude Code) and need one log row in `docs/ai-use-log.md`. The reviewer should be a different model family, and its row should name the model.
+
+## Mutation testing result and what changed
+
+First Stryker run on `ghostText.ts` (command runner, `npx tsx --test src/plugin/ghostText.test.ts`): 412 mutants, 279 killed, 132 survived, 1 timeout, score 67.96%. The first test round was then strengthened to cover the survivors that matter: the instruction around the prompt, the exact length cap, `maxWords` boundaries, every chatty opener, `!` and `?` sentence ends, list, heading, table and fence variants, CRLF, the token clamp, error paths in `fetchCompletion`, replace and delete edits at the ghost, and the Tab and Esc bindings. The grey widget markup (`toDOM`, class names) is still checked by hand in Obsidian, so those mutants are expected to survive. Re-run Stryker to get the new score.

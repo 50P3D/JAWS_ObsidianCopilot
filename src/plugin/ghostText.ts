@@ -195,7 +195,7 @@ export async function fetchCompletion(args: FetchCompletionArgs): Promise<string
         // qwen models return an empty answer unless thinking is switched off
         think: false,
         keep_alive: "10m",
-        options: { temperature: 0.2, num_predict: o.maxTokens, stop: ["\n"] },
+        options: { temperature: 0.2, num_predict: Math.min(40, Math.max(1, Math.round(o.maxTokens))), stop: ["\n"] },
       }),
     });
   } catch (e) {
