@@ -6,7 +6,7 @@ NoteCheck is an Obsidian plugin that extracts the factual claims from text you s
 
 Built by team **JAWS** for SE201 (AI-Driven Software Engineering), SMU, AY2026-27 Term 1.
 
-> **Status:** past the 18 October checkpoint, now working on instructor feedback. See [Project status](#project-status) for what works today.
+> **Status:** final submission due 10 November 2026, 12:00. The core pipeline, course materials checking and live suggestions work. Ghost text is built and awaiting review. The remaining evaluation runs are listed in [Project status](#project-status).
 
 ---
 
@@ -32,7 +32,9 @@ The non-AI alternative is keyword search against Wikipedia plus manual lookup, o
 4. **Source reliability flags.** Each piece of Wikipedia evidence gets a `Low`, `Medium` or `High` badge with reasons, such as a recent unreviewed edit, a POV or Disputed tag or low citation coverage. Flags describe articles and revisions, never individual editors.
 5. **MCP server.** Exposes `fact_check` and retrieval as tools so Claude can review a verdict on request. The same interface runs our evaluation harness.
 
-Inline autocomplete (ghost text from a small local model) and an automated Claude judge are **stretch goals**, not part of the core scope.
+6. **Ghost text (off by default).** A short grey suggestion from a small local model appears after the cursor when you pause after typing a space. Tab accepts it and Esc dismisses it. It is built and tested on the branch `aadhavan/ghost-text` and awaits review, so it is not in the main build yet.
+
+An automated Claude judge is a **stretch goal**, not part of the core scope.
 
 ### Where the evidence comes from
 
@@ -63,7 +65,7 @@ Here is what happens when you select a sentence and click check, step by step.
 3. **It picks out the individual facts.** A sentence like "Einstein was born in 1879 in Ulm and won the Nobel Prize in 1921" becomes separate claims that can each be checked on their own.
 4. **It throws away what can't be checked.** Opinions, to-do reminders and questions are skipped. Course-specific claims are skipped too, unless you have set a course materials folder that can check them.
 5. **It rewrites each claim so it makes sense alone.** "He was born in 1879" becomes "Albert Einstein was born in 1879", because the checker will not see the rest of your note.
-6. **It looks the claim up.** If you have set a course folder, it first searches your course notes, which were split into passages and indexed once when you set the folder. If they cover the claim, it skips to step 8. Otherwise it searches Wikipedia: it searches, picks the right article when a name has several meanings (Mercury the planet or the metal), cuts the article into small pieces and ranks which pieces are most useful.
+6. **It looks the claim up.** If you have set a course folder, it first searches your course notes, which were split into passages and indexed once when you set the folder. If they cover the claim, it skips to step 8. Otherwise it searches Wikipedia: it searches, skips pages that only list several meanings of a name ("Mercury may refer to..."), cuts the articles into small pieces and ranks which pieces are most useful. NoteCheck does not yet choose between meanings itself, so a claim about an ambiguous name may need a more specific wording.
 7. **It checks how much to trust that article.** It looks at warning banners, recent edits that nobody has reviewed and how often the page gets undone by other editors. This gives a High, Medium or Low badge with reasons.
 8. **The local AI reads the evidence and decides.** It compares the Wikipedia passage with your claim and answers Supported, Refuted or Not Enough Info. If your claim is wrong, it suggests a fix.
 9. **You see the result in a side panel and in your note.** Each claim shows the verdict, the exact passage, a link to the exact version of the Wikipedia page (or your course note) used and the trust badge. Refuted claims are also marked in the note itself, with the suggested change ready to accept.
@@ -120,7 +122,7 @@ Dashed boxes are the only places data leaves the machine.
 | 1 | Preprocess                     | Skips frontmatter, code blocks and LaTeX. Keeps wikilinks as context.                                                                        | Clean text                         |
 | 2 | Claim extraction               | Splits text into atomic claims and filters out opinions, reminders and course-specific content that Wikipedia cannot verify.                 | Claims as JSON                     |
 | 3 | Decontextualisation            | Rewrites each claim to stand alone using the note title, headings and nearby sentences (for example, replacing "he" with the person's name). | Self-contained claims              |
-| 4 | Query generation and retrieval | Builds search queries from entities, disambiguates pages (Mercury the planet or the element), then searches, chunks and reranks passages.    | Evidence passages and revision IDs |
+| 4 | Query generation and retrieval | Builds search queries from entities, searches, skips disambiguation pages (choosing between meanings is not built yet), then chunks and reranks passages.    | Evidence passages and revision IDs |
 | 5 | Reliability scoring            | Scores each evidence revision with transparent rules (see below).                                                                            | Badge and reasons                  |
 | 6 | Verification                   | The LLM labels each claim and proposes a correction when it is refuted.                                                                      | Verdict and fix                    |
 
@@ -196,7 +198,8 @@ The scorer is rule-based on purpose, so every badge can be explained and the cos
 | Evidence source                   | MediaWiki Action API, Wikimedia Lift Wing                 |
 | MCP server                        | MCP TypeScript SDK                                        |
 | Baseline checker                  | Bespoke-MiniCheck                                         |
-| Judge and test generation         | Claude (via Claude Desktop or the API)                    |
+| Test claim generation (planned)   | Claude, used only to create evaluation data               |
+| Development tools                 | Claude, Groq-hosted open models and Grok (in Cursor) help write and review code and tests. They are never part of the product. See [AI use disclosure](#ai-use-disclosure). |
 
 ---
 
@@ -401,7 +404,7 @@ Thresholds are tuned on a small development set first. The test set is not used 
 
 ### Planned changes after instructor feedback
 
-These come from the review of our proposal. The owners below are proposed and the team should confirm them.
+These come from the review of our proposal. The orchestrator with retry and the claim card contract are built. Which of the rest are done is tracked in [Project status](#project-status). The owners below are proposed and the team should confirm them.
 
 | Step                                                                   | In plain English                                                                                                                                                                | Owner                           | Where it lives             |
 | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | -------------------------- |
@@ -440,8 +443,21 @@ Checkpoint due **18 October 2026**.
 | RAG over the user's course materials, with Wikipedia as fallback      | **Done** — `src/course/`, 11 tests, live smoke test passes. Score threshold not tuned yet |
 | Cache Wikipedia articles and passage embeddings between checks        | **Done** — 1 hour article cache, embedding cache                                          |
 | Live checking with inline, word-level suggestions                     | **Done** — 21 tests. Needs the hands-on checks in [Testing it yourself](#testing-it-yourself) |
+| Ghost text (grey inline autocomplete, Tab to accept)                  | **Built, awaiting review** — branch `aadhavan/ghost-text`, 120 tests, mutation score 86.96% (Stryker). Hands-on check in Obsidian still to do |
+| Choosing between meanings of an ambiguous name                        | Not done — disambiguation pages are skipped for now                                          |
 | Course RAG evaluation on our own notes, per model size                | Not started                                                                                 |
 | Prefix caching, multi-session, Ollama keep-alive settings             | Not started                                                                                 |
+
+**Evaluation still to run before submission**
+
+| Target                                                                | State                                                       |
+| --------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Verdicts with RAG against the no-RAG baseline on FEVER dev            | Not run yet (the no-RAG baseline is done)                   |
+| Bespoke-MiniCheck baseline                                            | Built, not run yet                                          |
+| Held-out test run (once, after thresholds are fixed on dev)           | Not run yet                                                 |
+| Evidence quality rating by two people                                 | Not done                                                    |
+| Claims from our own notes, labelled and split into dev and test       | Not done                                                    |
+| Claude-generated false claims (`tools/claim-generator/`)              | Not done                                                    |
 
 Stubbed components will be listed here as they appear.
 
@@ -523,10 +539,19 @@ Separate folders stop most conflicts before they start. These habits handle the 
 | Notes leave the device during Claude review                      | Local by default. The Claude review is opt-in and clearly labelled.                                       |
 | Wikipedia content licensing                                      | Evidence is attributed with links, as CC BY-SA requires                                                   |
 | Weak hardware limits model quality                               | Models are configurable and we report results per model size                                              |
+| The local model gets a verdict or an explanation wrong           | Every verdict shows its evidence and revision link. Not Enough Info is allowed. Results are measured against FEVER labels and a no-RAG baseline |
+| Text in a Wikipedia page or a note tries to steer the model      | The model only returns a label, an explanation and a fix. It has no tools and cannot change files. Edits happen only when the user clicks Accept or Tab |
+| AI-written code hides bugs or weak tests                         | Tests are written first. Mutation testing (Stryker) checks that tests fail when code is broken. A second model from a different family reviews the code and tests, and a teammate approves every pull request |
+| Ghost text inserts a wrong or odd suggestion                     | Off by default. Local model only. Nothing is written until the user presses Tab. It is skipped inside code, headings, tables and frontmatter |
 
 ## AI use disclosure
 
-We use AI tools during development and track that use in [`docs/ai-use-log.md`](docs/ai-use-log.md), as the course requires.
+We use AI tools during development and track that use in [`docs/ai-use-log.md`](docs/ai-use-log.md), as the course requires. Each member also keeps a short note about their own work in their `NAME.md` file at the repository root.
+
+- **In the product:** only local models run through Ollama (Qwen for claims and verdicts, a small Qwen for ghost text, `nomic-embed-text` for embeddings). Claude is used only if a user opts in to the Claude review.
+- **During development:** Claude, Groq-hosted open models and Grok in Cursor help write code, tests and reviews. They are development tools only. They never run inside the product and never score our final results.
+- **Planned uses still to be logged when they happen:** generating false claims for evaluation data, a reviewer model that judges our verdicts (from a different model family than the one being judged), and any data used for fine-tuning.
+- **Checks on AI-written code:** tests first, mutation testing, review by a second model, and a teammate's approval on each pull request.
 
 ## Acknowledgements
 
