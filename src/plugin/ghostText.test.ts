@@ -13,6 +13,7 @@ import {
   ghostTextExtension,
   shouldSuggest,
   showGhost,
+  suggestInputFromState,
   type SuggestInput,
 } from "./ghostText";
 
@@ -788,4 +789,29 @@ test("Tab and Escape do nothing and return false without a ghost, so Tab can sti
   assert.equal(binding(view, "Tab")!.run!(view), false);
   assert.equal(binding(view, "Escape")!.run!(view), false);
   assert.equal(view.state.doc.toString(), DOC);
+});
+
+// ── suggestInputFromState (what the plugin asks shouldSuggest) ──────
+
+test("suggestInputFromState reads the text before the cursor and the rest of its line", () => {
+  const state = EditorState.create({ doc: "First line\nSecond normal form  removes\nLast", selection: { anchor: 30 } });
+  const input = suggestInputFromState(state, true, false);
+  assert.equal(input.before, "First line\nSecond normal form ");
+  assert.equal(input.after, " removes");
+  assert.equal(input.hasSelection, false);
+  assert.equal(input.enabled, true);
+  assert.equal(input.busy, false);
+});
+
+test("suggestInputFromState reports a selection and passes the flags on", () => {
+  const state = EditorState.create({ doc: "Hello there again", selection: { anchor: 0, head: 5 } });
+  const input = suggestInputFromState(state, false, true);
+  assert.equal(input.hasSelection, true);
+  assert.equal(input.enabled, false);
+  assert.equal(input.busy, true);
+});
+
+test("suggestInputFromState at the end of the note gives an empty rest of line", () => {
+  const state = EditorState.create({ doc: "Second normal form removes ", selection: { anchor: 27 } });
+  assert.equal(suggestInputFromState(state, true, false).after, "");
 });

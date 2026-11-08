@@ -13,7 +13,7 @@
  *   ghostTextExtension  the CodeMirror state and drawing, with showGhost, acceptGhost and so on
  */
 
-import { Prec, StateEffect, StateField, type Extension } from "@codemirror/state";
+import { Prec, StateEffect, StateField, type EditorState, type Extension } from "@codemirror/state";
 import { Decoration, EditorView, WidgetType, keymap, type DecorationSet } from "@codemirror/view";
 
 export interface GhostOptions {
@@ -89,6 +89,18 @@ export function shouldSuggest(input: SuggestInput, opts?: Partial<GhostOptions>)
 
   const words = line.replace(LIST_MARKER, "").split(/\s+/).filter(Boolean);
   return words.length >= o.minWordsBefore;
+}
+
+/** Read the input for `shouldSuggest` from an editor state: the note up to the cursor and the rest of that line. */
+export function suggestInputFromState(state: EditorState, enabled: boolean, busy: boolean): SuggestInput {
+  const sel = state.selection.main;
+  return {
+    before: state.doc.sliceString(0, sel.head),
+    after: state.doc.sliceString(sel.head, state.doc.lineAt(sel.head).to),
+    hasSelection: !sel.empty,
+    enabled,
+    busy,
+  };
 }
 
 // ── buildPrompt ────────────────────────────────────────────────────

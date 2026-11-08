@@ -11,6 +11,7 @@
  *   5. Dispatches fact-check requests to the real orchestrator pipeline
  *   6. Runs live fact-checking as you type (when enabled)
  *   7. Keeps the course index (RAG over the user's course folder) up to date
+ *   8. Shows ghost text (a grey inline suggestion from a small local model) when enabled
  *
  * Owner: Medapati Williams Smith
  */
@@ -33,10 +34,11 @@ import { enableCache as enableWikiCache } from "../retrieval/wikipedia.js";
 import { DEFAULT_SETTINGS, type NoteCheckSettings } from "./types.js";
 import { NoteCheckSettingTab } from "./settingsTab.js";
 import { NoteCheckResultView, VIEW_TYPE_NOTECHECK } from "./resultView.js";
-import { initLiveChecker, setLiveCheckEnabled, setLiveCheckDebounce } from "./liveChecker.js";
+import { initLiveChecker, isLiveChecking, setLiveCheckEnabled, setLiveCheckDebounce } from "./liveChecker.js";
 import { acceptAtCursor, findingFor, liveSuggestionsExtension, showFindings, type Finding } from "./inlineDecorations.js";
 import { minimalEdit } from "./liveText.js";
-import type { EditorView } from "@codemirror/view";
+import { currentGhost, fetchCompletion, ghostTextExtension, shouldSuggest, showGhost, suggestInputFromState } from "./ghostText.js";
+import { EditorView, type ViewUpdate } from "@codemirror/view";
 import { setCustomFetch as setWikiFetch, clearCustomFetch as clearWikiFetch } from "../retrieval/wikipedia.js";
 import { setCustomFetch as setEmbedFetch, clearCustomFetch as clearEmbedFetch } from "../retrieval/embed.js";
 import { setCustomFetch as setOllamaFetch, clearCustomFetch as clearOllamaFetch } from "../llm/ollama.js";
@@ -47,6 +49,11 @@ export default class NoteCheckPlugin extends Plugin {
   courseIndex!: CourseIndex;
   /** The editor of the last "Fact-check selection", so "Apply fix" in the sidebar knows where to edit. */
   private lastCheckedEditor: Editor | null = null;
+  /** Fetch that works inside Obsidian (see onload). Ghost text uses it for the Ollama call. */
+  private obsidianFetch: typeof fetch | null = null;
+  private ghostTimer: number | undefined;
+  private ghostAbort: AbortController | null = null;
+  private ghostWarned = false;
 
   async onload(): Promise<void> {
     console.log("Loading NoteCheck plugin...");
@@ -77,6 +84,8 @@ export default class NoteCheckPlugin extends Plugin {
         headers: { "Content-Type": "application/json" },
       });
     };
+
+    this.obsidianFetch = obsidianFetch as typeof fetch;
 
     // Inject custom fetch into all network modules
     setWikiFetch(obsidianFetch);
@@ -120,6 +129,12 @@ export default class NoteCheckPlugin extends Plugin {
 
     // Inline suggestions (tracked-changes style) for live checks and selection checks
     this.registerEditorExtension(liveSuggestionsExtension());
+
+    // Ghost text: the grey suggestion itself, and a listener that asks for one after typing stops
+    this.registerEditorExtension([
+      ghostTextExtension(),
+      EditorView.updateListener.of((update) => this.onGhostUpdate(update)),
+    ]);
 
     this.addCommand({
       id: "accept-suggestion",
@@ -165,6 +180,7 @@ export default class NoteCheckPlugin extends Plugin {
 
   onunload(): void {
     console.log("Unloading NoteCheck plugin.");
+    this.cancelGhost();
     // Clean up custom fetch
     clearWikiFetch();
     clearEmbedFetch();
@@ -199,6 +215,60 @@ export default class NoteCheckPlugin extends Plugin {
    */
   onLiveCheckDebounceChange(debounceMs: number): void {
     setLiveCheckDebounce(debounceMs);
+  }
+
+  // ── Ghost text ───────────────────────────────────────────────────
+
+  /** Drop any waiting or running ghost request. */
+  private cancelGhost(): void {
+    window.clearTimeout(this.ghostTimer);
+    this.ghostTimer = undefined;
+    this.ghostAbort?.abort();
+    this.ghostAbort = null;
+  }
+
+  /** Called on every editor update. After typing stops, asks for a suggestion. */
+  private onGhostUpdate(update: ViewUpdate): void {
+    if (!update.docChanged) return;
+    this.cancelGhost();
+    if (!this.settings.enableGhostText) return;
+    // only react to typing, not to accepting a suggestion, pasting or the plugin's own edits
+    if (!update.transactions.some((tr) => tr.isUserEvent("input.type"))) return;
+    // typing the suggestion's own letters keeps the ghost showing, so nothing new is needed
+    if (currentGhost(update.view)) return;
+    this.ghostTimer = window.setTimeout(() => void this.requestGhost(update.view), this.settings.ghostDebounceMs);
+  }
+
+  private async requestGhost(view: EditorView): Promise<void> {
+    this.ghostTimer = undefined;
+    const input = suggestInputFromState(view.state, this.settings.enableGhostText, isLiveChecking());
+    if (!shouldSuggest(input) || !this.settings.ghostModel.trim()) return;
+
+    const controller = new AbortController();
+    this.ghostAbort = controller;
+    const head = view.state.selection.main.head;
+    try {
+      const text = await fetchCompletion({
+        before: input.before,
+        model: this.settings.ghostModel.trim(),
+        ollamaUrl: this.settings.ollamaUrl,
+        signal: controller.signal,
+        fetchFn: this.obsidianFetch ?? undefined,
+      });
+      // the user may have moved on while the model was thinking
+      const sel = view.state.selection.main;
+      if (controller.signal.aborted || !text || !sel.empty || sel.head !== head) return;
+      showGhost(view, text);
+    } catch (err) {
+      // a missing model or Ollama being off is not worth a popup on every pause, so say it once
+      console.warn("[NoteCheck ghost]", err);
+      if (!this.ghostWarned) {
+        this.ghostWarned = true;
+        new Notice(`NoteCheck ghost text: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    } finally {
+      if (this.ghostAbort === controller) this.ghostAbort = null;
+    }
   }
 
   // ── Sidebar view activation ──────────────────────────────────────

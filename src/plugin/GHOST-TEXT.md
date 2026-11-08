@@ -2,7 +2,7 @@
 
 This file describes what the ghost text feature must do, without code, so a second reviewer (human or AI from another model family) can check the code and the tests against it. If the code and this file disagree, one of them is wrong. Say which.
 
-Status: tests written first, now passing (117/117). `ghostText.ts` is implemented; settings and `main.ts` wiring still to do.
+Status: tests written first, now passing (120/120). `ghostText.ts` is implemented and wired into `main.ts` and the settings tab. Still to do: check it by hand in Obsidian (grey styling, Tab, Esc, next to live suggestions) and measure speed and usefulness.
 
 ## What the feature is
 
@@ -15,7 +15,7 @@ Out of scope: suggestions mid-word, multi-line suggestions, accepting one word a
 | File | Role | State |
 |---|---|---|
 | `src/plugin/ghostText.ts` | Pure helpers, the Ollama call and the editor extension. No Obsidian imports, so it can be unit tested | Implemented |
-| `src/plugin/ghostText.test.ts` | Unit tests (`node:test`, `assert/strict`), run with `npm run test:ghost` | Written, green (117/117) |
+| `src/plugin/ghostText.test.ts` | Unit tests (`node:test`, `assert/strict`), run with `npm run test:ghost` | Written, green (120/120) |
 | `src/plugin/GHOST-TEXT.md` | This file | Written |
 | `src/plugin/types.ts`, `settingsTab.ts`, `main.ts` | Settings and wiring (later step) | Not started |
 | `eval/ghost/` | Latency and usefulness measurement on 20 hand-picked sentences (later step, needs the `eval/` owner's agreement) | Not started |
@@ -89,6 +89,7 @@ State: at most one ghost `{ pos, text }` per editor, shown as grey widget text a
 | `ghostTextExtension()` | The CodeMirror 6 extension to register once. Holds the ghost state and draws it. Tab and Esc are bound only while a ghost is showing, so Tab still indents otherwise |
 | `showGhost(view, text)` | Shows `text` at the cursor. Ignored if `text` is empty or text is selected. Replaces any earlier ghost |
 | `currentGhost(view)` | Returns the ghost or null |
+| `suggestInputFromState(state, enabled, busy)` | Builds the `shouldSuggest` input from an editor state: the note up to the cursor, the rest of that line, and whether text is selected |
 | `acceptGhost(view)` | Inserts the text at the ghost position, puts the cursor after it, clears the ghost and returns true. Returns false and changes nothing if there is no ghost |
 | `dismissGhost(view)` | Clears the ghost without editing the note. Returns true if there was one, otherwise false |
 
@@ -101,7 +102,7 @@ The ghost updates on its own:
 
 ## Data flow
 
-Typing stops for `ghostDebounceMs`, then `shouldSuggest`, then `fetchCompletion` (earlier request aborted if the user typed again), then `showGhost`. Tab runs `acceptGhost`. Esc runs `dismissGhost`.
+In `main.ts`, an editor update listener ignores everything except typed input (not paste, not accepting a suggestion) and skips when a ghost is already showing. Typing stops for `ghostDebounceMs`, then `shouldSuggest`, then `fetchCompletion` (earlier request aborted if the user typed again), then `showGhost`. Tab runs `acceptGhost`. Esc runs `dismissGhost`.
 
 ## Test layout
 
@@ -114,6 +115,7 @@ One test file, in sections that match the functions above. Each test has one rea
 | `cleanCompletion` | 26 | One test per rule, plus decimal point and the repeated-words case |
 | `advanceSuggestion` | 5 | Match, mismatch and fully typed |
 | `fetchCompletion` | 18 | Request shape, cleaning, trailing slash, signal passed on, abort, pre-aborted, HTTP error, network error. Uses a fake `fetch`, so no Ollama is needed |
+| `suggestInputFromState` | 3 | Before and after the cursor, selection and flags passed on, end of the note |
 | Editor state | 26 | Show, replace, ignore, accept, dismiss, type to advance, type to clear, cursor move, edit elsewhere, that the note text never changes until accept, replacing or deleting at the ghost, multi-letter typing, the Tab and Esc key bindings, and use on an editor without the extension |
 
 Not covered by unit tests, so check by hand in Obsidian: the grey styling, the Tab and Esc keys inside a real editor, and how it behaves next to the live fact-check suggestions.
