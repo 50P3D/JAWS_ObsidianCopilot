@@ -238,3 +238,5 @@ project-proposal.pdf
 .kiro
 .claude
 .gemini
+# Course index built by the MCP server from NOTECHECK_COURSE_DIR
+.notecheck-course-index.json

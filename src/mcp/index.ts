@@ -16,8 +16,24 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
-import { mockFactCheck } from "./mockPipeline.js";
+import { join } from "node:path";
+import { factCheck, type PipelineOptions } from "../orchestrator/index.js";
 import { retrieveEvidence } from "../retrieval/retrieve.js";
+import { CourseIndex } from "../course/index.js";
+import { jsonFileStore, readCourseFolder } from "../course/node.js";
+
+// Optional course materials: set NOTECHECK_COURSE_DIR to a folder of markdown files.
+// Claims are then checked against that folder before Wikipedia.
+const COURSE_DIR = process.env.NOTECHECK_COURSE_DIR;
+const courseIndex = COURSE_DIR
+  ? new CourseIndex(jsonFileStore(join(COURSE_DIR, ".notecheck-course-index.json")))
+  : null;
+
+async function pipelineOptions(): Promise<PipelineOptions> {
+  if (!courseIndex || !COURSE_DIR) return {};
+  await courseIndex.sync(await readCourseFolder(COURSE_DIR), (m) => console.error(`[course] ${m}`));
+  return { course: { search: (claim) => courseIndex.search(claim) } };
+}
 
 // ---------------------------------------------------------------------------
 // Server setup
@@ -47,14 +63,8 @@ server.tool(
       .describe("Headings in the note for context"),
   },
   async ({ text, note_title, headings }) => {
-    // TODO: Replace with orchestrator pipeline call when src/orchestrator/ is ready.
-    // The orchestrator will use note_title and headings to contextualise claims
-    // before handing them to retrieval + verification. For now both are unused.
-    void note_title;
-    void headings;
-
     try {
-      const response = await mockFactCheck(text);
+      const response = await factCheck({ text, note_title, headings }, await pipelineOptions());
 
       return {
         content: [

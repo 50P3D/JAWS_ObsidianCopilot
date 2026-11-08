@@ -29,6 +29,27 @@ export interface NoteCheckSettings {
    * This is an optional quality gate — it costs API credits.
    */
   enableClaudeReview: boolean;
+
+  /**
+   * When true, NoteCheck runs fact-checking automatically as you type.
+   * Checks the current paragraph/section on each change (debounced).
+   */
+  enableLiveCheck: boolean;
+
+  /**
+   * Milliseconds to wait after typing stops before running a live check.
+   * Higher values reduce API calls but increase latency.
+   */
+  liveCheckDebounceMs: number;
+
+  /**
+   * Vault folder holding course materials (lecture notes, readings), for example "Courses/SE201".
+   * Claims are checked against these files before Wikipedia. Empty turns course checking off.
+   */
+  courseFolder: string;
+
+  /** When true, only the course folder is used and Wikipedia is never searched. */
+  courseOnly: boolean;
 }
 
 /**
@@ -40,4 +61,8 @@ export const DEFAULT_SETTINGS: NoteCheckSettings = {
   modelName: "qwen3.5:9b",
   wikiUserAgent: "",
   enableClaudeReview: false,
+  enableLiveCheck: false,
+  liveCheckDebounceMs: 1500,
+  courseFolder: "",
+  courseOnly: false,
 };

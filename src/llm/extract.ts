@@ -26,18 +26,34 @@ export function preprocess(text: string): string {
     .trim();
 }
 
-// Stage 2 and 3: extract atomic claims, drop uncheckable ones, rewrite each to stand alone
-const SYSTEM = `You extract checkable factual claims from a student's notes.
+export interface ExtractOptions {
+  /**
+   * True when the user's course materials are indexed. Course-specific claims (definitions and
+   * facts as the course teaches them) are then kept, because the course index can check them.
+   */
+  courseClaims?: boolean;
+}
+
+const WIKI_ONLY_RULES = `- Keep only claims Wikipedia could confirm or deny: dates, places, people, numbers, events, definitions.
+- Skip opinions, to-do items, questions, instructions, and anything specific to a course or lecturer.`;
+
+const COURSE_RULES = `- Keep claims Wikipedia or the student's course materials could confirm or deny: dates, places, people, numbers, events, definitions, and facts as taught in the course.
+- Skip opinions, to-do items, questions and instructions.`;
+
+// Stage 2 and 3: extract atomic claims, drop uncheckable ones, rewrite each to stand alone.
+// Only one of two fixed prompts is ever sent, so Ollama can reuse the cached prompt prefix.
+export function extractSystemPrompt(opts: ExtractOptions = {}): string {
+  return `You extract checkable factual claims from a student's notes.
 
 Rules:
 - Split sentences into atomic claims, one fact each. "Einstein was born in 1879 in Ulm" becomes two claims.
-- Keep only claims Wikipedia could confirm or deny: dates, places, people, numbers, events, definitions.
-- Skip opinions, to-do items, questions, instructions, and anything specific to a course or lecturer.
+${opts.courseClaims ? COURSE_RULES : WIKI_ONLY_RULES}
 - Rewrite each claim so it makes sense alone. Replace "he", "it", "the treaty" and similar with full names, using the note title and headings for context.
 - Never correct or add facts. Keep the claim's meaning exactly, even if you think it is wrong.
 - original_text is the sentence the claim came from, copied exactly from the note.
 - [code] and [formula] mark removed code and maths. Skip any claim that is only about a placeholder, and never guess what it contained.
 - If there are no checkable claims, return an empty list.`;
+}
 
 // The schema for the expected output from the LLM
 const SCHEMA = {
@@ -61,7 +77,11 @@ interface ExtractResult {
 }
 
 // The main function to extract claims from a note text
-export async function extractClaims(request: FactCheckRequest, opts: LlmOptions = {}): Promise<ClaimCard[]> {
+export async function extractClaims(
+  request: FactCheckRequest,
+  opts: LlmOptions = {},
+  extract: ExtractOptions = {},
+): Promise<ClaimCard[]> {
   const text = preprocess(request.text);
   // If the preprocessed text is empty, return an empty array of claims
   if (!text) return [];
@@ -75,7 +95,7 @@ export async function extractClaims(request: FactCheckRequest, opts: LlmOptions 
     '"""',
   ].join("\n");
 
-  const out = await chatJson<ExtractResult>(SYSTEM, user, SCHEMA, opts);
+  const out = await chatJson<ExtractResult>(extractSystemPrompt(extract), user, SCHEMA, opts);
 
   return (out.claims ?? [])
     .filter((c) => c.claim?.trim())

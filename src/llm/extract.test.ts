@@ -1,6 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { preprocess } from "./extract";
+import { extractSystemPrompt, preprocess } from "./extract";
+
+test("skips course-specific claims unless a course index is in use", () => {
+  assert.match(extractSystemPrompt(), /anything specific to a course or lecturer/);
+  assert.doesNotMatch(extractSystemPrompt({ courseClaims: true }), /specific to a course/);
+  assert.match(extractSystemPrompt({ courseClaims: true }), /course materials/);
+});
 
 test("removes frontmatter", () => {
   assert.equal(preprocess("---\ntags: history\n---\nParis is in France."), "Paris is in France.");

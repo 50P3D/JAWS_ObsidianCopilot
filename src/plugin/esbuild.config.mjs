@@ -7,7 +7,8 @@ mkdirSync(outdir, { recursive: true });
 await esbuild.build({
   entryPoints: ["src/plugin/main.ts"],
   bundle: true,
-  external: ["obsidian"],
+  // Obsidian supplies CodeMirror at runtime; a second bundled copy would break editor extensions
+  external: ["obsidian", "@codemirror/state", "@codemirror/view"],
   outfile: `${outdir}/main.js`,
   format: "cjs",
   target: "es2022",

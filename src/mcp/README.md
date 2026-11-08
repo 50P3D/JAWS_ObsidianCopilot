@@ -22,9 +22,9 @@ with verdicts, evidence links, and reliability scores.
 | **Ollama** with `nomic-embed-text` | Required by the `retrieve` tool for semantic search. Start with `ollama serve`, then `ollama pull nomic-embed-text`. |
 
 > [!NOTE]
-> The `fact_check` tool currently returns **mock data** (three hardcoded
-> example cards). It does **not** need Ollama. The `retrieve` tool calls the
-> real retrieval pipeline and **does** need Ollama for embedding modes.
+> The `fact_check` tool calls the **real** orchestrator pipeline
+> (`src/orchestrator/index.ts`). It needs Ollama running with the configured
+> LLM model and `nomic-embed-text` for embedding-based retrieval.
 
 ---
 
@@ -62,9 +62,9 @@ verdicts, evidence, and reliability scores.
 `src/contract/claimCard.ts`), containing an array of `ClaimCard` objects.
 
 > [!IMPORTANT]
-> This tool currently returns **mock data** from `src/mcp/mockPipeline.ts`.
-> It will be wired to the real orchestrator pipeline once `src/orchestrator/`
-> is ready.
+> This tool calls the **real** orchestrator pipeline via `factCheck()` from
+> `src/orchestrator/index.ts`. It needs Ollama running with the configured
+> LLM model and `nomic-embed-text` for embedding-based retrieval.
 
 ---
 
@@ -110,6 +110,14 @@ or `%APPDATA%\Claude\claude_desktop_config.json` on Windows):
 
 Replace `<path-to-repo>` with the absolute path to this repository.
 
+To check claims against course materials first (Wikipedia stays the fallback), add the folder as an environment variable. The server keeps its index in `<course-folder>/.notecheck-course-index.json`.
+
+```json
+"env": { "NOTECHECK_COURSE_DIR": "<path-to-course-folder>" }
+```
+
+With the Inspector: `npx @modelcontextprotocol/inspector -e NOTECHECK_COURSE_DIR=<path> npx tsx src/mcp/index.ts`.
+
 After saving, restart Claude Desktop. The `fact_check` and `retrieve` tools
 will appear in Claude's tool list.
 
@@ -134,11 +142,11 @@ and see the raw JSON response.
 | Component | Status | Notes |
 |---|---|---|
 | `retrieve` tool | ✅ **Live** | Calls `src/retrieval/retrieve.ts` directly. Needs Ollama. |
-| `fact_check` tool | 🔶 **Mock** | Returns hardcoded example cards from `mockPipeline.ts`. |
-| Orchestrator integration | ⬜ **Not started** | Will replace `mockFactCheck` once `src/orchestrator/` is built. |
-| Claim extraction | ⬜ **Not started** | Will be called by the orchestrator to split text into claims. |
-| Reliability scoring | ⬜ **Not started** | Will be called by the orchestrator per evidence passage. |
-| Verification (verdict) | ⬜ **Not started** | Will be called by the orchestrator to produce verdicts. |
+| `fact_check` tool | ✅ **Live** | Calls `factCheck()` from `src/orchestrator/index.ts`. |
+| Orchestrator integration | ✅ **Live** | `src/orchestrator/index.ts` exports `factCheck(req, opts)`. |
+| Claim extraction | ✅ **Live** | Called by the orchestrator to split text into claims. |
+| Reliability scoring | ✅ **Live** | Called by the orchestrator per evidence passage. |
+| Verification (verdict) | ✅ **Live** | Called by the orchestrator to produce verdicts. |
 
 ---
 
@@ -147,6 +155,6 @@ and see the raw JSON response.
 ```
 src/mcp/
 ├── index.ts          # Server entry point — registers tools, connects transport
-├── mockPipeline.ts   # Returns hardcoded example ClaimCards (placeholder)
+├── smoke.ts          # Automated smoke test (spawns server over stdio)
 └── README.md         # This file
 ```

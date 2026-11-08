@@ -1,0 +1,135 @@
+{
+  "run_id": "20261018-023022_no-rag_phi4-mini_dev",
+  "started_at": "2026-10-18T02:30:22.822Z",
+  "finished_at": "2026-10-18T02:30:42.275Z",
+  "git_commit": "5bbd176",
+  "system": {
+    "name": "no-rag",
+    "model": "phi4-mini",
+    "family": "phi",
+    "config": {
+      "prompt_version": "no-rag-v1",
+      "think": false,
+      "temperature": 0,
+      "seed": 201
+    }
+  },
+  "dataset": {
+    "path": "eval/datasets/fever-dev.jsonl",
+    "sha256": "ae4f0fbe0d1d060ab84eaa4c32b6ade80d02adf45465dc7530d907571bd70171",
+    "split": "dev",
+    "count": 10
+  },
+  "predictions": [
+    {
+      "id": "fever-222042",
+      "claim": "Brubaker is within the genre of prison drama.",
+      "gold": "Supported",
+      "source": "fever",
+      "predicted": "Supported",
+      "correct": true,
+      "ms": 2441,
+      "explanation": "Brubaker is a well-known prison drama film.",
+      "raw": "{\"verdict\": \"Supported\", \"explanation\": \"Brubaker is a well-known prison drama film.\"}"
+    },
+    {
+      "id": "fever-204331",
+      "claim": "The Cretaceous is a Paleogene extinction event.",
+      "gold": "Refuted",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 2107,
+      "explanation": "The Cretaceous is a Mesozoic extinction event, not Paleogene.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"The Cretaceous is a Mesozoic extinction event, not Paleogene.\"}"
+    },
+    {
+      "id": "fever-202447",
+      "claim": "Tinker Tailor Soldier Spy stars Jonah Hill.",
+      "gold": "Not Enough Info",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": false,
+      "ms": 1777,
+      "explanation": "Jonah Hill did not star in Tinker Tailor Soldier Spy.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Jonah Hill did not star in Tinker Tailor Soldier Spy.\"}"
+    },
+    {
+      "id": "fever-3794",
+      "claim": "The Fame has sold over 4.5 million copies.",
+      "gold": "Supported",
+      "source": "fever",
+      "predicted": "Supported",
+      "correct": true,
+      "ms": 1440,
+      "explanation": "Supported by known sales data for the album.",
+      "raw": "{\"verdict\": \"Supported\", \"explanation\": \"Supported by known sales data for the album.\"}"
+    },
+    {
+      "id": "fever-94603",
+      "claim": "Gal Gadot was ranked ahead of Bar Rafaeli for highest earning actress/models in Israel.",
+      "gold": "Refuted",
+      "source": "fever",
+      "predicted": "Not Enough Info",
+      "correct": false,
+      "ms": 2107,
+      "explanation": "Insufficient data on the specific rankings and earnings of Gal Gadot and Bar Rafaeli.",
+      "raw": "{\"verdict\": \"Not Enough Info\", \"explanation\": \"Insufficient data on the specific rankings and earnings of Gal Gadot and Bar Rafaeli.\"}"
+    },
+    {
+      "id": "fever-139938",
+      "claim": "Francis I of France was the first chimpanzee from the Angoulême branch.",
+      "gold": "Not Enough Info",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": false,
+      "ms": 1814,
+      "explanation": "Francis I was a chimpanzee, not a human.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Francis I was a chimpanzee, not a human.\"}"
+    },
+    {
+      "id": "fever-63949",
+      "claim": "Zoe Saldana is a dancer.",
+      "gold": "Supported",
+      "source": "fever",
+      "predicted": "Supported",
+      "correct": true,
+      "ms": 1989,
+      "explanation": "Zoe Saldana is known for her roles in acting, not primarily as a dancer.",
+      "raw": "{\"verdict\": \"Supported\", \"explanation\": \"Zoe Saldana is known for her roles in acting, not primarily as a dancer.\"}"
+    },
+    {
+      "id": "fever-182279",
+      "claim": "Saturn Corporation was established in April.",
+      "gold": "Refuted",
+      "source": "fever",
+      "predicted": "Not Enough Info",
+      "correct": false,
+      "ms": 1404,
+      "explanation": "The claim lacks a specific year.",
+      "raw": "{\"verdict\": \"Not Enough Info\", \"explanation\": \"The claim lacks a specific year.\"}"
+    },
+    {
+      "id": "fever-149708",
+      "claim": "In March of 2012, The Raven (2012 film) came out in a sovereign country in western Europe.",
+      "gold": "Not Enough Info",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": false,
+      "ms": 2331,
+      "explanation": "The Raven (2012 film) was released in the United States, not a sovereign country in western Europe.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"The Raven (2012 film) was released in the United States, not a sovereign country in western Europe.\"}"
+    },
+    {
+      "id": "fever-21228",
+      "claim": "There were 3,090,953 Mormon members in 1971.",
+      "gold": "Supported",
+      "source": "fever",
+      "predicted": "Supported",
+      "correct": true,
+      "ms": 2040,
+      "explanation": "The claim is consistent with historical records of the Church of Jesus Christ of Latter-day Saints.",
+      "raw": "{\"verdict\": \"Supported\", \"explanation\": \"The claim is consistent with historical records of the Church of Jesus Christ of Latter-day Saints.\"}"
+    }
+  ]
+}
