@@ -2,7 +2,7 @@
 
 This file describes what the ghost text feature must do, without code, so a second reviewer (human or AI from another model family) can check the code and the tests against it. If the code and this file disagree, one of them is wrong. Say which.
 
-Status: tests written first and failing on purpose. `src/plugin/ghostText.ts` is a stub until the tests exist and are reviewed.
+Status: tests written first, now passing (49/49). `ghostText.ts` is implemented; settings and `main.ts` wiring still to do.
 
 ## What the feature is
 
@@ -14,8 +14,8 @@ Out of scope: suggestions mid-word, multi-line suggestions, accepting one word a
 
 | File | Role | State |
 |---|---|---|
-| `src/plugin/ghostText.ts` | Pure helpers, the Ollama call and the editor extension. No Obsidian imports, so it can be unit tested | Stub |
-| `src/plugin/ghostText.test.ts` | Unit tests (`node:test`, `assert/strict`), run with `npm run test:ghost` | Written, red |
+| `src/plugin/ghostText.ts` | Pure helpers, the Ollama call and the editor extension. No Obsidian imports, so it can be unit tested | Implemented |
+| `src/plugin/ghostText.test.ts` | Unit tests (`node:test`, `assert/strict`), run with `npm run test:ghost` | Written, green (49/49) |
 | `src/plugin/GHOST-TEXT.md` | This file | Written |
 | `src/plugin/types.ts`, `settingsTab.ts`, `main.ts` | Settings and wiring (later step) | Not started |
 | `eval/ghost/` | Latency and usefulness measurement on 20 hand-picked sentences (later step, needs the `eval/` owner's agreement) | Not started |
