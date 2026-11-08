@@ -13,7 +13,8 @@ npx tsx eval/harness/run.ts --system no-rag               # qwen3.5:9b with no e
 npx tsx eval/harness/run.ts --system minicheck            # the app's Wikipedia retrieval (with query-rewrite retries) + Bespoke-MiniCheck
 npx tsx eval/harness/run.ts --system minicheck --retries 0   # single search, no rewrite model
 npx tsx eval/harness/tuneMinicheck.ts eval/results/<minicheck dev run>.json   # pick --nei-threshold, no model calls
-npx tsx eval/harness/run.ts --system pipeline             # the whole app: factCheck() from src/orchestrator/
+npx tsx eval/harness/run.ts --system pipeline --model qwen3.5:9b           # the whole app: factCheck() from src/orchestrator/
+npx tsx eval/harness/run.ts --system pipeline --model qwen3.5:9b --think   # same, with thinking on for the verifier
 npx tsx eval/harness/compare.ts eval/results/<a>.json eval/results/<b>.json
 npx tsc -p eval --noEmit                                  # typecheck the harness
 ```
@@ -136,6 +137,23 @@ Later (single search, before the rewrite retries were added): `minicheck` at thr
 
 `pipeline` with `qwen3.5:9b` as the only chat model (extraction, query rewrites, verifier; `nomic-embed-text` for retrieval): macro-F1 0.485 [0.396, 0.556], accuracy 58.0%, false-flag 11.8%, miss 0.0%, 1 invalid (extraction returned no claim for "Dakota Fanning models."), median latency 10.2 s. On Supported and Refuted only, macro-F1 0.886. It never answers NEI (14 of 16 gold NEI called Refuted). Against `no-rag`: +5.6 points [-3.1, +14.6], short of the +10 target. Report: `results/20261107-220641_pipeline_qwen3.5-9b_dev.md`.
 
+### Changes after that round (`PIPELINE_VERSION` 2, not yet run)
+
+Each change targets failures in that report. Every one changes the app, not just the eval.
+
+| Change | Where | Failure it targets |
+|---|---|---|
+| Missing is not false: a passage that never mentions the fact is NEI, and Refuted needs passage text that conflicts with the claim. Replaces "prefer Supported or Refuted based on the closest match" | `src/llm/verify.ts` | 14 of 16 gold NEI called Refuted, often with "the passages never mention..." |
+| Judge the claim as written, with a worked "not born in 1961" example | `src/llm/verify.ts` | "Tim Roth was not born on May 14th, 1961" |
+| `explanation` comes before `verdict` in the JSON schema, so the model says what the passages say before deciding | `src/llm/verify.ts` | Explanations that contradicted their own verdict |
+| `fallbackToText`: if extraction returns no claims for one short sentence, check the sentence as it is. On for the selection command and the eval, off for the live checker | `src/orchestrator/pipeline.ts`, `src/plugin/main.ts` | "Dakota Fanning models." came back with no card |
+| Search queries: titles with a bracket written in the claim ("Dreamer (2005 film)") and the subject before the main verb ("Dub music", "A View to a Kill") go first; sentence-start words like "There" are not names; "Apollo 11" keeps its number | `src/retrieval/query.ts` | Rub-a-dub-dub, Tommy Dreamer, The View, "Who Goes There?" |
+| `--think` turns on qwen3.x thinking for the verifier only (`verifierThink`) | `src/llm/ollama.ts`, `src/orchestrator/pipeline.ts` | Optional; try after the rest. Slower |
+
+Retrieval check, keyword mode, no Ollama: on 57 claims with known pages (34 FEVER dev with `evidence_pages`, the 20 in `src/retrieval/testdata/claims.json`, and 3 FEVER NEI claims whose article is obvious), a passage from an expected page came back for 43 before and 51 after, with none lost. Wikipedia rate-limits (HTTP 429) quick repeated runs, so pause between them. Retrieval feeds `minicheck` too, so rerun both before comparing them.
+
+Expected cost: more NEI answers trigger more query-rewrite retries, so `pipeline` will be slower than 10.2 s median.
+
 ## Reliability dev round (40 revisions, 0 errors)
 
 | System | Precision [95% CI] | Recall [95% CI] | F1 | Flag rate |
@@ -153,7 +171,7 @@ On dev the scorer's Low flag is in practice Lift Wing. Full reports: `results/20
 |---|---|---|
 | 1 | Verdict harness, FEVER dev/test, `no-rag` and `constant` baselines, first round on 50 claims | Done |
 | 1 | `minicheck` baseline | Single-search dev run done (macro-F1 0.497 at threshold 0.5). Now uses the app's retrieval with rewrite retries; dev run with retries pending |
-| 1 | `pipeline` adapter | Dev run done with `qwen3.5:9b` (macro-F1 0.485, +5.6 over `no-rag`) |
+| 1 | `pipeline` adapter | Dev run done with `qwen3.5:9b` (macro-F1 0.485, +5.6 over `no-rag`). Fixes for that round are in (`PIPELINE_VERSION` 2, below); dev rerun pending |
 | 2 | 50 claims from our own notes (`source: "notes"`) | Todo, needs the team's notes |
 | 2 | Spot check of Claude-generated claims (`source: "generated"`, `human_checked`) | Todo, after Aadhavan's `tools/claim-generator` |
 | 2 | Evidence-quality sheet for two raters, 50 sampled verdicts, with agreement (Cohen's kappa) | Todo |

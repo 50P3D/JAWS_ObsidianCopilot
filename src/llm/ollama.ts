@@ -3,6 +3,8 @@
 export interface LlmOptions{
 ollamaUrl?: string;
 model?: string;
+/** Let qwen3.x reason before answering. Slower. Off by default; the pipeline only turns it on for the verifier. */
+think?: boolean;
 }
 // The default Ollama URL and model can be overridden by environment variables
 const env = (globalThis as any).process?.env ?? {};
@@ -52,7 +54,9 @@ Promise<T> {
                 ],
                 format: schema,  // specify the expected output format/schema
                 stream: false, // we want the full response, not a stream
-                think: false, // qwen3.5 thinks before answering by default, which can leave the JSON answer empty
+                // qwen3.5 thinks before answering by default, which is slow; Ollama keeps the reasoning
+                // in message.thinking, so the JSON answer stays in message.content either way
+                think: opts.think ?? false,
                 options: { temperature: 0}, // deterministic output
                 keep_alive: "10m", // keep the model loaded in memory between calls, so later calls are fast
             }),
