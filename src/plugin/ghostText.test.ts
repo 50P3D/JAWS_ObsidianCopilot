@@ -393,6 +393,11 @@ test("cleanCompletion adds no space before closing punctuation but adds one befo
   assert.equal(cleanCompletion("(and more)", before), " (and more)");
 });
 
+test("cleanCompletion adds no space before a reply that starts with . ! or ?", () => {
+  const before = "Second normal form removes";
+  for (const p of [".", "!", "?"]) assert.equal(cleanCompletion(`${p}x more`, before), `${p}x more`, p);
+});
+
 test("cleanCompletion never adds a space to an empty note", () => {
   assert.equal(cleanCompletion("Hello there", ""), "Hello there");
 });

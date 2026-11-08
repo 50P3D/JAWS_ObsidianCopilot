@@ -2,7 +2,7 @@
 
 This file describes what the ghost text feature must do, without code, so a second reviewer (human or AI from another model family) can check the code and the tests against it. If the code and this file disagree, one of them is wrong. Say which.
 
-Status: tests written first, now passing (116/116). `ghostText.ts` is implemented; settings and `main.ts` wiring still to do.
+Status: tests written first, now passing (117/117). `ghostText.ts` is implemented; settings and `main.ts` wiring still to do.
 
 ## What the feature is
 
@@ -15,7 +15,7 @@ Out of scope: suggestions mid-word, multi-line suggestions, accepting one word a
 | File | Role | State |
 |---|---|---|
 | `src/plugin/ghostText.ts` | Pure helpers, the Ollama call and the editor extension. No Obsidian imports, so it can be unit tested | Implemented |
-| `src/plugin/ghostText.test.ts` | Unit tests (`node:test`, `assert/strict`), run with `npm run test:ghost` | Written, green (49/49) |
+| `src/plugin/ghostText.test.ts` | Unit tests (`node:test`, `assert/strict`), run with `npm run test:ghost` | Written, green (117/117) |
 | `src/plugin/GHOST-TEXT.md` | This file | Written |
 | `src/plugin/types.ts`, `settingsTab.ts`, `main.ts` | Settings and wiring (later step) | Not started |
 | `eval/ghost/` | Latency and usefulness measurement on 20 hand-picked sentences (later step, needs the `eval/` owner's agreement) | Not started |
@@ -111,7 +111,7 @@ One test file, in sections that match the functions above. Each test has one rea
 |---|---|---|
 | `shouldSuggest` | 29 | One test per rule 1 to 7, plus boundary cases (two words against three, list marker, text after a closed code block or frontmatter) |
 | `buildPrompt` | 13 | Last in prompt, length cap (default and custom), word-boundary cut, short instruction, frontmatter (open, closed, CRLF, empty, only at the top) |
-| `cleanCompletion` | 25 | One test per rule, plus decimal point and the repeated-words case |
+| `cleanCompletion` | 26 | One test per rule, plus decimal point and the repeated-words case |
 | `advanceSuggestion` | 5 | Match, mismatch and fully typed |
 | `fetchCompletion` | 18 | Request shape, cleaning, trailing slash, signal passed on, abort, pre-aborted, HTTP error, network error. Uses a fake `fetch`, so no Ollama is needed |
 | Editor state | 26 | Show, replace, ignore, accept, dismiss, type to advance, type to clear, cursor move, edit elsewhere, that the note text never changes until accept, replacing or deleting at the ghost, multi-letter typing, the Tab and Esc key bindings, and use on an editor without the extension |
@@ -138,8 +138,9 @@ Stryker on `ghostText.ts` only (command runner, `npx tsx --test src/plugin/ghost
 |---|---|---|---|---|---|
 | 1 (49 tests) | 412 | 279 | 132 | 1 | 67.96% |
 | 2 (103 tests) | 414 | 352 | 60 | 2 | 85.51% |
+| 3 (116 tests) | 414 | 358 | 54 | 2 | 86.96% |
 
-Round 2 then added tests for the survivors that could change behaviour (116 tests now): a pipe or dash that is not at the start of a line, inline `$$` pairs, closing-quote handling, frontmatter at the very end of the note, a failing error body, and options that must not disturb each other. Run 3 has not been done yet.
+Round 2 then added tests for the survivors that could change behaviour (116 tests now): a pipe or dash that is not at the start of a line, inline `$$` pairs, closing-quote handling, frontmatter at the very end of the note, a failing error body, and options that must not disturb each other. Run 3 (after the second round): the 54 survivors left are equivalent mutants or the grey widget markup, listed below. One more test (a reply that starts with `.`, `!` or `?`) was added after run 3, so the suite is now 117 tests.
 
 Survivors left on purpose:
 - Equivalent mutants that cannot change any output (for example `>` against `>=` at exactly `maxContextChars`, `Math.min` against `Math.max` when the note is short, `?? ""` on a value that is always defined, optional chaining on values that always exist).
