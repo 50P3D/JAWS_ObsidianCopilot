@@ -7,25 +7,29 @@
 import type { ClaimCard, Verdict } from "../contract/claimCard";
 import { chatJson, DEFAULT_MODEL, type LlmOptions } from "./ollama";
 
+// Missing is not false: on the FEVER dev set the old prompt ("prefer Supported or Refuted based
+// on the closest match") made qwen3.5:9b call 14 of 16 unverifiable claims Refuted, often while
+// writing that the passages "never mention" the fact. See eval/README.md.
 const SYSTEM = `You check one claim against evidence passages from Wikipedia or the student's course materials.
 
 Rules:
 - Use only the passages. Ignore anything you know from elsewhere.
-- Supported: a passage clearly says the claim is true. Different wording is fine.
-- Refuted: a passage clearly contradicts the claim, for example a different date, place or number.
-- Not Enough Info: the passages do not settle it either way. Only choose this when the evidence is truly irrelevant or missing.
-- If a passage partially addresses the claim (e.g., mentions the entity and topic but not the specific fact), prefer Supported or Refuted based on the closest match.
-- explanation: one or two plain sentences pointing to what the passage says.
+- Judge the claim exactly as written, including words like "not", "never", "only", "all" and "exactly". If the claim says "X was not born in 1961" and a passage says X was born in 1961, the claim is Refuted. If a passage says X was born in 1958, the claim is Supported.
+- Supported: a passage says the claim is true. Different wording is fine.
+- Refuted: a passage says something that cannot be true at the same time as the claim, for example a different date, place or number, or a different person in the same role.
+- Not Enough Info: the passages do not say whether the claim is true. A passage about the right subject that never mentions the specific fact is Not Enough Info, not Refuted. A fact being missing from the passages does not make the claim false.
+- explanation: write this first. One or two plain sentences: what the passages say about the claim, and for Refuted the passage text that conflicts with it. If no passage text conflicts with the claim, the verdict cannot be Refuted.
 - suggested_fix: only when Refuted, the claim rewritten to match the passage. Otherwise an empty string.`;
 
+// explanation comes before verdict, so the model states what the passages say before it decides
 const SCHEMA = {
   type: "object",
   properties: {
-    verdict: { type: "string", enum: ["Supported", "Refuted", "Not Enough Info"] },
     explanation: { type: "string" },
+    verdict: { type: "string", enum: ["Supported", "Refuted", "Not Enough Info"] },
     suggested_fix: { type: "string" },
   },
-  required: ["verdict", "explanation", "suggested_fix"],
+  required: ["explanation", "verdict", "suggested_fix"],
 };
 
 interface VerifyResult {

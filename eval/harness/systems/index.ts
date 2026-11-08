@@ -5,7 +5,7 @@
  *   no-rag             local model, no evidence             --model qwen3.5:9b --think
  *   minicheck          app's Wikipedia retrieval + Bespoke-MiniCheck
  *                      --retrieval-mode hybrid --top 3 --nei-threshold 0.5 --retries 3 --rewrite-model qwen3.5:9b
- *   pipeline           the whole app: factCheck() from src/orchestrator/
+ *   pipeline           the whole app: factCheck() from src/orchestrator/   --model qwen3.5:9b --think
  */
 
 import { flagBool, flagNumber } from "../cli";
@@ -37,7 +37,7 @@ export function createSystem(name: string, flags: Record<string, string>): Syste
       });
     }
     case "pipeline":
-      return pipelineSystem({ model: flags.model });
+      return pipelineSystem({ model: flags.model, think: flagBool(flags, "think") });
     default:
       throw new Error(`Unknown system "${name}". Choose one of: ${SYSTEM_NAMES.join(", ")}`);
   }

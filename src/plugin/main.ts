@@ -250,7 +250,8 @@ export default class NoteCheckPlugin extends Plugin {
 
       new Notice(`NoteCheck: Checking claims for "${request.note_title ?? "selection"}"...`);
 
-      const response = await factCheck(request, await this.pipelineOptions(notePath));
+      // the user selected exactly this text, so a short sentence is checked even if extraction drops it
+      const response = await factCheck(request, { ...(await this.pipelineOptions(notePath)), fallbackToText: true });
 
       // claim positions come back relative to the selection; make them positions in the note
       const cards = target
