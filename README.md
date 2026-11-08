@@ -6,7 +6,7 @@ NoteCheck is an Obsidian plugin that extracts the factual claims from text you s
 
 Built by team **JAWS** for SE201 (AI-Driven Software Engineering), SMU, AY2026-27 Term 1.
 
-> **Status:** in development for the 18 October checkpoint. See [Project status](#project-status) for what works today.
+> **Status:** past the 18 October checkpoint, now working on instructor feedback. See [Project status](#project-status) for what works today.
 
 ---
 
@@ -27,10 +27,22 @@ The non-AI alternative is keyword search against Wikipedia plus manual lookup, o
 ## Features
 
 1. **Fact-check on demand.** Select text and run the command. NoteCheck extracts atomic claims, retrieves Wikipedia passages and labels each claim `Supported`, `Refuted` or `Not Enough Info`, with the evidence and a link to the exact revision used.
-2. **Source reliability flags.** Each piece of evidence gets a `Low`, `Medium` or `High` badge with reasons, such as a recent unreviewed edit, a POV or Disputed tag or low citation coverage. Flags describe articles and revisions, never individual editors.
-3. **MCP server.** Exposes `fact_check` and retrieval as tools so Claude can review a verdict on request. The same interface runs our evaluation harness.
+2. **Check against your own course materials.** Point NoteCheck at a folder of lecture notes and readings. Claims are checked against that folder first, and Wikipedia is only used when the course does not cover a claim. Course-specific claims ("2NF removes partial dependencies") can now be checked too. A "course only" mode never contacts Wikipedia.
+3. **Live suggestions as you type.** With live checking on, every sentence you finish is checked in the background. A wrong claim gets a wavy underline, the wrong words are struck through and the fix appears next to them, like tracked changes: "signed in ~~1920~~ **1919**". Click it to see the evidence, then Accept or Dismiss.
+4. **Source reliability flags.** Each piece of Wikipedia evidence gets a `Low`, `Medium` or `High` badge with reasons, such as a recent unreviewed edit, a POV or Disputed tag or low citation coverage. Flags describe articles and revisions, never individual editors.
+5. **MCP server.** Exposes `fact_check` and retrieval as tools so Claude can review a verdict on request. The same interface runs our evaluation harness.
 
 Inline autocomplete (ghost text from a small local model) and an automated Claude judge are **stretch goals**, not part of the core scope.
+
+### Where the evidence comes from
+
+| Settings                                     | Claims are checked against                                                                                               |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| No course folder (default)                   | Wikipedia only                                                                                                           |
+| Course folder set                            | Your course folder first. Wikipedia when no course passage is close enough, or the course passages give Not Enough Info |
+| Course folder set and **Course materials only** on | Your course folder only. Claims the course does not cover come back Not Enough Info, and Wikipedia is never contacted |
+
+Course evidence shows "Course material" in the results and links to the heading in your note. It has no reliability badge, because the badge signals (edit history, maintenance tags) only exist for Wikipedia.
 
 ### Worked example
 
@@ -49,15 +61,15 @@ Here is what happens when you select a sentence and click check, step by step.
 1. **You highlight some text** in your note and run the NoteCheck command.
 2. **NoteCheck cleans the text.** It ignores things that are not claims, such as code, maths and the hidden settings at the top of a note.
 3. **It picks out the individual facts.** A sentence like "Einstein was born in 1879 in Ulm and won the Nobel Prize in 1921" becomes separate claims that can each be checked on their own.
-4. **It throws away what can't be checked.** Opinions, to-do reminders and things only your lecturer said can't be proven from Wikipedia, so they are skipped.
+4. **It throws away what can't be checked.** Opinions, to-do reminders and questions are skipped. Course-specific claims are skipped too, unless you have set a course materials folder that can check them.
 5. **It rewrites each claim so it makes sense alone.** "He was born in 1879" becomes "Albert Einstein was born in 1879", because the checker will not see the rest of your note.
-6. **It looks the claim up on Wikipedia.** It searches, picks the right article when a name has several meanings (Mercury the planet or the metal), cuts the article into small pieces and ranks which pieces are most useful.
+6. **It looks the claim up.** If you have set a course folder, it first searches your course notes, which were split into passages and indexed once when you set the folder. If they cover the claim, it skips to step 8. Otherwise it searches Wikipedia: it searches, picks the right article when a name has several meanings (Mercury the planet or the metal), cuts the article into small pieces and ranks which pieces are most useful.
 7. **It checks how much to trust that article.** It looks at warning banners, recent edits that nobody has reviewed and how often the page gets undone by other editors. This gives a High, Medium or Low badge with reasons.
 8. **The local AI reads the evidence and decides.** It compares the Wikipedia passage with your claim and answers Supported, Refuted or Not Enough Info. If your claim is wrong, it suggests a fix.
-9. **You see the result in a side panel.** Each claim shows the verdict, the exact passage, a link to the exact version of the Wikipedia page used and the trust badge.
+9. **You see the result in a side panel and in your note.** Each claim shows the verdict, the exact passage, a link to the exact version of the Wikipedia page (or your course note) used and the trust badge. Refuted claims are also marked in the note itself, with the suggested change ready to accept.
 10. **Optional second opinion.** If you choose to, Claude can look at a verdict through the MCP server and say whether it agrees. Nothing goes to Claude unless you set this up.
 
-Planned extra step: if the evidence is weak (the AI says Not Enough Info), NoteCheck rewrites its search and tries again, up to two more times, before giving up.
+If the Wikipedia evidence is weak (the AI says Not Enough Info), NoteCheck rewrites its search and tries again, up to three more times, before giving up.
 
 ---
 
@@ -190,11 +202,9 @@ The scorer is rule-based on purpose, so every badge can be explained and the cos
 
 ## Getting started
 
-> **TODO (team):** confirm the commands below once the plugin scaffold is committed. File and script names are placeholders.
-
 ### Prerequisites
 
-- [Obsidian](https://obsidian.md) with a test vault you do not mind experimenting in
+- [Obsidian](https://obsidian.md) 1.5 or newer (desktop), with a test vault you do not mind experimenting in
 - [Ollama](https://ollama.com) installed and running
 - Node.js 20 or newer
 - At least 16 GB RAM for `qwen3.5:9b`. Use `qwen3.5:4b` on 8 GB machines.
@@ -202,40 +212,178 @@ The scorer is rule-based on purpose, so every badge can be explained and the cos
 ### 1. Pull the models
 
 ```bash
-ollama pull qwen3.5:9b
-ollama pull qwen3.5:4b
-ollama pull nomic-embed-text
+ollama pull qwen3.5:9b        # or qwen3.5:4b on 8 GB machines
+ollama pull nomic-embed-text  # embeddings, for Wikipedia ranking and the course index
 ```
 
 ### 2. Build the plugin
 
 ```bash
-git clone <this-repo-url>
-cd notecheck
+git clone https://github.com/50P3D/JAWS_ObsidianCopilot.git
+cd JAWS_ObsidianCopilot
 npm install
 npm run build
 ```
 
+This writes `main.js`, `manifest.json` and `styles.css` to `dist/plugin/`.
+
 ### 3. Install into your vault
 
-Copy `main.js`, `manifest.json` and `styles.css` into `<your-vault>/.obsidian/plugins/notecheck/`, then enable **NoteCheck** under Settings, Community plugins.
+1. Create the folder `<your-vault>/.obsidian/plugins/notecheck/`.
+2. Copy the three files from `dist/plugin/` into it.
+3. In Obsidian, open **Settings → Community plugins**, turn off Restricted mode if asked, and enable **NoteCheck**.
+
+After every rebuild, copy the files again and either restart Obsidian or toggle NoteCheck off and on.
 
 ### 4. Configure
 
-In the plugin settings, set the Ollama URL (default `http://localhost:11434`), pick your model and set a contact string for the Wikimedia User-Agent header (Wikimedia requires one).
+Open **Settings → NoteCheck**:
 
-### 5. Run a check
+| Setting                      | What to enter                                                                                                    |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Ollama URL                   | `http://localhost:11434` unless you changed Ollama's port                                                        |
+| Model name                   | A model you have pulled, for example `qwen3.5:9b`. It must match `ollama list` exactly.                          |
+| Wikimedia User-Agent         | `NoteCheck/0.1 (your-email@example.com)`. Wikimedia asks every client for a contact.                             |
+| Enable live fact-checking    | On to get suggestions as you type (see below)                                                                   |
+| Live check debounce (ms)     | How long to wait after you stop typing. 1500 is a good start.                                                    |
+| Course materials folder      | Vault path of your course folder, for example `Courses/SE201`. Empty means Wikipedia only.                       |
+| Course materials only        | On to never contact Wikipedia                                                                                    |
 
-Select a sentence in any note, open the command palette and run **NoteCheck: Fact-check selection**. Results appear in the side panel.
+---
+
+## Using NoteCheck
+
+### Check a selection
+
+1. Select one or more sentences in a note.
+2. Open the command palette (`Ctrl/Cmd+P`) and run **NoteCheck: Fact-check selection**.
+3. The results panel opens on the right. Each claim shows its verdict, explanation, evidence (with a link to the Wikipedia revision or your course note) and, for Wikipedia evidence, a reliability badge.
+4. Refuted claims are also marked in the note itself (see the next section). **Apply fix** in the panel changes only the wrong words in your sentence.
+
+The magnifying-glass icon in the left ribbon reopens the results panel.
+
+### Live suggestions as you type
+
+Turn on **Enable live fact-checking**, then write as normal.
+
+- When you pause, NoteCheck checks the sentences you have **finished** in the current section. A sentence counts as finished when it ends in `.`, `!` or `?`. A bullet without a full stop counts once your cursor leaves its line. The sentence you are still typing is left alone.
+- A badge in the bottom right of the editor shows `NoteCheck: Checking 1 sentence…`, then the number of suggestions.
+- A wrong claim gets a **wavy red underline**. The wrong words are **struck through** and the suggested words appear **in green** right after them.
+- **Click** the underline or the green text to open a card with the explanation, the evidence passage and a link to its source. **Accept** applies the change. **Dismiss** hides it for good.
+- **Keyboard:** run **NoteCheck: Accept suggestion at cursor** with the cursor in the sentence. You can bind it to a hotkey under Settings → Hotkeys.
+- Sometimes the fix rewords the whole sentence and cannot be placed word by word. Then a small red **check** chip appears instead, and its card offers **Copy wording**.
+- Each sentence is checked once. Its result is remembered by its text, so earlier sentences are not checked again. If you edit a sentence, its suggestion disappears and the new wording is checked.
+
+Expect each new sentence to take roughly 10 to 60 seconds on a laptop with the 9B model, and less with the 4B model or course-only mode.
+
+### Check against your course materials
+
+1. Put your course materials in a vault folder as markdown, one file per lecture or reading. Headings help, because each passage is labelled with the heading above it.
+2. Set **Course materials folder** to that folder and click **Index now**, or run **NoteCheck: Index course materials**. The notice shows how many passages were indexed.
+3. Check notes as usual. Course evidence is marked "Course material", and its link jumps to the heading in your course note.
+
+The index updates itself before each check. Only files that changed since the last check are re-embedded. It is saved in the plugin folder (`.obsidian/plugins/notecheck/course-index.json`), not among your notes. The note being checked is always left out of the search, so a note in the course folder can never confirm itself.
+
+> Put the **source material** (slides, lecture notes from the lecturer, readings) in the course folder, not the notes you want checked. Otherwise NoteCheck checks your notes against themselves.
 
 ### MCP server (optional)
 
 ```bash
-# TODO: confirm path and script name
 npm run mcp
 ```
 
-Then add the server to Claude Desktop's MCP config so Claude can call `fact_check`. Nothing is sent to Claude unless you do this.
+Add the server to Claude Desktop's config (`%APPDATA%\Claude\claude_desktop_config.json` on Windows, `~/Library/Application Support/Claude/claude_desktop_config.json` on macOS). The `env` line is optional and adds course checking:
+
+```json
+{
+  "mcpServers": {
+    "notecheck": {
+      "command": "npx",
+      "args": ["tsx", "<path-to-repo>/src/mcp/index.ts"],
+      "env": { "NOTECHECK_COURSE_DIR": "<path-to-course-folder>" }
+    }
+  }
+}
+```
+
+Nothing is sent to Claude unless you do this. See [`src/mcp/README.md`](src/mcp/README.md) for details.
+
+---
+
+## Testing it yourself
+
+Work through these in order. Parts A and B run without Obsidian. Part C is the hands-on check in Obsidian.
+
+### A. Automated tests (no Ollama needed)
+
+```bash
+npm run typecheck          # no output means no type errors
+npm run test:plugin        # 21 tests: inline suggestions, word-level fixes, sentence splitting
+npm run test:course        # 11 tests: course chunking, indexing, search
+npm run test:llm           # 9 tests: note preprocessing, extraction prompt
+npm test                   # 28 tests: retrieval
+npm run test:reliability   # 53 tests
+npm run test:eval          # 27 tests
+```
+
+Every suite should end with `# fail 0`.
+
+### B. Pipeline smoke tests (needs Ollama)
+
+Start Ollama, then run the course smoke test. It indexes the sample course in [`src/course/testdata/sample-course/`](src/course/testdata/sample-course/) and checks three claims.
+
+```bash
+# bash / macOS / Linux
+OLLAMA_MODEL=qwen3.5:9b npm run smoke:course
+```
+
+```powershell
+# Windows PowerShell
+$env:OLLAMA_MODEL="qwen3.5:9b"; npm run smoke:course
+```
+
+Expected, give or take wording:
+
+| Claim                                              | Verdict   | Evidence                                  |
+| -------------------------------------------------- | --------- | ----------------------------------------- |
+| Second normal form removes transitive dependencies | Refuted   | course: Week 3 - Normalisation, § 3NF and § 2NF |
+| Read Committed prevents dirty reads                | Supported | course: Week 5 - Transactions             |
+| The Treaty of Versailles was signed in 1920        | Refuted   | wikipedia: Treaty of Versailles           |
+
+Run it a second time. The first line should say `0 file(s) embedded`, which shows unchanged files are not embedded again. `npm run smoke:pipeline` runs the Wikipedia-only pipeline. To try your own course folder, set `NOTECHECK_COURSE_DIR` to it.
+
+### C. Hands-on checks in Obsidian
+
+**Setup**
+
+1. Build and install the plugin (Getting started, steps 2 and 3) into a **test vault**.
+2. Copy the folder `src/course/testdata/sample-course` into the vault as `Courses/Databases`.
+3. In NoteCheck's settings, set the model, the Wikimedia User-Agent, **Course materials folder** = `Courses/Databases`, and turn on **Enable live fact-checking**.
+4. Open the developer console (`Ctrl+Shift+I` on Windows/Linux, `Cmd+Option+I` on macOS). NoteCheck logs lines starting with `[NoteCheck Live]` and `[NoteCheck course]`, which help when something looks wrong.
+5. Create a new note called `Test` **outside** the course folder.
+
+**Checks.** Type each sentence on its own line, then wait for the status badge to finish.
+
+| #  | Do this                                                                                                     | Expect                                                                                                                                                      |
+| -- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1  | Click **Index now** in settings                                                                             | Notice: "Course index has 10 passages"                                                                                                                       |
+| 2  | Type `The Treaty of Versailles was signed in 1920.`                                                          | Badge shows "Checking 1 sentence…", then the sentence is underlined, `1920` is struck through and a green `1919` appears                                     |
+| 3  | Type `The Eiffel Tower is in Berlin` and keep typing more words without a full stop                          | Nothing is checked yet. Type the full stop and pause: now it is checked                                                                                       |
+| 4  | Click the green `1919`                                                                                       | Card shows "Refuted by Wikipedia", `1920 → 1919`, the explanation, a passage and a link to the Wikipedia revision                                             |
+| 5  | Click **Accept**                                                                                             | Only `1920` changes to `1919`. The underline goes, and the sentence is not checked again (the badge does not show "Checking")                                 |
+| 6  | Type `Second normal form removes transitive dependencies.`                                                   | `Second` struck through, green `Third`. The card says "by your course notes", and its link opens *Week 3 - Normalisation* at the 3NF heading                  |
+| 7  | Under a heading `# Albert Einstein`, type `He was born in 1880 in Ulm.`                                      | Only `1880` → `1879` is suggested. Accepting keeps "He"                                                                                                       |
+| 8  | With a suggestion showing, type a new sentence **above** it                                                  | The suggestion stays on the same words                                                                                                                        |
+| 9  | Edit a word inside a suggested sentence                                                                      | That suggestion disappears, and the new wording is checked after the pause                                                                                    |
+| 10 | Open a suggestion card and click **Dismiss**, then type elsewhere in the section                             | The dismissed suggestion does not come back                                                                                                                   |
+| 11 | Put the cursor in a suggested sentence and run **NoteCheck: Accept suggestion at cursor**                     | Same result as clicking Accept                                                                                                                                |
+| 12 | Turn live checking off. Select `The Eiffel Tower is in Berlin.` and run **NoteCheck: Fact-check selection**   | The results panel lists the claim as Refuted with Wikipedia evidence, the same inline suggestion appears in the note, and **Apply fix** changes only the wrong word |
+| 13 | Turn on **Course materials only**, select `The Treaty of Versailles was signed in 1919.` and run **Fact-check selection** | The panel shows Not Enough Info: "Your course materials do not cover this claim". It is fast, because Wikipedia is not searched. Turn the setting off again afterwards |
+| 14 | Add a line to *Week 5 - Transactions*, then run a selection check                                            | Console shows `[NoteCheck course] indexed Courses/Databases/Week 5 - Transactions.md`, and no other file                                                      |
+| 15 | Inside `Courses/Databases`, create a note with `Read Committed prevents phantom reads.` and check it          | Refuted by *Week 5 - Transactions*, never Supported by the note itself                                                                                        |
+| 16 | Turn live checking back on, quit Ollama and type a new sentence                                               | Badge shows "Check failed" and Obsidian keeps working. Start Ollama again: after your next edit the sentence is checked                                         |
+
+If something fails, write down the test number, the console output and the model you used before you report it.
 
 ---
 
@@ -275,15 +423,25 @@ Retrieval choices (keyword, embeddings or hybrid) stay with Aadhavan, who should
 
 Checkpoint due **18 October 2026**.
 
-| Target                                                                                                  | State                                           |
-| ------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| Core feature: select text, extract claims, retrieve, show verdicts and revision links in the side panel | TODO                                            |
-| Reliability scorer: maintenance tags and recent-edit signals                                            | TODO                                            |
-| Lift Wing revert-risk call                                                                              | TODO (working or documented as stubbed)         |
-| MCP server exposing `fact_check`                                                                      | TODO                                            |
-| First evaluation round on 50 FEVER claims with failures documented                                      | TODO                                            |
-| Setup README and commits from every member                                                              | In progress                                     |
-| AI use disclosure log                                                                                   | See [`docs/ai-use-log.md`](docs/ai-use-log.md) |
+| Target                                                                                                  | State                                                  |
+| ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| Core feature: select text, extract claims, retrieve, show verdicts and revision links in the side panel | **Done** — plugin wired to real orchestrator    |
+| Reliability scorer: maintenance tags and recent-edit signals                                            | **Done** — merged into pipeline, 53 tests pass  |
+| Lift Wing revert-risk call                                                                              | **Done** — live, can be toggled off             |
+| MCP server exposing `fact_check`                                                                      | **Done** — wired to real pipeline               |
+| First evaluation round on 50 FEVER claims with failures documented                                      | **Done** — no-RAG baseline run (macro-F1 0.429) |
+| Setup README and commits from every member                                                              | **Done**                                         |
+| AI use disclosure log                                                                                   | See [`docs/ai-use-log.md`](docs/ai-use-log.md)        |
+
+**After the checkpoint (instructor feedback)**
+
+| Target                                                                | State                                                                                       |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| RAG over the user's course materials, with Wikipedia as fallback      | **Done** — `src/course/`, 11 tests, live smoke test passes. Score threshold not tuned yet |
+| Cache Wikipedia articles and passage embeddings between checks        | **Done** — 1 hour article cache, embedding cache                                          |
+| Live checking with inline, word-level suggestions                     | **Done** — 21 tests. Needs the hands-on checks in [Testing it yourself](#testing-it-yourself) |
+| Course RAG evaluation on our own notes, per model size                | Not started                                                                                 |
+| Prefix caching, multi-session, Ollama keep-alive settings             | Not started                                                                                 |
 
 Stubbed components will be listed here as they appear.
 
@@ -298,7 +456,8 @@ notecheck/
 │   ├── llm/             # Jonathan: claim extraction, verification prompts, model benchmarks
 │   ├── orchestrator/    # Jonathan: runs the steps in order, retries weak searches
 │   ├── reliability/     # Nathanael: trust badge scoring
-│   ├── plugin/          # Medapati: Obsidian UI, commands, results panel
+│   ├── course/          # Medapati (proposed): index and search the user's course materials
+│   ├── plugin/          # Medapati: Obsidian UI, commands, results panel, live suggestions
 │   ├── mcp/             # Medapati: MCP server
 │   └── contract/        # Shared: the claim card format and example cards (changes need all four approvals)
 ├── eval/                # Nathanael: harness, baselines, datasets, results

@@ -86,6 +86,23 @@
   font-size: 0.92em;
 }
 
+.notecheck-apply-fix-btn {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 4px 12px;
+  font-size: 0.85em;
+  border: 1px solid var(--interactive-accent);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--interactive-accent);
+  cursor: pointer;
+}
+
+.notecheck-apply-fix-btn:hover {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
 /* ─── Evidence section ─────────────────────────────────────────── */
 
 .notecheck-evidence-section {
@@ -125,6 +142,10 @@
 
 .notecheck-evidence-title {
   font-weight: 600;
+}
+
+.notecheck-evidence-source {
+  color: var(--text-accent);
 }
 
 .notecheck-evidence-score {
@@ -214,4 +235,155 @@
   text-align: center;
   padding: 24px 0;
   color: #ff1744;
+}
+
+/* ─── Inline suggestions (live and selection checks) ─────────────── */
+
+/* The refuted sentence: wavy underline, like a spell checker */
+.notecheck-live-refuted {
+  text-decoration: underline wavy var(--color-red);
+  text-decoration-skip-ink: none;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* Words the suggestion would remove */
+.notecheck-live-remove {
+  text-decoration: line-through;
+  text-decoration-color: var(--color-red);
+  color: var(--text-muted);
+}
+
+/* Words the suggestion would add, shown right after the removed ones */
+.notecheck-live-insert {
+  margin-left: 4px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: rgba(var(--color-green-rgb), 0.15);
+  color: var(--color-green);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.notecheck-live-insert:hover,
+.notecheck-live-chip:hover {
+  background: rgba(var(--color-green-rgb), 0.28);
+}
+
+/* Shown when the fix rewords the sentence and cannot be placed word by word */
+.notecheck-live-chip {
+  margin-left: 4px;
+  padding: 0 6px;
+  border-radius: 8px;
+  background: rgba(var(--color-red-rgb), 0.12);
+  color: var(--color-red);
+  font-size: 0.75em;
+  vertical-align: 1px;
+  cursor: pointer;
+}
+
+/* Popover with the explanation, evidence and Accept / Dismiss */
+.notecheck-live-popover {
+  position: fixed;
+  z-index: var(--layer-popover);
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 12px;
+  width: min(380px, calc(100vw - 16px));
+  box-shadow: var(--shadow-l);
+  font-size: 0.85em;
+  line-height: 1.5;
+  animation: notecheck-popover-in 0.15s ease-out;
+}
+
+.notecheck-live-popover-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.notecheck-live-popover-source {
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+
+.notecheck-live-popover-change {
+  margin-bottom: 6px;
+}
+
+.notecheck-live-popover-change del {
+  color: var(--color-red);
+}
+
+.notecheck-live-popover-change ins {
+  color: var(--color-green);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.notecheck-live-popover blockquote {
+  margin: 8px 0;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.notecheck-live-popover-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+@keyframes notecheck-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Live status indicator */
+.notecheck-live-status {
+  position: fixed;
+  bottom: 60px;
+  right: 16px;
+  z-index: 100;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.75em;
+  color: var(--text-muted);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  transition: opacity 0.3s ease;
+}
+
+.notecheck-live-status.checking {
+  color: var(--text-accent);
+  border-color: var(--interactive-accent);
+}
+
+.notecheck-live-status::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  vertical-align: middle;
+}
+
+.notecheck-live-status.checking::before {
+  background: var(--interactive-accent);
+  animation: notecheck-pulse 1s ease-in-out infinite;
+}
+
+@keyframes notecheck-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }

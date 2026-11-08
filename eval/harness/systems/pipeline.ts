@@ -1,10 +1,10 @@
 /**
  * The system under test: the real NoteCheck pipeline (Jonathan's orchestrator).
  *
- * STUBBED until src/orchestrator/ exists. The harness expects this export:
+ * The harness expects this export:
  *
  *   // src/orchestrator/index.ts
- *   export async function factCheck(req: FactCheckRequest): Promise<FactCheckResponse>
+ *   export async function factCheck(req: FactCheckRequest, opts?: PipelineOptions): Promise<FactCheckResponse>
  *
  * Types come from src/contract/claimCard.ts, so nothing new needs agreeing.
  * The module is loaded at run time, so the eval code type-checks before it lands.
@@ -15,13 +15,14 @@
  */
 
 import type { ClaimCard, FactCheckRequest, FactCheckResponse } from "../../../src/contract/claimCard";
+import type { PipelineOptions } from "../../../src/orchestrator/index";
 import { modelFamily } from "../ollama";
 import type { EvalItem, Verdict } from "../types";
 import type { System } from "./types";
 
 const ORCHESTRATOR = "../../../src/orchestrator/index";
 
-type FactCheck = (req: FactCheckRequest) => Promise<FactCheckResponse>;
+type FactCheck = (req: FactCheckRequest, opts?: PipelineOptions) => Promise<FactCheckResponse>;
 
 export function combineCards(cards: ClaimCard[]): Verdict | null {
   const verdicts = cards.map((c) => c.verdict).filter((v): v is Verdict => !!v);
@@ -54,7 +55,7 @@ export function pipelineSystem(opts: { model?: string } = {}): System {
     },
     async check(item: EvalItem) {
       if (!factCheck) throw new Error("pipeline.setup() was not run");
-      const res = await factCheck({ text: item.claim });
+      const res = await factCheck({ text: item.claim }, { model });
       const cards = res.cards ?? [];
       const models = [...new Set(cards.map((c) => c.model_used).filter(Boolean))];
       const stubbed = [...new Set(cards.flatMap((c) => c.stubbed ?? []))];

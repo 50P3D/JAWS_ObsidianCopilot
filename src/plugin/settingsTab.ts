@@ -7,7 +7,7 @@
  * Obsidian's `saveData` / `loadData` mechanism.
  */
 
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, Notice, PluginSettingTab, Setting } from "obsidian";
 import type NoteCheckPlugin from "./main.js";
 
 export class NoteCheckSettingTab extends PluginSettingTab {
@@ -88,6 +88,98 @@ export class NoteCheckSettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.enableClaudeReview)
           .onChange(async (value) => {
             this.plugin.settings.enableClaudeReview = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    // ── Live fact-checking toggle ────────────────────────────────
+    new Setting(containerEl)
+      .setName("Enable live fact-checking")
+      .setDesc(
+        "Automatically fact-check the current paragraph as you type. " +
+        "Results appear as inline highlights in the editor. " +
+        "Requires Ollama to be running."
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.enableLiveCheck)
+          .onChange(async (value) => {
+            this.plugin.settings.enableLiveCheck = value;
+            await this.plugin.saveSettings();
+            // Notify plugin to start/stop live checker
+            this.plugin.onLiveCheckSettingChange(value);
+          })
+      );
+
+    // ── Live check debounce ──────────────────────────────────────
+    new Setting(containerEl)
+      .setName("Live check debounce (ms)")
+      .setDesc(
+        "Wait this many milliseconds after typing stops before running a live check. " +
+        "Higher values reduce API calls but increase latency."
+      )
+      .addText((text) =>
+        text
+          .setPlaceholder("1500")
+          .setValue(String(this.plugin.settings.liveCheckDebounceMs))
+          .onChange(async (value) => {
+            const ms = parseInt(value, 10);
+            if (!isNaN(ms) && ms >= 200) {
+              this.plugin.settings.liveCheckDebounceMs = ms;
+              await this.plugin.saveSettings();
+            }
+          })
+      );
+
+    containerEl.createEl("h3", { text: "Course materials" });
+
+    // ── Course folder ────────────────────────────────────────────
+    new Setting(containerEl)
+      .setName("Course materials folder")
+      .setDesc(
+        "Vault folder with your lecture notes, slides (as markdown) and readings. " +
+        "Claims are checked against these first, and Wikipedia is only used when " +
+        "the course does not cover a claim. Leave empty to use Wikipedia only."
+      )
+      .addText((text) =>
+        text
+          .setPlaceholder("Courses/SE201")
+          .setValue(this.plugin.settings.courseFolder)
+          .onChange(async (value) => {
+            this.plugin.settings.courseFolder = value;
+            await this.plugin.saveSettings();
+          })
+      )
+      .addButton((btn) =>
+        btn.setButtonText("Index now").onClick(async () => {
+          if (!this.plugin.settings.courseFolder.trim()) {
+            new Notice("NoteCheck: Set a course materials folder first.");
+            return;
+          }
+          btn.setDisabled(true).setButtonText("Indexing…");
+          try {
+            const r = await this.plugin.syncCourseIndex();
+            new Notice(`NoteCheck: Course index has ${r.passages} passages.`);
+          } catch (err) {
+            new Notice(`NoteCheck: Indexing failed: ${err instanceof Error ? err.message : String(err)}`);
+          } finally {
+            btn.setDisabled(false).setButtonText("Index now");
+          }
+        })
+      );
+
+    // ── Course only ──────────────────────────────────────────────
+    new Setting(containerEl)
+      .setName("Course materials only")
+      .setDesc(
+        "Never search Wikipedia. Claims the course does not cover come back as Not Enough Info. " +
+        "Faster, and nothing leaves your machine."
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.courseOnly)
+          .onChange(async (value) => {
+            this.plugin.settings.courseOnly = value;
             await this.plugin.saveSettings();
           })
       );
