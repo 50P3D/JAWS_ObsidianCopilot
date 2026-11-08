@@ -2,7 +2,7 @@
 
 This file describes what the ghost text feature must do, without code, so a second reviewer (human or AI from another model family) can check the code and the tests against it. If the code and this file disagree, one of them is wrong. Say which.
 
-Status: tests written first, now passing (49/49). `ghostText.ts` is implemented; settings and `main.ts` wiring still to do.
+Status: tests written first, now passing (116/116). `ghostText.ts` is implemented; settings and `main.ts` wiring still to do.
 
 ## What the feature is
 
@@ -41,7 +41,7 @@ Returns true only when all of these hold:
 1. The feature is enabled.
 2. No live check is running (the same small machine runs both models).
 3. Nothing is selected.
-4. The rest of the line after the cursor is empty or only spaces.
+4. The rest of the line after the cursor is empty or only spaces and tabs.
 5. The text before the cursor ends with a space.
 6. The current line has at least `minWordsBefore` words, not counting a leading list marker such as `- `.
 7. The cursor is not in a heading, a fenced code block, frontmatter, a maths block or a table row.
@@ -60,10 +60,10 @@ Turns the model's raw reply into a safe suggestion, or an empty string. Rules, i
 2. Only the first line is kept.
 3. Wrapping quotes are removed.
 4. Chatty openers ("Sure", "Here is", "Here's" and similar) make the whole reply invalid, so the result is an empty string.
-5. If the reply starts by repeating the last words before the cursor (three or more), the repeated part is removed.
+5. If the reply starts by repeating the last words before the cursor (three or more, up to the last eight words), the repeated part is removed.
 6. The reply is cut after the first sentence end, where a full stop, `!` or `?` is followed by a space or the end of the text. A decimal point such as in `3.5` is not a sentence end.
 7. At most `maxWords` words are kept.
-8. Spacing: if the text before the cursor ends in whitespace, leading spaces are removed. If it does not, and the reply starts with a word, exactly one leading space is added. If the reply starts with closing punctuation (`,` `;` `:` `)` `]` `}` `%`), none is added. An opening bracket or a quote counts as a word start and gets the space.
+8. Spacing: if the text before the cursor ends in whitespace, leading spaces are removed. If it does not, and the reply starts with a word, exactly one leading space is added. If the reply starts with closing punctuation (`,` `;` `:` `)` `]` `}` `%` `.` `!` `?`), none is added. An opening bracket or a quote counts as a word start and gets the space.
 9. The result never contains a newline.
 
 ### `advanceSuggestion(suggestion, typed) -> string | null`
@@ -109,11 +109,11 @@ One test file, in sections that match the functions above. Each test has one rea
 
 | Section | Count | What it covers |
 |---|---|---|
-| `shouldSuggest` | 21 | One test per rule 1 to 7, plus boundary cases (two words against three, list marker, text after a closed code block or frontmatter) |
-| `buildPrompt` | 12 | Last in prompt, length cap (default and custom), word-boundary cut, short instruction, frontmatter (open, closed, CRLF, empty, only at the top) |
-| `cleanCompletion` | 23 | One test per rule, plus decimal point and the repeated-words case |
+| `shouldSuggest` | 29 | One test per rule 1 to 7, plus boundary cases (two words against three, list marker, text after a closed code block or frontmatter) |
+| `buildPrompt` | 13 | Last in prompt, length cap (default and custom), word-boundary cut, short instruction, frontmatter (open, closed, CRLF, empty, only at the top) |
+| `cleanCompletion` | 25 | One test per rule, plus decimal point and the repeated-words case |
 | `advanceSuggestion` | 5 | Match, mismatch and fully typed |
-| `fetchCompletion` | 17 | Request shape, cleaning, trailing slash, signal passed on, abort, pre-aborted, HTTP error, network error. Uses a fake `fetch`, so no Ollama is needed |
+| `fetchCompletion` | 18 | Request shape, cleaning, trailing slash, signal passed on, abort, pre-aborted, HTTP error, network error. Uses a fake `fetch`, so no Ollama is needed |
 | Editor state | 26 | Show, replace, ignore, accept, dismiss, type to advance, type to clear, cursor move, edit elsewhere, that the note text never changes until accept, replacing or deleting at the ghost, multi-letter typing, the Tab and Esc key bindings, and use on an editor without the extension |
 
 Not covered by unit tests, so check by hand in Obsidian: the grey styling, the Tab and Esc keys inside a real editor, and how it behaves next to the live fact-check suggestions.
@@ -132,4 +132,20 @@ The spec, the stub and the tests were written by Claude (Claude Code) and need o
 
 ## Mutation testing result and what changed
 
-First Stryker run on `ghostText.ts` (command runner, `npx tsx --test src/plugin/ghostText.test.ts`): 412 mutants, 279 killed, 132 survived, 1 timeout, score 67.96%. The first test round was then strengthened to cover the survivors that matter: the instruction around the prompt, the exact length cap, `maxWords` boundaries, every chatty opener, `!` and `?` sentence ends, list, heading, table and fence variants, CRLF, the token clamp, error paths in `fetchCompletion`, replace and delete edits at the ghost, and the Tab and Esc bindings. The grey widget markup (`toDOM`, class names) is still checked by hand in Obsidian, so those mutants are expected to survive. Re-run Stryker to get the new score.
+Stryker on `ghostText.ts` only (command runner, `npx tsx --test src/plugin/ghostText.test.ts`).
+
+| Run | Mutants | Killed | Survived | Timeout | Score |
+|---|---|---|---|---|---|
+| 1 (49 tests) | 412 | 279 | 132 | 1 | 67.96% |
+| 2 (103 tests) | 414 | 352 | 60 | 2 | 85.51% |
+
+Round 2 then added tests for the survivors that could change behaviour (116 tests now): a pipe or dash that is not at the start of a line, inline `$$` pairs, closing-quote handling, frontmatter at the very end of the note, a failing error body, and options that must not disturb each other. Run 3 has not been done yet.
+
+Survivors left on purpose:
+- Equivalent mutants that cannot change any output (for example `>` against `>=` at exactly `maxContextChars`, `Math.min` against `Math.max` when the note is short, `?? ""` on a value that is always defined, optional chaining on values that always exist).
+- The grey widget markup and decoration set (`toDOM`, class name, `aria-hidden`, `side`). These need a real DOM, so they are checked by hand in Obsidian.
+
+Decisions where the two reviewers disagreed or the spec was loose:
+- A first line such as `--- one two three` is not frontmatter, because frontmatter starts with a line that is only `---`. Code and spec stay as they are, and a test pins it.
+- A tab after the cursor counts as a space. The spec was changed to say so, and a test pins it.
+- The echo check looks at the last eight words only. The spec was changed to say so.

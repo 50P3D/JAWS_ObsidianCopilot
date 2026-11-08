@@ -43,8 +43,11 @@ test("shouldSuggest says no when text is selected", () => {
   assert.equal(ask({ hasSelection: true }), false);
 });
 
-test("shouldSuggest allows trailing spaces after the cursor but not words", () => {
+test("shouldSuggest allows trailing spaces after the cursor", () => {
   assert.equal(ask({ after: "  " }), true);
+});
+
+test("shouldSuggest says no when words follow the cursor on the line", () => {
   assert.equal(ask({ after: "more words" }), false);
 });
 
@@ -77,9 +80,29 @@ test("shouldSuggest skips frontmatter but not the note below it", () => {
   assert.equal(ask({ before: "---\ntags: databases\n---\n\nSecond normal form removes " }), true);
 });
 
-test("shouldSuggest skips maths blocks and table rows", () => {
+test("shouldSuggest skips maths blocks", () => {
   assert.equal(ask({ before: "$$\na + b + c " }), false);
+});
+
+test("shouldSuggest skips table rows", () => {
   assert.equal(ask({ before: "| a | b | c " }), false);
+});
+
+test("shouldSuggest allows a pipe that is not at the start of the line", () => {
+  assert.equal(ask({ before: "a | b | c d e " }), true);
+});
+
+test("shouldSuggest allows inline $$ pairs in a sentence but not a lone $$", () => {
+  assert.equal(ask({ before: "Write $$x + y$$ in a sentence like " }), true);
+  assert.equal(ask({ before: "It costs $$ here and more " }), false);
+});
+
+test("shouldSuggest does not read a first line that merely starts with --- as frontmatter", () => {
+  assert.equal(ask({ before: "--- one two three " }), true);
+});
+
+test("shouldSuggest does not count a dash in the middle of a line as a list marker", () => {
+  assert.equal(ask({ before: "Say - it " }), true);
 });
 
 test("shouldSuggest uses minWordsBefore from the options", () => {
@@ -134,9 +157,17 @@ test("shouldSuggest treats frontmatter with trailing spaces or CRLF line endings
   assert.equal(ask({ before: "```\r\ncode\r\n```\r\nSecond normal form removes " }), true);
 });
 
-test("shouldSuggest only needs a space, not a tab, before the cursor", () => {
+test("shouldSuggest needs a real space just before the cursor, not a tab", () => {
   assert.equal(ask({ before: "Second normal form removes\t" }), false);
+});
+
+test("shouldSuggest treats a tab after the cursor like a space", () => {
   assert.equal(ask({ after: "\t" }), true);
+});
+
+test("shouldSuggest keeps the default word minimum when only another option is given", () => {
+  assert.equal(shouldSuggest({ ...base, before: "Hello there " }, { maxWords: 5, maxContextChars: 10, maxTokens: 5 }), false);
+  assert.equal(shouldSuggest({ ...base, before: "Hello there again " }, { maxWords: 5 }), true);
 });
 
 // ── buildPrompt ────────────────────────────────────────────────────
@@ -151,8 +182,8 @@ test("buildPrompt keeps only the end of a long note", () => {
   const prompt = buildPrompt(before, { maxContextChars: 100 });
   assert.ok(!prompt.includes("START-MARKER"));
   assert.ok(prompt.endsWith("the final words are these "));
-  // the context is capped at 100 characters, and the instruction around it stays short
-  assert.ok(prompt.length < 100 + 300);
+  // the context is capped at 100 characters on top of the fixed instruction
+  assert.ok(prompt.length <= buildPrompt("").length + 100);
 });
 
 test("buildPrompt never starts the context in the middle of a word", () => {
@@ -198,7 +229,7 @@ test("buildPrompt keeps a word that starts exactly at the cut", () => {
 });
 
 test("buildPrompt trims spaces at the start of the cut context", () => {
-  assert.equal(buildPrompt("aaa  bbb ccc ", { maxContextChars: 9 }).slice(instructionOnly.length), "bbb ccc ");
+  assert.equal(buildPrompt("aaa  bbb ccc ", { maxContextChars: 10 }).slice(instructionOnly.length), "bbb ccc ");
 });
 
 test("buildPrompt leaves a short note whole", () => {
@@ -211,6 +242,10 @@ test("buildPrompt strips empty, CRLF and trailing-space frontmatter but only at 
   assert.equal(body("---\r\ntitle: x\r\n---\r\nHello there again "), "Hello there again ");
   assert.equal(body("---  \ntitle: x\n---  \nHello there again "), "Hello there again ");
   assert.equal(body("Intro text\n---\ntitle: x\n---\nHello there again "), "Intro text\n---\ntitle: x\n---\nHello there again ");
+});
+
+test("buildPrompt strips frontmatter that ends the note", () => {
+  assert.equal(buildPrompt("---\ntitle: x\n---").slice(instructionOnly.length), "");
 });
 
 test("buildPrompt does not strip frontmatter that never closes (ghost text is not requested there)", () => {
@@ -288,6 +323,10 @@ test("cleanCompletion removes single, smart and unclosed opening quotes", () => 
   assert.equal(cleanCompletion('"partial dependencies', BEFORE), "partial dependencies");
 });
 
+test("cleanCompletion only removes the closing quote at the very end", () => {
+  assert.equal(cleanCompletion('"say "hi" now"', BEFORE), 'say "hi" now');
+});
+
 test("cleanCompletion leaves quotes that are inside the reply", () => {
   assert.equal(cleanCompletion('partial "dependencies" here', BEFORE), 'partial "dependencies" here');
   assert.equal(cleanCompletion('the "A" and "B"', BEFORE), 'the "A" and "B"');
@@ -339,6 +378,11 @@ test("cleanCompletion keeps exactly maxWords words and uses 12 by default", () =
   assert.equal(cleanCompletion("one two three four five six", BEFORE, { maxWords: 5 }), "one two three four five");
   const fifteen = "w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12 w13 w14 w15";
   assert.equal(cleanCompletion(fifteen, BEFORE), "w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12");
+});
+
+test("cleanCompletion keeps the default word limit when only another option is given", () => {
+  const fifteen = "w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12 w13 w14 w15";
+  assert.equal(cleanCompletion(fifteen, BEFORE, { minWordsBefore: 1, maxTokens: 5 }).split(" ").length, 12);
 });
 
 test("cleanCompletion adds no space before closing punctuation but adds one before an opening bracket", () => {
@@ -504,6 +548,12 @@ test("fetchCompletion throws a clear error when the reply is not JSON", async ()
   await assert.rejects(fetchCompletion({ ...args, fetchFn: fn }), /could not be read/);
 });
 
+test("fetchCompletion still reports the status when the error body cannot be read", async () => {
+  const res = { ok: false, status: 503, text: async () => { throw new Error("body failed"); } } as unknown as Response;
+  const { fn } = fakeFetch(() => res);
+  await assert.rejects(fetchCompletion({ ...args, fetchFn: fn }), /503/);
+});
+
 test("fetchCompletion returns an empty string when the reply has no response field", async () => {
   const { fn } = fakeFetch(() => new Response("{}", { status: 200 }));
   assert.equal(await fetchCompletion({ ...args, fetchFn: fn }), "");
@@ -550,13 +600,16 @@ test("the suggestion is not part of the note", () => {
   assert.equal(view.state.doc.toString(), DOC);
 });
 
-test("showGhost ignores empty text and selections", () => {
-  const empty = fakeView(DOC);
-  showGhost(empty, "");
-  assert.equal(currentGhost(empty), null);
-  const selected = fakeView(DOC, 0, 6);
-  showGhost(selected, GHOST);
-  assert.equal(currentGhost(selected), null);
+test("showGhost ignores empty text", () => {
+  const view = fakeView(DOC);
+  showGhost(view, "");
+  assert.equal(currentGhost(view), null);
+});
+
+test("showGhost ignores a request while text is selected", () => {
+  const view = fakeView(DOC, 0, 6);
+  showGhost(view, GHOST);
+  assert.equal(currentGhost(view), null);
 });
 
 test("a new suggestion replaces the old one", () => {
