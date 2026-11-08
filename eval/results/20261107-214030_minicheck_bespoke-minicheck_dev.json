@@ -1,0 +1,1575 @@
+{
+  "run_id": "20261107-214030_minicheck_bespoke-minicheck_dev",
+  "started_at": "2026-11-07T21:40:30.900Z",
+  "finished_at": "2026-11-07T21:42:48.401Z",
+  "git_commit": "0a72f74",
+  "system": {
+    "name": "minicheck",
+    "model": "bespoke-minicheck",
+    "family": "bespoke-minicheck",
+    "config": {
+      "retrieval_mode": "hybrid",
+      "top": 3,
+      "nei_threshold": 0.5,
+      "temperature": 0
+    }
+  },
+  "dataset": {
+    "path": "eval/datasets/fever-dev.jsonl",
+    "sha256": "ae4f0fbe0d1d060ab84eaa4c32b6ade80d02adf45465dc7530d907571bd70171",
+    "split": "dev",
+    "count": 50
+  },
+  "predictions": [
+    {
+      "id": "fever-222042",
+      "claim": "Brubaker is within the genre of prison drama.",
+      "gold": "Supported",
+      "source": "fever",
+      "predicted": "Supported",
+      "correct": true,
+      "ms": 3821,
+      "raw": "Yes",
+      "evidence": [
+        {
+          "page_title": "Brubaker",
+          "revision_id": 1377134826,
+          "retrieval_score": 0.839
+        },
+        {
+          "page_title": "Brubaker",
+          "revision_id": 1377134826,
+          "retrieval_score": 0.728
+        },
+        {
+          "page_title": "Brubaker",
+          "revision_id": 1377134826,
+          "retrieval_score": 0.723
+        }
+      ],
+      "extra": {
+        "yes": true,
+        "best_score": 0.839
+      }
+    },
+    {
+      "id": "fever-204331",
+      "claim": "The Cretaceous is a Paleogene extinction event.",
+      "gold": "Refuted",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 2581,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Cretaceous",
+          "revision_id": 1383605539,
+          "retrieval_score": 0.964
+        },
+        {
+          "page_title": "Late Cretaceous",
+          "revision_id": 1376893493,
+          "retrieval_score": 0.945
+        },
+        {
+          "page_title": "Cretaceous–Paleogene extinction event",
+          "revision_id": 1383221065,
+          "retrieval_score": 0.943
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.964
+      }
+    },
+    {
+      "id": "fever-202447",
+      "claim": "Tinker Tailor Soldier Spy stars Jonah Hill.",
+      "gold": "Not Enough Info",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": false,
+      "ms": 3598,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Tinker Tailor Soldier Spy",
+          "revision_id": 1384230527,
+          "retrieval_score": 0.782
+        },
+        {
+          "page_title": "Tinker Tailor Soldier Spy",
+          "revision_id": 1384230527,
+          "retrieval_score": 0.711
+        },
+        {
+          "page_title": "Tinker Tailor Soldier Spy",
+          "revision_id": 1384230527,
+          "retrieval_score": 0.71
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.782
+      }
+    },
+    {
+      "id": "fever-3794",
+      "claim": "The Fame has sold over 4.5 million copies.",
+      "gold": "Supported",
+      "source": "fever",
+      "predicted": "Supported",
+      "correct": true,
+      "ms": 2580,
+      "raw": "Yes",
+      "evidence": [
+        {
+          "page_title": "The Fame",
+          "revision_id": 1380121150,
+          "retrieval_score": 0.843
+        },
+        {
+          "page_title": "The Fame",
+          "revision_id": 1380121150,
+          "retrieval_score": 0.807
+        },
+        {
+          "page_title": "The Fame",
+          "revision_id": 1380121150,
+          "retrieval_score": 0.801
+        }
+      ],
+      "extra": {
+        "yes": true,
+        "best_score": 0.843
+      }
+    },
+    {
+      "id": "fever-94603",
+      "claim": "Gal Gadot was ranked ahead of Bar Rafaeli for highest earning actress/models in Israel.",
+      "gold": "Refuted",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 2586,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Gal Gadot",
+          "revision_id": 1384354776,
+          "retrieval_score": 0.839
+        },
+        {
+          "page_title": "Gal Gadot",
+          "revision_id": 1384354776,
+          "retrieval_score": 0.788
+        },
+        {
+          "page_title": "Gal Gadot",
+          "revision_id": 1384354776,
+          "retrieval_score": 0.76
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.839
+      }
+    },
+    {
+      "id": "fever-139938",
+      "claim": "Francis I of France was the first chimpanzee from the Angoulême branch.",
+      "gold": "Not Enough Info",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": false,
+      "ms": 2417,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Francis I of France",
+          "revision_id": 1384237209,
+          "retrieval_score": 0.865
+        },
+        {
+          "page_title": "Francis I of France",
+          "revision_id": 1384237209,
+          "retrieval_score": 0.757
+        },
+        {
+          "page_title": "Francis I of France",
+          "revision_id": 1384237209,
+          "retrieval_score": 0.75
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.865
+      }
+    },
+    {
+      "id": "fever-63949",
+      "claim": "Zoe Saldana is a dancer.",
+      "gold": "Supported",
+      "source": "fever",
+      "predicted": "Supported",
+      "correct": true,
+      "ms": 6384,
+      "raw": "Yes",
+      "evidence": [
+        {
+          "page_title": "Zoe Saldaña",
+          "revision_id": 1383093344,
+          "retrieval_score": 0.785
+        },
+        {
+          "page_title": "Emilia Pérez",
+          "revision_id": 1382267888,
+          "retrieval_score": 0.727
+        },
+        {
+          "page_title": "Emilia Pérez",
+          "revision_id": 1382267888,
+          "retrieval_score": 0.724
+        }
+      ],
+      "extra": {
+        "yes": true,
+        "best_score": 0.785
+      }
+    },
+    {
+      "id": "fever-182279",
+      "claim": "Saturn Corporation was established in April.",
+      "gold": "Refuted",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 2448,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Saturn Corporation",
+          "revision_id": 1379758919,
+          "retrieval_score": 0.891
+        },
+        {
+          "page_title": "Saturn Corporation",
+          "revision_id": 1379758919,
+          "retrieval_score": 0.793
+        },
+        {
+          "page_title": "Saturn Corporation",
+          "revision_id": 1379758919,
+          "retrieval_score": 0.764
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.891
+      }
+    },
+    {
+      "id": "fever-149708",
+      "claim": "In March of 2012, The Raven (2012 film) came out in a sovereign country in western Europe.",
+      "gold": "Not Enough Info",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": false,
+      "ms": 2394,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "March",
+          "revision_id": 1380210129,
+          "retrieval_score": 0.574
+        },
+        {
+          "page_title": "March and March",
+          "revision_id": 1383400809,
+          "retrieval_score": 0.544
+        },
+        {
+          "page_title": "March",
+          "revision_id": 1380210129,
+          "retrieval_score": 0.521
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.574
+      }
+    },
+    {
+      "id": "fever-21228",
+      "claim": "There were 3,090,953 Mormon members in 1971.",
+      "gold": "Supported",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": false,
+      "ms": 2199,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Who Goes There?",
+          "revision_id": 1384225133,
+          "retrieval_score": 0.529
+        },
+        {
+          "page_title": "Hey There Delilah",
+          "revision_id": 1383080580,
+          "retrieval_score": 0.496
+        },
+        {
+          "page_title": "Who Goes There?",
+          "revision_id": 1384225133,
+          "retrieval_score": 0.493
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.529
+      }
+    },
+    {
+      "id": "fever-173495",
+      "claim": "Sancho Panza is a fictional character in a novel written by an Australian writer born in 1616.",
+      "gold": "Refuted",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 2353,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Sancho Panza",
+          "revision_id": 1379920596,
+          "retrieval_score": 0.828
+        },
+        {
+          "page_title": "Sancho Panza",
+          "revision_id": 1379920596,
+          "retrieval_score": 0.701
+        },
+        {
+          "page_title": "Sancho Panza",
+          "revision_id": 1379920596,
+          "retrieval_score": 0.685
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.828
+      }
+    },
+    {
+      "id": "fever-140686",
+      "claim": "Qui-Gon Jinn is portrayed by Johnny Depp.",
+      "gold": "Not Enough Info",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": false,
+      "ms": 2904,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Qui-Gon Jinn",
+          "revision_id": 1377419934,
+          "retrieval_score": 0.799
+        },
+        {
+          "page_title": "Qui-Gon Jinn",
+          "revision_id": 1377419934,
+          "retrieval_score": 0.728
+        },
+        {
+          "page_title": "List of Star Wars prequel trilogy characters",
+          "revision_id": 1383147594,
+          "retrieval_score": 0.727
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.799
+      }
+    },
+    {
+      "id": "fever-174878",
+      "claim": "In a constitutional federal republic, the Alfred P. Murrah Federal Building was located.",
+      "gold": "Supported",
+      "source": "fever",
+      "predicted": "Supported",
+      "correct": true,
+      "ms": 2535,
+      "raw": "Yes",
+      "evidence": [
+        {
+          "page_title": "Alfred P. Murrah Federal Building",
+          "revision_id": 1380264142,
+          "retrieval_score": 0.772
+        },
+        {
+          "page_title": "Alfred P. Murrah",
+          "revision_id": 1358107782,
+          "retrieval_score": 0.729
+        },
+        {
+          "page_title": "Oklahoma City bombing",
+          "revision_id": 1383658199,
+          "retrieval_score": 0.724
+        }
+      ],
+      "extra": {
+        "yes": true,
+        "best_score": 0.772
+      }
+    },
+    {
+      "id": "fever-141812",
+      "claim": "The Hunger Games are based on a play.",
+      "gold": "Refuted",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 2466,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "The Hunger Games",
+          "revision_id": 1382949951,
+          "retrieval_score": 0.874
+        },
+        {
+          "page_title": "The Hunger Games (film)",
+          "revision_id": 1384017697,
+          "retrieval_score": 0.831
+        },
+        {
+          "page_title": "The Hunger Games (film)",
+          "revision_id": 1384017697,
+          "retrieval_score": 0.786
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.874
+      }
+    },
+    {
+      "id": "fever-111170",
+      "claim": "One of the founders of San Diego Comic-Con was Chevron.",
+      "gold": "Not Enough Info",
+      "source": "fever",
+      "predicted": "Not Enough Info",
+      "correct": true,
+      "ms": 1536,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "1",
+          "revision_id": 1379535523,
+          "retrieval_score": 0.385
+        },
+        {
+          "page_title": "1",
+          "revision_id": 1379535523,
+          "retrieval_score": 0.365
+        },
+        {
+          "page_title": "1",
+          "revision_id": 1379535523,
+          "retrieval_score": 0.358
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.385
+      }
+    },
+    {
+      "id": "fever-52278",
+      "claim": "Folklore includes jokes.",
+      "gold": "Supported",
+      "source": "fever",
+      "predicted": "Supported",
+      "correct": true,
+      "ms": 2114,
+      "raw": "Yes",
+      "evidence": [
+        {
+          "page_title": "Folklore",
+          "revision_id": 1381887369,
+          "retrieval_score": 0.92
+        },
+        {
+          "page_title": "Folklore",
+          "revision_id": 1381887369,
+          "retrieval_score": 0.789
+        },
+        {
+          "page_title": "Folklore",
+          "revision_id": 1381887369,
+          "retrieval_score": 0.783
+        }
+      ],
+      "extra": {
+        "yes": true,
+        "best_score": 0.92
+      }
+    },
+    {
+      "id": "fever-32970",
+      "claim": "Tremont Street Subway is a bridge.",
+      "gold": "Refuted",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 2611,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Tremont Street subway",
+          "revision_id": 1382025054,
+          "retrieval_score": 0.862
+        },
+        {
+          "page_title": "Tremont Street subway",
+          "revision_id": 1382025054,
+          "retrieval_score": 0.86
+        },
+        {
+          "page_title": "Tremont Street subway",
+          "revision_id": 1382025054,
+          "retrieval_score": 0.83
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.862
+      }
+    },
+    {
+      "id": "fever-72474",
+      "claim": "Muscarinic acetylcholine receptors form biological units.",
+      "gold": "Not Enough Info",
+      "source": "fever",
+      "predicted": "Supported",
+      "correct": false,
+      "ms": 2489,
+      "raw": "Yes",
+      "evidence": [
+        {
+          "page_title": "Muscarinic acetylcholine receptor",
+          "revision_id": 1378715158,
+          "retrieval_score": 0.798
+        },
+        {
+          "page_title": "Muscarinic acetylcholine receptor",
+          "revision_id": 1378715158,
+          "retrieval_score": 0.793
+        },
+        {
+          "page_title": "Muscarinic acetylcholine receptor",
+          "revision_id": 1378715158,
+          "retrieval_score": 0.778
+        }
+      ],
+      "extra": {
+        "yes": true,
+        "best_score": 0.798
+      }
+    },
+    {
+      "id": "fever-111719",
+      "claim": "Dakota Fanning models.",
+      "gold": "Supported",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": false,
+      "ms": 6144,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Dakota Fanning",
+          "revision_id": 1383395631,
+          "retrieval_score": 0.798
+        },
+        {
+          "page_title": "Elle Fanning",
+          "revision_id": 1383744901,
+          "retrieval_score": 0.773
+        },
+        {
+          "page_title": "Dakota Fanning",
+          "revision_id": 1383395631,
+          "retrieval_score": 0.771
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.798
+      }
+    },
+    {
+      "id": "fever-73121",
+      "claim": "Shortness of breath is not one symptom of pulmonary embolism.",
+      "gold": "Refuted",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 2288,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Shortness of breath",
+          "revision_id": 1381505440,
+          "retrieval_score": 0.827
+        },
+        {
+          "page_title": "Shortness of breath",
+          "revision_id": 1381505440,
+          "retrieval_score": 0.79
+        },
+        {
+          "page_title": "Shortness of breath",
+          "revision_id": 1381505440,
+          "retrieval_score": 0.762
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.827
+      }
+    },
+    {
+      "id": "fever-117478",
+      "claim": "Juventus F.C. began wearing a gold-and-blue home uniform in 1968.",
+      "gold": "Not Enough Info",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": false,
+      "ms": 5840,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Juventus FC",
+          "revision_id": 1384289838,
+          "retrieval_score": 0.7
+        },
+        {
+          "page_title": "Juventus FC",
+          "revision_id": 1384289838,
+          "retrieval_score": 0.684
+        },
+        {
+          "page_title": "Juventus FC",
+          "revision_id": 1384289838,
+          "retrieval_score": 0.671
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.7
+      }
+    },
+    {
+      "id": "fever-169915",
+      "claim": "Japan national football team is one of the most successful teams in Asia.",
+      "gold": "Supported",
+      "source": "fever",
+      "predicted": "Supported",
+      "correct": true,
+      "ms": 2358,
+      "raw": "Yes",
+      "evidence": [
+        {
+          "page_title": "Japan",
+          "revision_id": 1383768415,
+          "retrieval_score": 0.905
+        },
+        {
+          "page_title": "Japan",
+          "revision_id": 1383768415,
+          "retrieval_score": 0.774
+        },
+        {
+          "page_title": "Japan",
+          "revision_id": 1383768415,
+          "retrieval_score": 0.715
+        }
+      ],
+      "extra": {
+        "yes": true,
+        "best_score": 0.905
+      }
+    },
+    {
+      "id": "fever-10052",
+      "claim": "Stomp the Yard is a clothing brand.",
+      "gold": "Refuted",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 1946,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Stomp the Yard",
+          "revision_id": 1372440639,
+          "retrieval_score": 0.795
+        },
+        {
+          "page_title": "Stomp the Yard",
+          "revision_id": 1372440639,
+          "retrieval_score": 0.766
+        },
+        {
+          "page_title": "Stomp the Yard",
+          "revision_id": 1372440639,
+          "retrieval_score": 0.751
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.795
+      }
+    },
+    {
+      "id": "fever-215229",
+      "claim": "Dreamer (2005 film) is a Canadian drama film.",
+      "gold": "Not Enough Info",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": false,
+      "ms": 3044,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Tommy Dreamer",
+          "revision_id": 1382124358,
+          "retrieval_score": 0.7
+        },
+        {
+          "page_title": "Tommy Dreamer",
+          "revision_id": 1382124358,
+          "retrieval_score": 0.623
+        },
+        {
+          "page_title": "Tommy Dreamer",
+          "revision_id": 1382124358,
+          "retrieval_score": 0.616
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.7
+      }
+    },
+    {
+      "id": "fever-177186",
+      "claim": "Dub music is a genre of music that grew out of reggae.",
+      "gold": "Supported",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": false,
+      "ms": 1883,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Rub-a-dub-dub",
+          "revision_id": 1382887237,
+          "retrieval_score": 0.628
+        },
+        {
+          "page_title": "Rub-a-dub-dub",
+          "revision_id": 1382887237,
+          "retrieval_score": 0.621
+        },
+        {
+          "page_title": "Dubbing",
+          "revision_id": 1384262362,
+          "retrieval_score": 0.565
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.628
+      }
+    },
+    {
+      "id": "fever-110571",
+      "claim": "Dev Patel starred in Chappie, an animated movie.",
+      "gold": "Refuted",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 2911,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Dev Patel",
+          "revision_id": 1383284396,
+          "retrieval_score": 0.868
+        },
+        {
+          "page_title": "Dev Patel",
+          "revision_id": 1383284396,
+          "retrieval_score": 0.803
+        },
+        {
+          "page_title": "Dev Patel",
+          "revision_id": 1383284396,
+          "retrieval_score": 0.742
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.868
+      }
+    },
+    {
+      "id": "fever-106173",
+      "claim": "James Spader starred in Twilight.",
+      "gold": "Not Enough Info",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": false,
+      "ms": 1982,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "James Spader",
+          "revision_id": 1384159714,
+          "retrieval_score": 0.853
+        },
+        {
+          "page_title": "James Spader",
+          "revision_id": 1384159714,
+          "retrieval_score": 0.823
+        },
+        {
+          "page_title": "James Spader",
+          "revision_id": 1384159714,
+          "retrieval_score": 0.819
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.853
+      }
+    },
+    {
+      "id": "fever-11554",
+      "claim": "Pharrell Williams plays an instrument.",
+      "gold": "Supported",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": false,
+      "ms": 3522,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Pharrell Williams",
+          "revision_id": 1384142267,
+          "retrieval_score": 0.785
+        },
+        {
+          "page_title": "Pharrell Williams",
+          "revision_id": 1384142267,
+          "retrieval_score": 0.756
+        },
+        {
+          "page_title": "Pharrell Williams",
+          "revision_id": 1384142267,
+          "retrieval_score": 0.747
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.785
+      }
+    },
+    {
+      "id": "fever-63527",
+      "claim": "The 100 is a music video following a group of teens.",
+      "gold": "Refuted",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 3045,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "The Fox (What Does the Fox Say?)",
+          "revision_id": 1383609855,
+          "retrieval_score": 0.64
+        },
+        {
+          "page_title": "The Fox (What Does the Fox Say?)",
+          "revision_id": 1383609855,
+          "retrieval_score": 0.627
+        },
+        {
+          "page_title": "Super Trouper (song)",
+          "revision_id": 1379606637,
+          "retrieval_score": 0.608
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.64
+      }
+    },
+    {
+      "id": "fever-179006",
+      "claim": "Steve Ditko was a comic cartoonist.",
+      "gold": "Not Enough Info",
+      "source": "fever",
+      "predicted": "Supported",
+      "correct": false,
+      "ms": 4078,
+      "raw": "Yes",
+      "evidence": [
+        {
+          "page_title": "Steve Ditko",
+          "revision_id": 1383841711,
+          "retrieval_score": 0.845
+        },
+        {
+          "page_title": "Steve Ditko",
+          "revision_id": 1383841711,
+          "retrieval_score": 0.837
+        },
+        {
+          "page_title": "Steve Ditko",
+          "revision_id": 1383841711,
+          "retrieval_score": 0.831
+        }
+      ],
+      "extra": {
+        "yes": true,
+        "best_score": 0.845
+      }
+    },
+    {
+      "id": "fever-27403",
+      "claim": "The Mormon population has been growing rapidly due to high birth and conversion rates.",
+      "gold": "Supported",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": false,
+      "ms": 2802,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "The Church of Jesus Christ of Latter-day Saints",
+          "revision_id": 1384133860,
+          "retrieval_score": 0.637
+        },
+        {
+          "page_title": "Mormons",
+          "revision_id": 1379942030,
+          "retrieval_score": 0.631
+        },
+        {
+          "page_title": "The Church of Jesus Christ of Latter-day Saints",
+          "revision_id": 1384133860,
+          "retrieval_score": 0.621
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.637
+      }
+    },
+    {
+      "id": "fever-18037",
+      "claim": "Global warming effects all regions in exactly the same way.",
+      "gold": "Refuted",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 2208,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Globalization",
+          "revision_id": 1382680807,
+          "retrieval_score": 0.633
+        },
+        {
+          "page_title": "Globalization",
+          "revision_id": 1382680807,
+          "retrieval_score": 0.592
+        },
+        {
+          "page_title": "Globalization",
+          "revision_id": 1382680807,
+          "retrieval_score": 0.586
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.633
+      }
+    },
+    {
+      "id": "fever-147784",
+      "claim": "Fred Seibert produces for satellite and cable television and the internet.",
+      "gold": "Not Enough Info",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": false,
+      "ms": 2467,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Fred Seibert",
+          "revision_id": 1378613354,
+          "retrieval_score": 0.78
+        },
+        {
+          "page_title": "Fred Seibert",
+          "revision_id": 1378613354,
+          "retrieval_score": 0.78
+        },
+        {
+          "page_title": "Fred Seibert",
+          "revision_id": 1378613354,
+          "retrieval_score": 0.714
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.78
+      }
+    },
+    {
+      "id": "fever-124479",
+      "claim": "Due Date was shot in the United States.",
+      "gold": "Supported",
+      "source": "fever",
+      "predicted": "Supported",
+      "correct": true,
+      "ms": 1982,
+      "raw": "Yes",
+      "evidence": [
+        {
+          "page_title": "Due Date",
+          "revision_id": 1380176746,
+          "retrieval_score": 0.801
+        },
+        {
+          "page_title": "Due Date",
+          "revision_id": 1380176746,
+          "retrieval_score": 0.697
+        },
+        {
+          "page_title": "Due Date",
+          "revision_id": 1380176746,
+          "retrieval_score": 0.694
+        }
+      ],
+      "extra": {
+        "yes": true,
+        "best_score": 0.801
+      }
+    },
+    {
+      "id": "fever-198421",
+      "claim": "Arthur Schopenhauer died in 1788.",
+      "gold": "Refuted",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 2687,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Arthur Schopenhauer",
+          "revision_id": 1384203612,
+          "retrieval_score": 0.906
+        },
+        {
+          "page_title": "Arthur Schopenhauer",
+          "revision_id": 1384203612,
+          "retrieval_score": 0.862
+        },
+        {
+          "page_title": "Arthur Schopenhauer",
+          "revision_id": 1384203612,
+          "retrieval_score": 0.861
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.906
+      }
+    },
+    {
+      "id": "fever-71126",
+      "claim": "A View to a Kill is an action movie.",
+      "gold": "Not Enough Info",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": false,
+      "ms": 2760,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "The View",
+          "revision_id": 1382508611,
+          "retrieval_score": 0.568
+        },
+        {
+          "page_title": "The View",
+          "revision_id": 1382508611,
+          "retrieval_score": 0.568
+        },
+        {
+          "page_title": "The View",
+          "revision_id": 1382508611,
+          "retrieval_score": 0.552
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.568
+      }
+    },
+    {
+      "id": "fever-206733",
+      "claim": "Samwell Tarly appears in the A Song of Ice and Fire series book A Clash of Kings.",
+      "gold": "Supported",
+      "source": "fever",
+      "predicted": "Supported",
+      "correct": true,
+      "ms": 2884,
+      "raw": "Yes",
+      "evidence": [
+        {
+          "page_title": "Samwell Tarly",
+          "revision_id": 1380455242,
+          "retrieval_score": 0.838
+        },
+        {
+          "page_title": "Samwell Tarly",
+          "revision_id": 1380455242,
+          "retrieval_score": 0.762
+        },
+        {
+          "page_title": "Samwell Tarly",
+          "revision_id": 1380455242,
+          "retrieval_score": 0.76
+        }
+      ],
+      "extra": {
+        "yes": true,
+        "best_score": 0.838
+      }
+    },
+    {
+      "id": "fever-46065",
+      "claim": "The NAACP Image Award for Outstanding Supporting Actor in a Drama Series was last given in 1995.",
+      "gold": "Refuted",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 1830,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "NAACP Image Award for Outstanding Supporting Actor in a Drama Series",
+          "revision_id": 1368792852,
+          "retrieval_score": 0.879
+        },
+        {
+          "page_title": "NAACP Image Award for Outstanding Supporting Actor in a Motion Picture",
+          "revision_id": 1368792259,
+          "retrieval_score": 0.805
+        },
+        {
+          "page_title": "NAACP Image Award for Outstanding Supporting Actor in a Comedy Series",
+          "revision_id": 1374653851,
+          "retrieval_score": 0.747
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.879
+      }
+    },
+    {
+      "id": "fever-194895",
+      "claim": "Stripes featured John Larroquette as Darth Vader.",
+      "gold": "Not Enough Info",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": false,
+      "ms": 2349,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Stripes (film)",
+          "revision_id": 1383619561,
+          "retrieval_score": 0.684
+        },
+        {
+          "page_title": "The White Stripes",
+          "revision_id": 1384157322,
+          "retrieval_score": 0.585
+        },
+        {
+          "page_title": "The White Stripes",
+          "revision_id": 1384157322,
+          "retrieval_score": 0.57
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.684
+      }
+    },
+    {
+      "id": "fever-209356",
+      "claim": "An example of a seaport is Alexandria.",
+      "gold": "Supported",
+      "source": "fever",
+      "predicted": "Supported",
+      "correct": true,
+      "ms": 2456,
+      "raw": "Yes",
+      "evidence": [
+        {
+          "page_title": "Alexandria",
+          "revision_id": 1384322607,
+          "retrieval_score": 0.778
+        },
+        {
+          "page_title": "Alexandria",
+          "revision_id": 1384322607,
+          "retrieval_score": 0.696
+        },
+        {
+          "page_title": "Alexandria",
+          "revision_id": 1384322607,
+          "retrieval_score": 0.695
+        }
+      ],
+      "extra": {
+        "yes": true,
+        "best_score": 0.778
+      }
+    },
+    {
+      "id": "fever-157641",
+      "claim": "Janet Leigh was incapable of acting.",
+      "gold": "Refuted",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 2318,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Janet Leigh",
+          "revision_id": 1380875464,
+          "retrieval_score": 0.775
+        },
+        {
+          "page_title": "Janet Leigh",
+          "revision_id": 1380875464,
+          "retrieval_score": 0.745
+        },
+        {
+          "page_title": "Janet Leigh",
+          "revision_id": 1380875464,
+          "retrieval_score": 0.733
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.775
+      }
+    },
+    {
+      "id": "fever-225270",
+      "claim": "Brian De Palma was born in Taipei.",
+      "gold": "Not Enough Info",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": false,
+      "ms": 2019,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Brian De Palma",
+          "revision_id": 1382829607,
+          "retrieval_score": 0.835
+        },
+        {
+          "page_title": "Brian De Palma",
+          "revision_id": 1382829607,
+          "retrieval_score": 0.833
+        },
+        {
+          "page_title": "Brian De Palma filmography",
+          "revision_id": 1380965673,
+          "retrieval_score": 0.788
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.835
+      }
+    },
+    {
+      "id": "fever-35575",
+      "claim": "Tim Roth was not born on May 14th, 1961.",
+      "gold": "Supported",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": false,
+      "ms": 2543,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Tim Roth",
+          "revision_id": 1383606738,
+          "retrieval_score": 0.842
+        },
+        {
+          "page_title": "Tim Roth",
+          "revision_id": 1383606738,
+          "retrieval_score": 0.833
+        },
+        {
+          "page_title": "Tim Roth",
+          "revision_id": 1383606738,
+          "retrieval_score": 0.691
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.842
+      }
+    },
+    {
+      "id": "fever-217194",
+      "claim": "A monk completely avoids practicing a lifestyle characterized by abstinence from worldly pleasures.",
+      "gold": "Refuted",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 2676,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Monk",
+          "revision_id": 1384323337,
+          "retrieval_score": 0.613
+        },
+        {
+          "page_title": "Monk",
+          "revision_id": 1384323337,
+          "retrieval_score": 0.609
+        },
+        {
+          "page_title": "Monk",
+          "revision_id": 1384323337,
+          "retrieval_score": 0.587
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.613
+      }
+    },
+    {
+      "id": "fever-131928",
+      "claim": "The heart beats at a resting rate close to 72 licks per minute.",
+      "gold": "Not Enough Info",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": false,
+      "ms": 3275,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Hummingbird",
+          "revision_id": 1383308941,
+          "retrieval_score": 0.707
+        },
+        {
+          "page_title": "Hummingbird",
+          "revision_id": 1383308941,
+          "retrieval_score": 0.613
+        },
+        {
+          "page_title": "Hummingbird",
+          "revision_id": 1383308941,
+          "retrieval_score": 0.595
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.707
+      }
+    },
+    {
+      "id": "fever-175652",
+      "claim": "Fabian Nicieza's date of birth was December 31, 1961.",
+      "gold": "Supported",
+      "source": "fever",
+      "predicted": "Supported",
+      "correct": true,
+      "ms": 2451,
+      "raw": "Yes",
+      "evidence": [
+        {
+          "page_title": "Fabian Nicieza",
+          "revision_id": 1369043691,
+          "retrieval_score": 0.8
+        },
+        {
+          "page_title": "Deadpool",
+          "revision_id": 1381341672,
+          "retrieval_score": 0.622
+        },
+        {
+          "page_title": "Fabian Nicieza",
+          "revision_id": 1369043691,
+          "retrieval_score": 0.614
+        }
+      ],
+      "extra": {
+        "yes": true,
+        "best_score": 0.8
+      }
+    },
+    {
+      "id": "fever-78985",
+      "claim": "Stomp the Yard stars a cat.",
+      "gold": "Refuted",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 805,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Stomp the Yard",
+          "revision_id": 1372440639,
+          "retrieval_score": 0.816
+        },
+        {
+          "page_title": "Stomp the Yard",
+          "revision_id": 1372440639,
+          "retrieval_score": 0.725
+        },
+        {
+          "page_title": "Stomp the Yard",
+          "revision_id": 1372440639,
+          "retrieval_score": 0.724
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.816
+      }
+    },
+    {
+      "id": "fever-48654",
+      "claim": "David Attenborough served as the program director for Disney.",
+      "gold": "Not Enough Info",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": false,
+      "ms": 2622,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "David Attenborough",
+          "revision_id": 1383433250,
+          "retrieval_score": 0.728
+        },
+        {
+          "page_title": "David Attenborough",
+          "revision_id": 1383433250,
+          "retrieval_score": 0.722
+        },
+        {
+          "page_title": "David Attenborough",
+          "revision_id": 1383433250,
+          "retrieval_score": 0.713
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.728
+      }
+    },
+    {
+      "id": "fever-70164",
+      "claim": "Ekta Kapoor is a producer of an Indian soap opera.",
+      "gold": "Supported",
+      "source": "fever",
+      "predicted": "Supported",
+      "correct": true,
+      "ms": 3041,
+      "raw": "Yes",
+      "evidence": [
+        {
+          "page_title": "Ekta Kapoor",
+          "revision_id": 1384077449,
+          "retrieval_score": 0.897
+        },
+        {
+          "page_title": "Ekta Kapoor",
+          "revision_id": 1384077449,
+          "retrieval_score": 0.763
+        },
+        {
+          "page_title": "Ekta Kapoor",
+          "revision_id": 1384077449,
+          "retrieval_score": 0.761
+        }
+      ],
+      "extra": {
+        "yes": true,
+        "best_score": 0.897
+      }
+    },
+    {
+      "id": "fever-130108",
+      "claim": "Shomu Mukherjee was born on April 10, 2008.",
+      "gold": "Refuted",
+      "source": "fever",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 2255,
+      "raw": "No",
+      "evidence": [
+        {
+          "page_title": "Shomu Mukherjee",
+          "revision_id": 1374317958,
+          "retrieval_score": 0.902
+        },
+        {
+          "page_title": "Tanishaa",
+          "revision_id": 1380296880,
+          "retrieval_score": 0.634
+        },
+        {
+          "page_title": "Mukherjee-Samarth family",
+          "revision_id": 1376997527,
+          "retrieval_score": 0.624
+        }
+      ],
+      "extra": {
+        "yes": false,
+        "best_score": 0.902
+      }
+    }
+  ]
+}
