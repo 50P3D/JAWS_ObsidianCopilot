@@ -1,7 +1,7 @@
 import { test, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { chooseSenses, expandDisambiguations, rankSenses, type Sense } from "./disambiguate";
-import { clearCustomFetch, fetchSenses, isDisambiguation, setCustomFetch, type WikiPage } from "./wikipedia";
+import { clearCustomFetch, fetchPage, fetchSenses, isDisambiguation, setCustomFetch, type WikiPage } from "./wikipedia";
 
 const CLAIM = "Mercury is the closest planet to the Sun.";
 
@@ -211,4 +211,30 @@ test("fetchSenses returns an empty list when the answer has no pages", async () 
 test("fetchSenses throws when Wikipedia answers with an error", async () => {
   setCustomFetch(async () => new Response("no", { status: 503, statusText: "Service Unavailable" }));
   await assert.rejects(fetchSenses("Mercury"), /503/);
+});
+
+function pageAnswer(title: string, extract: string, pageprops?: Record<string, string>) {
+  return { query: { pages: [{ title, pageid: 7, extract, revisions: [{ revid: 70, timestamp: "2026-01-01T00:00:00Z" }], ...(pageprops ? { pageprops } : {}) }] } };
+}
+
+test("fetchPage marks a page flagged as a disambiguation page by Wikipedia", async () => {
+  fakeWiki(pageAnswer("Mercury", "A long text that never says the giveaway words.", { disambiguation: "" }));
+  assert.equal((await fetchPage("Mercury"))!.disambiguation, true);
+});
+
+test("fetchPage marks a page whose text says 'may refer to' even without the flag", async () => {
+  fakeWiki(pageAnswer("Mercury", "Mercury may refer to:\n- the planet"));
+  assert.equal((await fetchPage("Mercury"))!.disambiguation, true);
+});
+
+test("fetchPage does not mark an ordinary article", async () => {
+  fakeWiki(pageAnswer("Mercury (planet)", "Mercury is the first planet from the Sun."));
+  assert.equal((await fetchPage("Mercury (planet)"))!.disambiguation, false);
+});
+
+test("fetchPage asks Wikipedia for the disambiguation flag", async () => {
+  const urls = fakeWiki(pageAnswer("Mercury (planet)", "Mercury is the first planet."));
+  await fetchPage("Mercury (planet)");
+  assert.match(urls[0], /pageprops/);
+  assert.match(urls[0], /ppprop=disambiguation/);
 });
