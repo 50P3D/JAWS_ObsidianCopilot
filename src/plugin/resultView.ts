@@ -9,6 +9,7 @@
  * lives in the right sidebar so users can read results alongside their note.
  */
 
+import { reviewLabel, type CrossCheckResult } from "../crosscheck/crosscheck.js";
 import { ItemView, MarkdownRenderer, WorkspaceLeaf } from "obsidian";
 import type { ClaimCard, Evidence, Verdict, ReliabilityBadge } from "../contract/claimCard.js";
 import { openEvidence } from "./evidence.js";
@@ -44,7 +45,7 @@ export class NoteCheckResultView extends ItemView {
    * Replace the panel contents with a list of rendered claim cards.
    * Called by the plugin after a fact-check run completes.
    */
-  renderCards(cards: ClaimCard[]): void {
+  renderCards(cards: ClaimCard[], reviews?: Map<string, CrossCheckResult>): void {
     this.clear();
     const container = this.containerEl.children[1]; // Obsidian reserves [0] for the header
 
@@ -57,7 +58,7 @@ export class NoteCheckResultView extends ItemView {
     }
 
     for (const card of cards) {
-      this.renderOneCard(container, card);
+      this.renderOneCard(container, card, reviews?.get(card.claim_id));
     }
   }
 
@@ -97,7 +98,7 @@ export class NoteCheckResultView extends ItemView {
   /**
    * Render a single ClaimCard as a DOM subtree inside `parent`.
    */
-  private renderOneCard(parent: Element, card: ClaimCard): void {
+  private renderOneCard(parent: Element, card: ClaimCard, review?: CrossCheckResult): void {
     const cardEl = parent.createEl("div", { cls: "notecheck-card" });
 
     // ── Verdict badge ──────────────────────────────────────────
@@ -128,6 +129,14 @@ export class NoteCheckResultView extends ItemView {
       cardEl.createEl("p", {
         text: card.explanation,
         cls: "notecheck-explanation",
+      });
+    }
+
+    // ── Claude's second opinion (optional) ─────────────────────
+    if (review) {
+      cardEl.createEl("p", {
+        text: reviewLabel(review),
+        cls: `notecheck-claude-review notecheck-claude-${review.stance}`,
       });
     }
 
