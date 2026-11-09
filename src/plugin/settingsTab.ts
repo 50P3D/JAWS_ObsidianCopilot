@@ -204,5 +204,57 @@ export class NoteCheckSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
+
+    containerEl.createEl("h3", { text: "Ghost text" });
+
+    // ── Ghost text toggle ────────────────────────────────────────
+    new Setting(containerEl)
+      .setName("Enable ghost text")
+      .setDesc(
+        "Show a short grey suggestion after the cursor when you pause after typing a space. " +
+        "Press Tab to accept it or Esc to dismiss it. Uses a small local model through Ollama."
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.enableGhostText)
+          .onChange(async (value) => {
+            this.plugin.settings.enableGhostText = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    // ── Ghost model ──────────────────────────────────────────────
+    new Setting(containerEl)
+      .setName("Ghost text model")
+      .setDesc(
+        "A small, fast Ollama model, for example qwen3.5:2b. Run `ollama pull` for it first. " +
+        "It is separate from the model used for fact-checking."
+      )
+      .addText((text) =>
+        text
+          .setPlaceholder("qwen3.5:2b")
+          .setValue(this.plugin.settings.ghostModel)
+          .onChange(async (value) => {
+            this.plugin.settings.ghostModel = value.trim();
+            await this.plugin.saveSettings();
+          })
+      );
+
+    // ── Ghost debounce ───────────────────────────────────────────
+    new Setting(containerEl)
+      .setName("Ghost text delay (ms)")
+      .setDesc("Wait this long after you stop typing before asking for a suggestion.")
+      .addText((text) =>
+        text
+          .setPlaceholder("400")
+          .setValue(String(this.plugin.settings.ghostDebounceMs))
+          .onChange(async (value) => {
+            const ms = parseInt(value, 10);
+            if (!isNaN(ms) && ms >= 100) {
+              this.plugin.settings.ghostDebounceMs = ms;
+              await this.plugin.saveSettings();
+            }
+          })
+      );
   }
 }

@@ -1,6 +1,6 @@
 # Claude cross-check
 
-Status: 78 tests, all passing. Spec written first, then tests, then code. Stryker mutation score 97.48% on `crosscheck.ts` (the survivors are equivalent mutants: optional-chaining fallbacks, a trim on text that cannot have spaces at its ends, and regex changes that match the same text). Not yet run against the real API (needs an API key). Unit tests use a fake network. Not yet reviewed by a second model.
+Status: 78 tests, all passing. Spec written first, then tests, then code. Stryker mutation score 97.48% on `crosscheck.ts` (the survivors are equivalent mutants: optional-chaining fallbacks, a trim on text that cannot have spaces at its ends, and regex changes that match the same text). Not yet run against the real API: run `ANTHROPIC_API_KEY=... npm run smoke:crosscheck` (4 small calls) and record the output here. Unit tests use a fake network. Not yet reviewed by a second model.
 
 ## What it is
 
