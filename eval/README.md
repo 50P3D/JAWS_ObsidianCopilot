@@ -131,7 +131,7 @@ What failed:
 - **It never answers NEI** (0 of 16). Ten gold-NEI claims were called Refuted, and most of those are plainly false ("Qui-Gon Jinn is portrayed by Johnny Depp"), so this is mostly the FEVER NEI problem, not the model. On Supported and Refuted claims only, macro-F1 is 0.793.
 - **It calls true claims false** (5 of 17). Some are confident hallucinations: Brubaker "is about a police officer, not a prison drama", and Fabian Nicieza's birth date.
 - **Ambiguous titles.** "Due Date was shot in the United States" was read as being about a rapper, not the 2010 film. Retrieval and disambiguation should fix this.
-- **Negation.** "Tim Roth was not born on May 14th, 1961" is true in FEVER. The model gave the right fact and the wrong label.
+- **A wrong gold label.** "Tim Roth was not born on May 14th, 1961" is Supported in FEVER, but Tim Roth was born on 14 May 1961, so the claim is false. The model's Refuted is right. (Earlier versions of this README called this a negation error.)
 
 Later (single search, before the rewrite retries were added): `minicheck` at threshold 0.5 scored macro-F1 0.497 [0.381, 0.615], accuracy 58.0%, false-flag 35.3%, miss 0.0%. Threshold 0.8, tuned on the same 50 claims, gives 0.685 (in-sample). Report: `results/20261107-214030_minicheck_bespoke-minicheck_dev.md`.
 
@@ -144,7 +144,7 @@ Each change targets failures in that report. Every one changes the app, not just
 | Change | Where | Failure it targets |
 |---|---|---|
 | Missing is not false: a passage that never mentions the fact is NEI, and Refuted needs passage text that conflicts with the claim. Replaces "prefer Supported or Refuted based on the closest match" | `src/llm/verify.ts` | 14 of 16 gold NEI called Refuted, often with "the passages never mention..." |
-| Judge the claim as written, with a worked "not born in 1961" example | `src/llm/verify.ts` | "Tim Roth was not born on May 14th, 1961" |
+| Judge the claim as written, with a worked "not born in 1961" example | `src/llm/verify.ts` | Negated claims in general. (Targeted at Tim Roth, which turned out to be a wrong gold label, not a model error) |
 | `explanation` comes before `verdict` in the JSON schema, so the model says what the passages say before deciding | `src/llm/verify.ts` | Explanations that contradicted their own verdict |
 | `fallbackToText`: if extraction returns no claims for one short sentence, check the sentence as it is. On for the selection command and the eval, off for the live checker | `src/orchestrator/pipeline.ts`, `src/plugin/main.ts` | "Dakota Fanning models." came back with no card |
 | Search queries: titles with a bracket written in the claim ("Dreamer (2005 film)") and the subject before the main verb ("Dub music", "A View to a Kill") go first; sentence-start words like "There" are not names; "Apollo 11" keeps its number | `src/retrieval/query.ts` | Rub-a-dub-dub, Tommy Dreamer, The View, "Who Goes There?" |

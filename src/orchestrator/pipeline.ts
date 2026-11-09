@@ -113,6 +113,7 @@ async function checkOne(
   retrieval: PipelineOptions["retrieval"] = {},
   context?: CourseQueryContext,
   localOnly = false,
+  verifyLlm: LlmOptions = llm,
 ): Promise<ClaimCard> {
   const tried: string[] = [];
   let wikipediaResult: ClaimCard | undefined;
@@ -127,7 +128,7 @@ async function checkOne(
     log(`${card.claim_id}: ${evidence.length} course passage(s)`);
     if (evidence.length > 0) {
       // course passages are the user's own material, so there is no Wikipedia reliability badge to score
-      const checked = await verifyClaim({ ...card, evidence }, llm, { topic });
+      const checked = await verifyClaim({ ...card, evidence }, verifyLlm, { topic });
       if (checked.verdict !== "Not Enough Info" || course.only || localOnly) return checked;
     } else if (course.only) {
       return { ...card, evidence: [], verdict: "Not Enough Info", explanation: "Your course materials do not cover this claim." };
@@ -153,7 +154,7 @@ async function checkOne(
     const rel = await scoreEvidence(evidence);
     const checked = await verifyClaim(
       { ...card, evidence, reliability: rel.reliability, stubbed: mergeStubbed(card.stubbed, rel.stubbed) },
-      llm,
+      verifyLlm,
       { topic },
     );
     wikipediaResult = checked;
@@ -170,11 +171,13 @@ export async function runFactCheckPipeline(request: FactCheckRequest, opts: Pipe
   configureReliability({ userAgent: opts.userAgent });
 
   const llm: LlmOptions = { ollamaUrl: opts.ollamaUrl, model: opts.model };
+  // Thinking applies only to verdicts. Extraction and query rewrites stay fast.
+  const verifyLlm: LlmOptions = opts.verifierThink ? { ...llm, think: true } : llm;
   const maxRetries = opts.maxRetries ?? 1;
   const pipelineRetrieval = opts.retrieval ?? { pages: 2, candidates: 24, mode: "hybrid" as const };
   const log = opts.log ?? (() => {});
 
-  const claims = opts.directClaims
+  let claims = opts.directClaims
     ? request.text.split(/\r?\n/).map((text, i) => ({
         claim_id: `c${i + 1}`,
         original_text: text,
@@ -184,6 +187,13 @@ export async function runFactCheckPipeline(request: FactCheckRequest, opts: Pipe
         courseClaims: opts.course !== undefined,
         topicContext: opts.topicContext,
       });
+  if (claims.length === 0 && opts.fallbackToText) {
+    const whole = wholeTextClaim(request.text);
+    if (whole) {
+      claims = [whole];
+      log("extraction found no claims, checking the text as one claim");
+    }
+  }
   log(`extracted ${claims.length} claim(s)`);
 
   const cards = new Array<ClaimCard>(claims.length);
@@ -210,6 +220,7 @@ export async function runFactCheckPipeline(request: FactCheckRequest, opts: Pipe
           pipelineRetrieval,
           context,
           opts.localOnly,
+          verifyLlm,
         );
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);

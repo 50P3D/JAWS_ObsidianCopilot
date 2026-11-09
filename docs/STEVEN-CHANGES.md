@@ -43,7 +43,7 @@ Reports: `eval/results/20261107-214030_minicheck_bespoke-minicheck_dev.md`, `eva
 
 - **NEI called Refuted:** 14 of 16 gold Not Enough Info claims. Some are the known FEVER problem (plainly false claims labelled NEI). Others are real mistakes: the model wrote that the passages "never mention" the fact and still answered Refuted. The verifier prompt told it to pick NEI only when evidence was "truly irrelevant".
 - **Wrong article retrieved:** "Dub music" fetched "Rub-a-dub-dub", "Dreamer (2005 film)" fetched Tommy Dreamer, "A View to a Kill" fetched The View.
-- **Negation:** "Tim Roth was not born on May 14th, 1961" got the right fact and the wrong label.
+- **A wrong gold label, not a model error:** "Tim Roth was not born on May 14th, 1961" is Supported in FEVER, but Tim Roth was born on 14 May 1961. The model's Refuted is right. I first called this a negation error.
 - **No answer:** extraction returned no claim for "Dakota Fanning models.", so it counts as invalid.
 
 ---
@@ -70,7 +70,7 @@ These files belong to other members (`src/llm`, `src/orchestrator`: Jonathan; `s
 | Change | Where | Targets |
 |---|---|---|
 | Verifier: a passage that never mentions the fact means Not Enough Info, and Refuted needs passage text that conflicts with the claim | `src/llm/verify.ts` | NEI called Refuted |
-| Verifier: judge the claim as written, with a "not born in 1961" example | `src/llm/verify.ts` | Negation |
+| Verifier: judge the claim as written, with a "not born in 1961" example | `src/llm/verify.ts` | Negated claims in general (the Tim Roth case turned out to be a label error) |
 | Verifier: `explanation` comes before `verdict` in the JSON schema | `src/llm/verify.ts` | Explanations that contradicted their verdict |
 | `fallbackToText`: if extraction finds no claim in one short sentence, check it as written. On for the selection command and the eval, off for live checking | `src/orchestrator/pipeline.ts`, `src/plugin/main.ts` | "Dakota Fanning models." |
 | Search queries: bracket titles and the claim's subject go first; "There" is no longer a name; "Apollo 11" keeps its number | `src/retrieval/query.ts` | Wrong article retrieved |

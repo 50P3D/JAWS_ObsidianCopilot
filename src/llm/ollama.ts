@@ -2,13 +2,8 @@
 export interface LlmOptions {
   ollamaUrl?: string;
   model?: string;
-// Helper for talking to local model through ollama
-// In our case, qwen3.5 4b or 9b
-export interface LlmOptions{
-ollamaUrl?: string;
-model?: string;
-/** Let qwen3.x reason before answering. Slower. Off by default; the pipeline only turns it on for the verifier. */
-think?: boolean;
+  /** Let qwen3.x reason before answering. Slower. Off by default. */
+  think?: boolean;
 }
 
 const env = (globalThis as any).process?.env ?? {};
@@ -36,14 +31,14 @@ async function ollamaFetch(url: string, init?: RequestInit): Promise<Response> {
   return customFetch ? customFetch(url, init) : fetch(url, init);
 }
 
-function cacheKey(url: string, model: string, system: string, user: string, schema: object): string {
-  return JSON.stringify([url, model, system, user, schema]);
+function cacheKey(url: string, model: string, system: string, user: string, schema: object, think: boolean): string {
+  return JSON.stringify([url, model, system, user, schema, think]);
 }
 
 export async function chatJson<T>(system: string, user: string, schema: object, opts: LlmOptions = {}): Promise<T> {
   const url = opts.ollamaUrl ?? DEFAULT_OLLAMA_URL;
   const model = opts.model ?? DEFAULT_MODEL;
-  const key = cacheKey(url, model, system, user, schema);
+  const key = cacheKey(url, model, system, user, schema, opts.think ?? false);
   const cached = responseCache.get(key);
   if (cached && cached.expiresAt > Date.now()) return cached.value as T;
   if (cached) responseCache.delete(key);
@@ -64,7 +59,7 @@ export async function chatJson<T>(system: string, user: string, schema: object, 
           ],
           format: schema,
           stream: false,
-          think: false,
+          think: opts.think ?? false,
           options: { temperature: 0 },
           keep_alive: "10m",
         }),

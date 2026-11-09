@@ -85,7 +85,7 @@ Confusion matrix for no-RAG (rows are gold):
 - **It never answers Not Enough Info (0 of 16).** Ten of those claims were called Refuted. Most are plainly false to any reader ("Qui-Gon Jinn is portrayed by Johnny Depp", "Brian De Palma was born in Taipei"). FEVER labels them NEI because the 2017 Wikipedia dump did not settle them, not because they are unknowable. So this failure is largely the dataset, not the model. Reading only the Supported and Refuted claims, macro-F1 is 0.793 [0.642, 0.912].
 - **It calls true claims false (5 of 17).** Some are confident hallucinations: it said Brubaker is "a 1980 film about a police officer, not a prison drama", and gave a different birth date for Fabian Nicieza.
 - **It misreads ambiguous titles.** "Due Date was shot in the United States" became a statement about a rapper, not the 2010 film. Disambiguation in retrieval should help here.
-- **It slips on negation.** "Tim Roth was not born on May 14th, 1961" is Supported in FEVER. The model stated the right date and gave the wrong label.
+- ~~**It slips on negation.**~~ Correction (9 November): "Tim Roth was not born on May 14th, 1961" is Supported in FEVER, but Tim Roth was born on 14 May 1961, so the gold label is wrong and the model's Refuted was right.
 - **It says Supported to claims that FEVER marks unverifiable** (6 of 16 NEI), often by agreeing with a plausible sentence ("Steve Ditko was a comic cartoonist").
 
 Full report: `eval/results/20261016-225821_no-rag_qwen3.5-9b_dev.md`. Comparison: `eval/results/compare-dev.md`.
