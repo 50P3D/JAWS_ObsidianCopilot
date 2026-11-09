@@ -31,6 +31,12 @@ export interface NoteCheckSettings {
   enableClaudeReview: boolean;
 
   /**
+   * Anthropic API key for the Claude review. Obsidian keeps plugin settings in plain text
+   * in the vault's plugin data file, so anyone who can read that file can read the key.
+   */
+  claudeApiKey: string;
+
+  /**
    * When true, NoteCheck runs fact-checking automatically as you type.
    * Checks the current paragraph/section on each change (debounced).
    */
@@ -70,6 +76,7 @@ export const DEFAULT_SETTINGS: NoteCheckSettings = {
   modelName: "qwen3.5:9b",
   wikiUserAgent: "",
   enableClaudeReview: false,
+  claudeApiKey: "",
   enableLiveCheck: false,
   liveCheckDebounceMs: 1500,
   courseFolder: "",

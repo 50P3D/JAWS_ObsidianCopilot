@@ -34,6 +34,7 @@ import { enableCache as enableWikiCache } from "../retrieval/wikipedia.js";
 import { DEFAULT_SETTINGS, type NoteCheckSettings } from "./types.js";
 import { NoteCheckSettingTab } from "./settingsTab.js";
 import { NoteCheckResultView, VIEW_TYPE_NOTECHECK } from "./resultView.js";
+import { crossCheckCards, privacyNote, type CrossCheckResult, type FetchFn } from "../crosscheck/crosscheck.js";
 import { initLiveChecker, isLiveChecking, setLiveCheckEnabled, setLiveCheckDebounce } from "./liveChecker.js";
 import { acceptAtCursor, findingFor, liveSuggestionsExtension, showFindings, type Finding } from "./inlineDecorations.js";
 import { minimalEdit } from "./liveText.js";
@@ -45,6 +46,9 @@ import { setCustomFetch as setOllamaFetch, clearCustomFetch as clearOllamaFetch 
 import { setCustomFetch as setReliabilityFetch, clearCustomFetch as clearReliabilityFetch } from "../reliability/http.js";
 
 export default class NoteCheckPlugin extends Plugin {
+  /** Obsidian's network call, kept for the Claude review. */
+  private httpFetch?: FetchFn;
+
   settings: NoteCheckSettings = DEFAULT_SETTINGS;
   courseIndex!: CourseIndex;
   /** The editor of the last "Fact-check selection", so "Apply fix" in the sidebar knows where to edit. */
@@ -85,6 +89,7 @@ export default class NoteCheckPlugin extends Plugin {
       });
     };
 
+    this.httpFetch = obsidianFetch;
     this.obsidianFetch = obsidianFetch as typeof fetch;
 
     // Inject custom fetch into all network modules
@@ -338,7 +343,18 @@ export default class NoteCheckPlugin extends Plugin {
         this.lastCheckedEditor = target.editor;
         this.showSelectionSuggestions(target.editor, cards, target.offset, target.offset + request.text.length);
       }
-      view.renderCards(cards);
+      let reviews: Map<string, CrossCheckResult> | undefined;
+      let skipped: Map<string, string> | undefined;
+      if (this.settings.enableClaudeReview && this.settings.claudeApiKey.trim() !== "" && this.httpFetch) {
+        new Notice("NoteCheck: asking Claude for a second opinion...");
+        skipped = new Map();
+        for (const c of cards) {
+          const note = privacyNote(c);
+          if (note) skipped.set(c.claim_id, note);
+        }
+        reviews = await crossCheckCards(cards, { apiKey: this.settings.claudeApiKey, fetch: this.httpFetch });
+      }
+      view.renderCards(cards, reviews, skipped);
       new Notice("NoteCheck: Fact-check complete!");
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);

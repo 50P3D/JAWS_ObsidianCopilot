@@ -255,7 +255,7 @@ Open **Settings → NoteCheck**:
 | Ghost text model             | A small, fast model you have pulled, for example `qwen3.5:2b`. Separate from the model above. Empty means no suggestions. |
 | Ghost text delay (ms)        | How long to wait after you stop typing before asking for a suggestion                                            |
 
-**Enable Claude review** appears in settings but does not do anything yet. Claude reviews verdicts through the MCP server instead (see [Features](#features)).
+**Enable Claude review** is off by default. When it is on and an Anthropic API key is set, each Supported or Refuted verdict gets an optional second opinion from Claude: Haiku first, then Sonnet if Haiku does not agree. Claude sees only the claim, the local verdict and up to three Wikipedia sentences. It never sees your note, the note title, headings or course material. Claims in the first person or holding emails, links, phone-like numbers or ID-style numbers are never sent, and the panel says so. Claude never changes the local verdict. See [`src/crosscheck/CROSSCHECK.md`](src/crosscheck/CROSSCHECK.md). The key is stored in plain text in the plugin settings.
 
 ---
 

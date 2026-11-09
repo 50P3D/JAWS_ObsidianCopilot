@@ -80,8 +80,11 @@ export class NoteCheckSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("Enable Claude review")
       .setDesc(
-        "Run an additional Claude-based review pass after the local LLM verdict. " +
-        "This improves accuracy but requires an Anthropic API key and uses credits."
+        "After a selection check, ask Claude for a second opinion on each Supported or Refuted verdict. " +
+        "Claude Haiku answers first and Claude Sonnet is asked when Haiku does not agree. " +
+        "It never changes the local verdict. What is sent to Anthropic: the claim, the verdict and up to three " +
+        "Wikipedia sentences. Not sent: your note text, note title, headings or any course material. " +
+        "Needs an API key and uses credits."
       )
       .addToggle((toggle) =>
         toggle
@@ -91,6 +94,24 @@ export class NoteCheckSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
+
+    // ── Claude API key ───────────────────────────────────────────
+    new Setting(containerEl)
+      .setName("Anthropic API key")
+      .setDesc(
+        "Used only for the Claude review. Obsidian stores plugin settings in plain text in this vault's " +
+        "plugin data file, so anyone who can read that file can read the key. Do not sync or share it."
+      )
+      .addText((text) => {
+        text.inputEl.type = "password";
+        text
+          .setPlaceholder("sk-ant-...")
+          .setValue(this.plugin.settings.claudeApiKey)
+          .onChange(async (value) => {
+            this.plugin.settings.claudeApiKey = value.trim();
+            await this.plugin.saveSettings();
+          });
+      });
 
     // ── Live fact-checking toggle ────────────────────────────────
     new Setting(containerEl)
