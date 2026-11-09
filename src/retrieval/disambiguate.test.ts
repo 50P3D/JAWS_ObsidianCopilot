@@ -297,3 +297,116 @@ test("fetchPage asks Wikipedia for the disambiguation flag", async () => {
   assert.match(urls[0], /pageprops/);
   assert.match(urls[0], /ppprop=disambiguation/);
 });
+
+// ── second pass: pin the numbers (added after the first Grok review) ──
+
+const approx = (a: number, b: number) => assert.ok(Math.abs(a - b) < 1e-9, `${a} is not ${b}`);
+const WORDS10 = "w1 w2 w3 w4 w5 w6 w7 w8 w9 w10";
+/** A meaning whose introduction shares the first `hits` of the ten claim words. */
+const withHits = (title: string, hits: number): Sense => ({
+  title,
+  intro: Array.from({ length: hits }, (_, i) => `w${i + 1}`).join(" "),
+});
+
+test("rankSenses adds exactly 0.3 when the claim names the bracketed word, whatever its capitals", () => {
+  const [hit] = rankSenses("BAR baz qux quux", [{ title: "Foo (bar)", intro: "nothing" }]);
+  const [miss] = rankSenses("BAR baz qux quux", [{ title: "Foo (other)", intro: "nothing" }]);
+  approx(hit.score, 0.25 + 0.3);
+  approx(miss.score, 0);
+});
+
+test("rankSenses scores by shared words and ignores stopwords", () => {
+  approx(rankSenses("alpha beta gamma delta", [{ title: "S", intro: "alpha beta" }])[0].score, 0.5);
+  approx(rankSenses("the of and", [{ title: "S", intro: "the of and" }])[0].score, 0);
+});
+
+test("rankSenses adds the year bonus only when claim and introduction both have a year", () => {
+  approx(rankSenses("foo 1999", [{ title: "S", intro: "foo from 1850" }])[0].score, 0.6);
+  approx(rankSenses("foo 1999", [{ title: "S", intro: "foo from long ago" }])[0].score, 0.5);
+});
+
+test("chooseSenses keeps a meaning that scores exactly 0.25 and drops one just below", () => {
+  assert.deepEqual(chooseSenses("alpha beta gamma delta", [{ title: "Sa", intro: "alpha" }]), ["Sa"]);
+  assert.deepEqual(chooseSenses("alpha beta gamma delta epsilon", [{ title: "Sa", intro: "alpha" }]), []);
+});
+
+test("chooseSenses keeps a second meaning exactly 0.1 behind the best and drops one further behind", () => {
+  const senses = [withHits("Sc", 3), withHits("Sb", 4), withHits("Sa", 5)];
+  assert.deepEqual(chooseSenses(WORDS10, senses, { max: 3 }), ["Sa", "Sb"]);
+});
+
+test("chooseSenses drops a far-behind meaning even when it clears the minimum score", () => {
+  const senses = [withHits("Sa", 10), withHits("Sb", 3)];
+  assert.deepEqual(chooseSenses(WORDS10, senses, { max: 3 }), ["Sa"]);
+});
+
+test("chooseSenses keeps two meanings by default and lists the best first", () => {
+  const four = ["Sa", "Sb", "Sc", "Sd"].map((t) => withHits(t, 5));
+  assert.equal(chooseSenses(WORDS10, four).length, 2);
+  const mixed = [withHits("Sc", 3), withHits("Sa", 5), withHits("Sb", 4)];
+  assert.deepEqual(chooseSenses(WORDS10, mixed, { margin: 0.5, max: 2 }), ["Sa", "Sb"]);
+});
+
+test("chooseSenses returns nothing for a claim made only of stopwords", () => {
+  assert.deepEqual(chooseSenses("the of and", SENSES), []);
+});
+
+test("expandDisambiguations still uses the other meanings when one cannot be fetched", async () => {
+  const two: Sense[] = [
+    { title: "Thing (q1)", intro: "shared words appear here" },
+    { title: "Thing (q2)", intro: "shared words appear here" },
+  ];
+  const result = await expandDisambiguations("shared words appear here", [MERCURY_DISAMBIG], {
+    fetchSenses: async () => two,
+    fetchPage: async (title: string) => {
+      if (title === "Thing (q1)") throw new Error("boom");
+      return page("Thing (q2)", 11);
+    },
+  });
+  assert.deepEqual(result.map((p) => p.title), ["Thing (q2)"]);
+});
+
+test("expandDisambiguations treats two titles with the same page id as one page", async () => {
+  const redirect = page("Mercury, the planet", 2);
+  const result = await expandDisambiguations(CLAIM, [PLANET, MERCURY_DISAMBIG], deps({ fetchPage: async () => redirect }));
+  assert.deepEqual(result.map((p) => p.title), ["Mercury (planet)"]);
+});
+
+test("isDisambiguation also spots 'may also refer to' and looks only at the first 400 characters", () => {
+  assert.equal(isDisambiguation(page("A", 20, { text: "A may also refer to:" })), true);
+  assert.equal(isDisambiguation(page("A", 21, { text: `${"x".repeat(380)} may refer to` })), true);
+  assert.equal(isDisambiguation(page("A", 22, { text: `${"x".repeat(401)} may refer to` })), false);
+});
+
+test("pickSenseTitles keeps the first titles when it has to cut", () => {
+  const links = Array.from({ length: 5 }, (_, i) => `Mercury (${i + 1})`);
+  assert.deepEqual(pickSenseTitles("Mercury", links, 3), ["Mercury (1)", "Mercury (2)", "Mercury (3)"]);
+});
+
+test("fetchSenses lists main-namespace links only and asks for the disambiguation flag", async () => {
+  const urls = fakeSenseWiki(["Mercury (planet)"]);
+  await fetchSenses("Mercury");
+  assert.match(urls[0], /plnamespace=0/);
+  assert.match(urls[1], /ppprop=disambiguation/);
+});
+
+test("fetchSenses reads at most 40 meanings by default", async () => {
+  fakeSenseWiki(Array.from({ length: 45 }, (_, i) => `Mercury (sense ${i})`));
+  assert.equal((await fetchSenses("Mercury")).length, 40);
+});
+
+test("fetchSenses drops a blank introduction and a page that only says 'may refer to'", async () => {
+  fakeSenseWiki(["Mercury (planet)", "Spaces", "Mercury (list)"], {
+    "Mercury (planet)": { title: "Mercury (planet)", extract: "Mercury is the first planet." },
+    Spaces: { title: "Spaces", extract: " \n " },
+    "Mercury (list)": { title: "Mercury (list)", extract: "Mercury may refer to:\n- a planet" },
+  });
+  assert.deepEqual((await fetchSenses("Mercury")).map((s) => s.title), ["Mercury (planet)"]);
+});
+
+test("fetchPage also marks 'may also refer to', but only near the top of the text", async () => {
+  fakeWiki(pageAnswer("Mercury", "Mercury may also refer to:\n- the planet"));
+  assert.equal((await fetchPage("Mercury"))!.disambiguation, true);
+  fakeWiki(pageAnswer("Long", `${"x".repeat(401)} may refer to`));
+  assert.equal((await fetchPage("Long"))!.disambiguation, false);
+});

@@ -2,7 +2,7 @@
 
 This file describes what disambiguation must do, without code, so a second reviewer (human or AI from another model family) can check the code and the tests against it. If the code and this file disagree, one of them is wrong. Say which.
 
-Status: 38 tests, all passing. Written tests first, then the code. Not yet checked against live Wikipedia (`npm run smoke:disambiguation` does that).
+Status: 54 tests, all passing. Written tests first, then the code. Not yet checked against live Wikipedia (`npm run smoke:disambiguation` does that).
 
 ## What the feature is
 
@@ -76,7 +76,7 @@ A "sense" is one meaning: the title of a linked article and its first paragraph.
 1. First request lists the links of `title` (main namespace only). No links means no second request.
 2. `pickSenseTitles` chooses which links to read, so "Mercury (planet)" is read even when it is far down Wikipedia's alphabetical list.
 3. Introductions are requested in batches of at most 20 titles (Wikipedia's cap), together with the disambiguation flag.
-4. Leaves out missing pages, pages with an empty introduction, disambiguation pages and the page `title`.
+4. Leaves out missing pages, pages with an empty introduction, disambiguation pages (flagged, or saying "may refer to" in the first 400 characters) and the page `title`.
 5. A non-OK response throws an error that includes the status code.
 
 ## Where it runs
@@ -87,13 +87,13 @@ In `retrieveEvidence`, after the top pages are fetched and before they are cut i
 
 | Section | Count | What it covers |
 |---|---|---|
-| `rankSenses` | 4 | Best first, sorted, bracket bonus, no senses |
-| `chooseSenses` | 7 | Planet, element and god claims, a tie keeps two, nothing fits, the limit, no senses |
-| `expandDisambiguations` | 9 | Ordinary pages, replace in place, no repeats, no fit, failed lookup, missing pages, nested disambiguation, unfetchable meaning, title passed to the lookup |
-| `isDisambiguation` | 2 | Flag decides, text fallback |
-| `fetchSenses` | 6 | Links then introductions, qualified titles far down the list, batches of 20, filtering, no links, error status |
-| `pickSenseTitles` | 6 | Qualified first, capitals, exclusions, limit, fallback, no links |
-| `fetchPage` | 4 | Flag, text fallback, ordinary article, flag requested |
+| `rankSenses` | 7 | Best first, sorted, bracket bonus, no senses |
+| `chooseSenses` | 12 | Planet, element and god claims, a tie keeps two, nothing fits, the limit, no senses |
+| `expandDisambiguations` | 11 | Ordinary pages, replace in place, no repeats, no fit, failed lookup, missing pages, nested disambiguation, unfetchable meaning, title passed to the lookup |
+| `isDisambiguation` | 3 | Flag decides, text fallback |
+| `fetchSenses` | 9 | Links then introductions, qualified titles far down the list, batches of 20, filtering, no links, error status |
+| `pickSenseTitles` | 7 | Qualified first, capitals, exclusions, limit, fallback, no links |
+| `fetchPage` | 5 | Flag, text fallback, ordinary article, flag requested |
 
 Not covered by unit tests: the call inside `retrieveEvidence` (needs the network and Ollama) and the real Wikipedia response. Check those with the smoke script.
 
@@ -116,3 +116,17 @@ Not covered by unit tests: the call inside `retrieveEvidence` (needs the network
 ## AI use
 
 Claude wrote the tests first, then the code and this file. It needs a row in `docs/ai-use-log.md`. The reviewer should be a different model family from Claude.
+
+## Review log
+
+### Pass 1 (Grok in Cursor, Ask mode, against this spec)
+
+It found no mismatch between the spec and `retrieve.ts`, and no objection to the Mercury happy-path tests. It found that the numbers were not pinned: the bracket bonus of 0.3, the minimum score 0.25, the margin 0.1 and the default maximum of 2 would all survive a wrong value. It also found four smaller problems: `fetchSenses` kept a page that only said "may refer to" (no flag), one failed `fetchPage` threw away every meaning of that page, "may also refer to" and the 400-character window were untested, and the default limit of 40 and `plnamespace=0` / `ppprop` were untested.
+
+### Pass 2 (fixes, 38 -> 54 tests)
+
+Code changed in two places. `fetchSenses` now also leaves out an introduction that says "may refer to" near the top. `expandDisambiguations` now skips a meaning whose `fetchPage` fails and keeps the others.
+
+New tests use claims with known word counts so the scores are exact: 0.25 + 0.3 for the bonus (any capitals), 0.25 kept and 0.2 dropped, a second meaning 0.1 behind kept and 0.3 behind dropped, a far-behind meaning dropped even above the minimum, default maximum 2 with best first, stopword-only claims, the year bonus both ways, same page id under two titles, and the request parameters of `fetchSenses`.
+
+Left as is on purpose: the planet, element and god tests stay as readable examples, because the exact-number tests above now do the pinning. The live case where the god claim keeps both Mercury (planet) and Mercury (mythology) is the margin rule working, not a bug.

@@ -60,7 +60,8 @@ export interface SenseDeps {
 /**
  * Go through fetched pages. Ordinary pages stay. A disambiguation page is replaced, in the same
  * position, by the article for the meaning the claim is about. A page already in the list is not
- * repeated, and a failed lookup just drops that page, so retrieval carries on with the rest.
+ * repeated, a meaning that cannot be fetched is skipped, and a failed lookup of the meanings drops
+ * that page only, so retrieval carries on with the rest.
  */
 export async function expandDisambiguations(
   claim: string,
@@ -85,7 +86,8 @@ export async function expandDisambiguations(
     }
     try {
       const titles = chooseSenses(claim, await deps.fetchSenses(p.title), opts);
-      const fetched = await Promise.all(titles.map((t) => deps.fetchPage(t)));
+      // one meaning that cannot be fetched is skipped; the others are still used
+      const fetched = await Promise.all(titles.map((t) => deps.fetchPage(t).catch(() => null)));
       fetched.forEach(add);
     } catch {
       // a failed lookup drops this page only

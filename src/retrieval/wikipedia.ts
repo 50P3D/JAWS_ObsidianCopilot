@@ -173,7 +173,8 @@ export function pickSenseTitles(name: string, links: string[], limit: number): s
 /**
  * Reads the senses listed on a disambiguation page: first the page's links, then the
  * introductions of the chosen ones (Wikipedia returns at most 20 introductions per request).
- * Pages that are missing, have no introduction or are disambiguation pages themselves are left out.
+ * Pages that are missing, have no introduction or are disambiguation pages themselves (flagged, or
+ * saying "may refer to" near the top) are left out.
  */
 export async function fetchSenses(title: string, limit = 40): Promise<Sense[]> {
   const linkData = await wikiGet({
@@ -207,7 +208,7 @@ export async function fetchSenses(title: string, limit = 40): Promise<Sense[]> {
   return pages
     .filter((p) => !p.missing && p.title !== title && p.pageprops?.disambiguation === undefined)
     .map((p) => ({ title: String(p.title), intro: String(p.extract ?? "").trim() }))
-    .filter((p) => p.intro !== "");
+    .filter((p) => p.intro !== "" && !MAY_REFER_TO.test(p.intro.slice(0, 400)));
 }
 
 /**
