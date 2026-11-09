@@ -2,7 +2,7 @@
 
 This file describes what disambiguation must do, without code, so a second reviewer (human or AI from another model family) can check the code and the tests against it. If the code and this file disagree, one of them is wrong. Say which.
 
-Status: 54 tests, all passing. Written tests first, then the code. Not yet checked against live Wikipedia (`npm run smoke:disambiguation` does that).
+Status: 57 tests, all passing. Written tests first, then the code. Not yet checked against live Wikipedia (`npm run smoke:disambiguation` does that).
 
 ## What the feature is
 
@@ -87,8 +87,8 @@ In `retrieveEvidence`, after the top pages are fetched and before they are cut i
 
 | Section | Count | What it covers |
 |---|---|---|
-| `rankSenses` | 7 | Best first, sorted, bracket bonus, no senses |
-| `chooseSenses` | 12 | Planet, element and god claims, a tie keeps two, nothing fits, the limit, no senses |
+| `rankSenses` | 8 | Best first, sorted, bracket bonus, no senses |
+| `chooseSenses` | 14 | Planet, element and god claims, a tie keeps two, nothing fits, the limit, no senses |
 | `expandDisambiguations` | 11 | Ordinary pages, replace in place, no repeats, no fit, failed lookup, missing pages, nested disambiguation, unfetchable meaning, title passed to the lookup |
 | `isDisambiguation` | 3 | Flag decides, text fallback |
 | `fetchSenses` | 9 | Links then introductions, qualified titles far down the list, batches of 20, filtering, no links, error status |
@@ -119,14 +119,32 @@ Claude wrote the tests first, then the code and this file. It needs a row in `do
 
 ## Review log
 
-### Pass 1 (Grok in Cursor, Ask mode, against this spec)
+A full pass is: the reviewer reads this spec, compares it with the code and tests, then runs Stryker on `disambiguate.ts`. Fixes follow, then the next pass repeats all of it.
 
-It found no mismatch between the spec and `retrieve.ts`, and no objection to the Mercury happy-path tests. It found that the numbers were not pinned: the bracket bonus of 0.3, the minimum score 0.25, the margin 0.1 and the default maximum of 2 would all survive a wrong value. It also found four smaller problems: `fetchSenses` kept a page that only said "may refer to" (no flag), one failed `fetchPage` threw away every meaning of that page, "may also refer to" and the 400-character window were untested, and the default limit of 40 and `plnamespace=0` / `ppprop` were untested.
+### Preliminary review (Grok in Cursor, Ask mode, comparison only, no Stryker)
 
-### Pass 2 (fixes, 38 -> 54 tests)
+Found that the numbers were not pinned: the 0.3 bonus, minimum score 0.25, margin 0.1 and default maximum of 2 would all survive a wrong value. Also found that `fetchSenses` kept a page that only said "may refer to" (no flag), that one failed `fetchPage` threw away every meaning of that page, and that "may also refer to", the 400-character window, the default limit of 40, `plnamespace=0` and `ppprop` were untested. Fixed in the next commit (38 -> 54 tests). No Stryker score was taken at this stage.
 
-Code changed in two places. `fetchSenses` now also leaves out an introduction that says "may refer to" near the top. `expandDisambiguations` now skips a meaning whose `fetchPage` fails and keeps the others.
+### Pass 1 (Grok on commit a25442b, then Stryker)
 
-New tests use claims with known word counts so the scores are exact: 0.25 + 0.3 for the bonus (any capitals), 0.25 kept and 0.2 dropped, a second meaning 0.1 behind kept and 0.3 behind dropped, a far-behind meaning dropped even above the minimum, default maximum 2 with best first, stopword-only claims, the year bonus both ways, same page id under two titles, and the request parameters of `fetchSenses`.
+Grok's run used a commit from before the preliminary fixes, so it re-found the same gaps. Stryker scored 77.78% (72 mutants, 16 survived) on the old tests. Our own run on the fixed tests scored 90.41% (73 mutants, 7 survived). The 7 survivors:
 
-Left as is on purpose: the planet, element and god tests stay as readable examples, because the exact-number tests above now do the pinning. The live case where the god claim keeps both Mercury (planet) and Mercury (mythology) is the margin rule working, not a bug.
+| Survivor | Verdict | Action |
+|---|---|---|
+| Quantity check `ranked[0].score < minScore` set to false | Equivalent: the filter below already returns nothing | Removed the redundant line |
+| `r.score >= minScore` set to true | Real gap | Test: second meaning below 0.25 but within the margin is dropped |
+| `<= margin` changed to `< margin` | Real gap (hidden by floating point on 0.5 and 0.4) | Test with margin 0.25 on scores 0.75 and 0.5, which are exact in binary |
+| `.trim()` dropped on the bracket word | Real gap | Test with "Foo ( album )" |
+| Regex without `$` (first bracket, not last) | Real gap | Test with "Foo (Mercury) (album)" |
+| Regex `\s*$` changed to `\S*$` | Real gap | Test with a trailing space after the bracket |
+| `.catch(() => null)` changed to `() => undefined` | Equivalent: both are falsy and skipped | None |
+
+After the fixes: 57 tests, Stryker 98.53% (68 mutants, 1 survivor, equivalent).
+
+### Pass 2
+
+To do: Grok re-reads this spec against the fixed code and tests and runs Stryker again.
+
+### Left as is on purpose
+
+The planet, element and god tests stay as readable examples, because the exact-number tests do the pinning. The live case where the god claim keeps both Mercury (planet) and Mercury (mythology) is the margin rule working, not a bug. The scoring weights are hand-set and are not retuned against the test claims.

@@ -410,3 +410,27 @@ test("fetchPage also marks 'may also refer to', but only near the top of the tex
   fakeWiki(pageAnswer("Long", `${"x".repeat(401)} may refer to`));
   assert.equal((await fetchPage("Long"))!.disambiguation, false);
 });
+
+// ── pass 1 (Stryker survivors) ──
+
+test("chooseSenses drops a second meaning below the minimum score even when it is within the margin", () => {
+  const senses = [withHits("Sa", 3), withHits("Sb", 2)];
+  assert.deepEqual(chooseSenses(WORDS10, senses, { max: 3 }), ["Sa"]);
+});
+
+test("chooseSenses keeps a second meaning exactly the margin behind and drops one just past it", () => {
+  const claim = "alpha beta gamma delta";
+  const senses = [
+    { title: "Sa", intro: "alpha beta gamma" },
+    { title: "Sb", intro: "alpha beta" },
+  ];
+  assert.deepEqual(chooseSenses(claim, senses, { margin: 0.25, max: 3 }), ["Sa", "Sb"]);
+  assert.deepEqual(chooseSenses(claim, senses, { margin: 0.2, max: 3 }), ["Sa"]);
+});
+
+test("rankSenses reads the last bracket of the title, ignoring spaces inside and after it", () => {
+  const bonus = (title: string) => rankSenses("album zzz", [{ title, intro: "nothing" }])[0].score;
+  approx(bonus("Foo (Mercury) (album)"), 0.8);
+  approx(bonus("Foo ( album )"), 0.8);
+  approx(bonus("Foo (album) "), 0.8);
+});

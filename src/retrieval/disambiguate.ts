@@ -44,7 +44,7 @@ export function chooseSenses(claim: string, senses: Sense[], opts: ChooseOptions
   const minScore = opts.minScore ?? 0.25;
   const margin = opts.margin ?? 0.1;
   const ranked = rankSenses(claim, senses);
-  if (ranked.length === 0 || ranked[0].score < minScore) return [];
+  if (ranked.length === 0) return [];
   const best = ranked[0].score;
   return ranked
     .filter((r) => r.score >= minScore && best - r.score <= margin)
