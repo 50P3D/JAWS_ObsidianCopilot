@@ -1,7 +1,7 @@
 import { test, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { chooseSenses, expandDisambiguations, rankSenses, type Sense } from "./disambiguate";
-import { clearCustomFetch, fetchPage, fetchSenses, isDisambiguation, setCustomFetch, type WikiPage } from "./wikipedia";
+import { clearCustomFetch, fetchPage, fetchSenses, isDisambiguation, pickSenseTitles, setCustomFetch, type WikiPage } from "./wikipedia";
 
 const CLAIM = "Mercury is the closest planet to the Sun.";
 
@@ -170,47 +170,106 @@ function fakeWiki(body: unknown) {
   return urls;
 }
 
-test("fetchSenses reads the linked articles' titles and introductions in one request", async () => {
-  const urls = fakeWiki({
-    query: {
-      pages: [
-        { title: "Mercury (planet)", extract: "Mercury is the first planet from the Sun." },
-        { title: "Mercury (element)", extract: "Mercury is a chemical element." },
-      ],
-    },
+const json = (body: unknown) => new Response(JSON.stringify(body), { status: 200 });
+
+/** Fake Wikipedia for fetchSenses: one answer for the list of links, one for each batch of introductions. */
+function fakeSenseWiki(links: string[], extracts: Record<string, any> = {}) {
+  const urls: string[] = [];
+  setCustomFetch(async (url: string) => {
+    urls.push(url);
+    const u = new URL(url);
+    if (u.searchParams.get("prop") === "links") {
+      return json({ query: { pages: [{ title: "Mercury", links: links.map((title) => ({ ns: 0, title })) }] } });
+    }
+    const titles = (u.searchParams.get("titles") ?? "").split("|");
+    return json({ query: { pages: titles.map((t) => extracts[t] ?? { title: t, extract: `${t} introduction.` }) } });
+  });
+  return urls;
+}
+
+test("fetchSenses lists the page's links first and then reads their introductions", async () => {
+  const urls = fakeSenseWiki(["Mercury (planet)", "Mercury (element)"], {
+    "Mercury (planet)": { title: "Mercury (planet)", extract: "Mercury is the first planet from the Sun." },
+    "Mercury (element)": { title: "Mercury (element)", extract: "Mercury is a chemical element." },
   });
   const senses = await fetchSenses("Mercury");
-  assert.equal(urls.length, 1);
-  assert.match(urls[0], /generator=links/);
+  assert.equal(urls.length, 2);
+  assert.match(urls[0], /prop=links/);
   assert.match(urls[0], /titles=Mercury/);
-  assert.deepEqual(senses.map((s) => s.title).sort(), ["Mercury (element)", "Mercury (planet)"]);
-  assert.equal(senses.find((s) => s.title === "Mercury (planet)")!.intro, "Mercury is the first planet from the Sun.");
+  assert.match(urls[1], /exintro=1/);
+  assert.deepEqual(senses.map((s) => s.title), ["Mercury (planet)", "Mercury (element)"]);
+  assert.equal(senses[0].intro, "Mercury is the first planet from the Sun.");
+});
+
+test("fetchSenses reads the introductions of 'Name (...)' links even when they are far down the list", async () => {
+  const others = Array.from({ length: 30 }, (_, i) => `Aardvark ${i}`);
+  fakeSenseWiki([...others, "Mercury (planet)"]);
+  const senses = await fetchSenses("Mercury", 5);
+  assert.ok(senses.some((s) => s.title === "Mercury (planet)"));
+  assert.equal(senses.length, 5);
+});
+
+test("fetchSenses asks for introductions in batches of at most 20 titles", async () => {
+  const links = Array.from({ length: 45 }, (_, i) => `Mercury (sense ${i})`);
+  const urls = fakeSenseWiki(links);
+  const senses = await fetchSenses("Mercury", 45);
+  assert.equal(urls.length, 1 + 3);
+  for (const url of urls.slice(1)) {
+    assert.ok((new URL(url).searchParams.get("titles") ?? "").split("|").length <= 20);
+  }
+  assert.equal(senses.length, 45);
 });
 
 test("fetchSenses leaves out missing pages, empty introductions, other disambiguation pages and the page itself", async () => {
-  fakeWiki({
-    query: {
-      pages: [
-        { title: "Mercury (planet)", extract: "Mercury is the first planet." },
-        { title: "Gone", missing: true },
-        { title: "Blank", extract: "" },
-        { title: "Mercury (disambiguation)", extract: "Mercury may refer to:", pageprops: { disambiguation: "" } },
-        { title: "Mercury", extract: "Mercury may refer to:" },
-      ],
-    },
+  fakeSenseWiki(["Mercury (planet)", "Gone", "Blank", "Mercury (disambiguation)", "Mercury"], {
+    "Mercury (planet)": { title: "Mercury (planet)", extract: "Mercury is the first planet." },
+    Gone: { title: "Gone", missing: true },
+    Blank: { title: "Blank", extract: "" },
+    "Mercury (disambiguation)": { title: "Mercury (disambiguation)", extract: "Mercury may refer to:", pageprops: { disambiguation: "" } },
+    Mercury: { title: "Mercury", extract: "Mercury may refer to:" },
   });
   const senses = await fetchSenses("Mercury");
   assert.deepEqual(senses.map((s) => s.title), ["Mercury (planet)"]);
 });
 
-test("fetchSenses returns an empty list when the answer has no pages", async () => {
-  fakeWiki({});
+test("fetchSenses makes only one request when the page has no links", async () => {
+  const urls = fakeSenseWiki([]);
   assert.deepEqual(await fetchSenses("Mercury"), []);
+  assert.equal(urls.length, 1);
 });
 
 test("fetchSenses throws when Wikipedia answers with an error", async () => {
   setCustomFetch(async () => new Response("no", { status: 503, statusText: "Service Unavailable" }));
   await assert.rejects(fetchSenses("Mercury"), /503/);
+});
+
+// ── pickSenseTitles ────────────────────────────────────────────────
+
+test("pickSenseTitles puts 'Name (...)' titles first and keeps the rest in order", () => {
+  const picked = pickSenseTitles("Mercury", ["Bristol Mercury", "Mercury (planet)", "HMS Mercury", "Mercury (element)"], 10);
+  assert.deepEqual(picked, ["Mercury (planet)", "Mercury (element)", "Bristol Mercury", "HMS Mercury"]);
+});
+
+test("pickSenseTitles ignores capital letters in the name", () => {
+  assert.deepEqual(pickSenseTitles("mercury", ["Zed", "MERCURY (planet)"], 10), ["MERCURY (planet)", "Zed"]);
+});
+
+test("pickSenseTitles leaves out the page itself, '(disambiguation)' pages and repeats", () => {
+  const picked = pickSenseTitles("Mercury", ["Mercury", "Mercury (disambiguation)", "Mercury (planet)", "Mercury (planet)"], 10);
+  assert.deepEqual(picked, ["Mercury (planet)"]);
+});
+
+test("pickSenseTitles never returns more than the limit", () => {
+  const links = Array.from({ length: 10 }, (_, i) => `Mercury (${i})`);
+  assert.equal(pickSenseTitles("Mercury", links, 3).length, 3);
+});
+
+test("pickSenseTitles falls back to the first links when none look like senses", () => {
+  assert.deepEqual(pickSenseTitles("Mercury", ["Alpha", "Beta", "Gamma"], 2), ["Alpha", "Beta"]);
+});
+
+test("pickSenseTitles returns nothing for no links", () => {
+  assert.deepEqual(pickSenseTitles("Mercury", [], 5), []);
 });
 
 function pageAnswer(title: string, extract: string, pageprops?: Record<string, string>) {

@@ -151,24 +151,59 @@ export async function fetchPage(title: string): Promise<WikiPage | null> {
 }
 
 /**
- * The articles a disambiguation page links to, with the first paragraph of each, in one request.
+ * Chooses which linked pages of a disambiguation page to read. Titles that start with the page's
+ * own name followed by a bracket ("Mercury (planet)") are the real senses, so they go first;
+ * the other links follow in the order Wikipedia gave them. Leaves out the page itself,
+ * "(disambiguation)" pages and repeats.
+ */
+export function pickSenseTitles(name: string, links: string[], limit: number): string[] {
+  const lower = name.toLowerCase();
+  const seen = new Set<string>();
+  const qualified: string[] = [];
+  const rest: string[] = [];
+  for (const link of links) {
+    const key = link.toLowerCase();
+    if (key === lower || key.includes("(disambiguation)") || seen.has(key)) continue;
+    seen.add(key);
+    (key.startsWith(`${lower} (`) ? qualified : rest).push(link);
+  }
+  return [...qualified, ...rest].slice(0, limit);
+}
+
+/**
+ * Reads the senses listed on a disambiguation page: first the page's links, then the
+ * introductions of the chosen ones (Wikipedia returns at most 20 introductions per request).
  * Pages that are missing, have no introduction or are disambiguation pages themselves are left out.
  */
-export async function fetchSenses(title: string, limit = 20): Promise<Sense[]> {
-  const data = await wikiGet({
+export async function fetchSenses(title: string, limit = 40): Promise<Sense[]> {
+  const linkData = await wikiGet({
     action: "query",
-    generator: "links",
+    prop: "links",
     titles: title,
-    gplnamespace: "0",
-    gpllimit: String(limit),
-    prop: "extracts|pageprops",
-    exintro: "1",
-    explaintext: "1",
-    exlimit: "max",
-    ppprop: "disambiguation",
+    plnamespace: "0",
+    pllimit: "max",
     redirects: "1",
   });
-  const pages: any[] = data?.query?.pages ?? [];
+  const linkPages: any[] = linkData?.query?.pages ?? [];
+  const links: string[] = linkPages.flatMap((p) => (p.links ?? []).map((l: any) => String(l.title)));
+  const titles = pickSenseTitles(title, links, limit);
+  const batches: string[][] = [];
+  for (let i = 0; i < titles.length; i += 20) batches.push(titles.slice(i, i + 20));
+  const results = await Promise.all(
+    batches.map((batch) =>
+      wikiGet({
+        action: "query",
+        titles: batch.join("|"),
+        prop: "extracts|pageprops",
+        exintro: "1",
+        explaintext: "1",
+        exlimit: "max",
+        ppprop: "disambiguation",
+        redirects: "1",
+      }),
+    ),
+  );
+  const pages: any[] = results.flatMap((d) => d?.query?.pages ?? []);
   return pages
     .filter((p) => !p.missing && p.title !== title && p.pageprops?.disambiguation === undefined)
     .map((p) => ({ title: String(p.title), intro: String(p.extract ?? "").trim() }))

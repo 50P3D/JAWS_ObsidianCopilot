@@ -2,7 +2,7 @@
 
 This file describes what disambiguation must do, without code, so a second reviewer (human or AI from another model family) can check the code and the tests against it. If the code and this file disagree, one of them is wrong. Say which.
 
-Status: 30 tests, all passing. Written tests first, then the code. Not yet checked against live Wikipedia (`npm run smoke:disambiguation` does that).
+Status: 38 tests, all passing. Written tests first, then the code. Not yet checked against live Wikipedia (`npm run smoke:disambiguation` does that).
 
 ## What the feature is
 
@@ -65,13 +65,19 @@ A "sense" is one meaning: the title of a linked article and its first paragraph.
 1. The request also asks Wikipedia for the page property `disambiguation`.
 2. The returned page has `disambiguation` set to true when Wikipedia flags it, or when its text says "may refer to" near the top. Otherwise false.
 
-### `fetchSenses(title, limit = 20) -> Sense[]`
+### `pickSenseTitles(name, links, limit) -> string[]`
 
-1. Makes one request that lists the pages linked from `title` (main namespace only), with each page's introduction and disambiguation flag.
-2. Leaves out missing pages, pages with an empty introduction, pages that are disambiguation pages themselves, and the page `title`.
-3. An answer with no pages gives an empty list.
-4. A non-OK response throws an error that includes the status code.
-5. Only the first `limit` links are looked at. A meaning beyond that is never seen.
+1. Titles that start with `name` and a bracket ("Mercury (planet)"), ignoring capital letters, come first.
+2. The other links follow in the order given.
+3. Leaves out `name` itself, "(disambiguation)" titles and repeats, and returns at most `limit` titles.
+
+### `fetchSenses(title, limit = 40) -> Sense[]`
+
+1. First request lists the links of `title` (main namespace only). No links means no second request.
+2. `pickSenseTitles` chooses which links to read, so "Mercury (planet)" is read even when it is far down Wikipedia's alphabetical list.
+3. Introductions are requested in batches of at most 20 titles (Wikipedia's cap), together with the disambiguation flag.
+4. Leaves out missing pages, pages with an empty introduction, disambiguation pages and the page `title`.
+5. A non-OK response throws an error that includes the status code.
 
 ## Where it runs
 
@@ -85,7 +91,8 @@ In `retrieveEvidence`, after the top pages are fetched and before they are cut i
 | `chooseSenses` | 7 | Planet, element and god claims, a tie keeps two, nothing fits, the limit, no senses |
 | `expandDisambiguations` | 9 | Ordinary pages, replace in place, no repeats, no fit, failed lookup, missing pages, nested disambiguation, unfetchable meaning, title passed to the lookup |
 | `isDisambiguation` | 2 | Flag decides, text fallback |
-| `fetchSenses` | 4 | One request and its parameters, filtering, empty answer, error status |
+| `fetchSenses` | 6 | Links then introductions, qualified titles far down the list, batches of 20, filtering, no links, error status |
+| `pickSenseTitles` | 6 | Qualified first, capitals, exclusions, limit, fallback, no links |
 | `fetchPage` | 4 | Flag, text fallback, ordinary article, flag requested |
 
 Not covered by unit tests: the call inside `retrieveEvidence` (needs the network and Ollama) and the real Wikipedia response. Check those with the smoke script.
@@ -94,7 +101,8 @@ Not covered by unit tests: the call inside `retrieveEvidence` (needs the network
 
 - Choice is by word overlap only. A claim that shares no words with the intended meaning's introduction is skipped, not guessed.
 - Weights and thresholds are set by hand.
-- Only the first 20 links of a disambiguation page are read.
+- At most 40 linked pages are read per disambiguation page, qualified titles first. A meaning without a bracket in its title may be cut on very long pages.
+- Found by the live smoke test: reading only the first 20 links (alphabetical) missed Mercury (planet) and Mercury (element). Unit tests with fakes could not show this.
 - A disambiguation page that lists meanings without linking to articles gives nothing.
 
 ## Notes for the cross-checker
