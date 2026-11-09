@@ -7,6 +7,9 @@
 import type { ClaimCard, Verdict } from "../contract/claimCard";
 import { chatJson, DEFAULT_MODEL, type LlmOptions } from "./ollama";
 
+// Missing is not false: on the FEVER dev set the old prompt ("prefer Supported or Refuted based
+// on the closest match") made qwen3.5:9b call 14 of 16 unverifiable claims Refuted, often while
+// writing that the passages "never mention" the fact. See eval/README.md.
 const SYSTEM = `You check one claim against evidence passages from Wikipedia or the student's course materials.
 
 Rules:
@@ -20,14 +23,15 @@ Rules:
   and changing only the contradicted fact. It must not be empty. Otherwise use an empty string.
 - The corrected sentence must be directly supported by one of the passages; never guess or use outside knowledge.`;
 
+// explanation comes before verdict, so the model states what the passages say before it decides
 const SCHEMA = {
   type: "object",
   properties: {
-    verdict: { type: "string", enum: ["Supported", "Refuted", "Not Enough Info"] },
     explanation: { type: "string" },
+    verdict: { type: "string", enum: ["Supported", "Refuted", "Not Enough Info"] },
     suggested_fix: { type: "string" },
   },
-  required: ["verdict", "explanation", "suggested_fix"],
+  required: ["explanation", "verdict", "suggested_fix"],
 };
 
 interface VerifyResult {

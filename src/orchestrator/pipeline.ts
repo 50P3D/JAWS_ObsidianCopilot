@@ -15,7 +15,7 @@
  */
 
 import type { ClaimCard, Evidence, FactCheckRequest, FactCheckResponse } from "../contract/claimCard";
-import { extractClaims } from "../llm/extract";
+import { extractClaims, preprocess } from "../llm/extract";
 import { chatJson, type LlmOptions } from "../llm/ollama";
 import { verifyClaim } from "../llm/verify";
 import { mergeStubbed, scoreEvidence } from "../reliability";
@@ -48,6 +48,33 @@ export interface PipelineOptions {
   signal?: AbortSignal;
   /** The user's course materials, searched before Wikipedia. See src/course/. */
   course?: CourseSource;
+  /**
+   * When extraction finds no claims in a single short sentence, check that sentence as it is.
+   * For callers where the user asked about exactly this text (the selection command, the
+   * evaluation). Off by default, because the live checker sends whole paragraphs, where
+   * "no checkable claims" is often the right answer.
+   */
+  fallbackToText?: boolean;
+  /** Let the model reason before each verdict (qwen3.x thinking mode). Slower. Off by default. */
+  verifierThink?: boolean;
+}
+
+/** Longest text the fallback will check as one claim. */
+const FALLBACK_MAX_CHARS = 300;
+
+/**
+ * The text as a single claim card, or null when it is not one short sentence.
+ * Used when extraction returns nothing, as it did for "Dakota Fanning models." on the dev set.
+ */
+export function wholeTextClaim(text: string): ClaimCard | null {
+  const claim = preprocess(text).replace(/\s+/g, " ").trim();
+  if (!claim || claim.length > FALLBACK_MAX_CHARS) return null;
+  // more than one sentence means extraction had real text to work with and found nothing checkable
+  if (/[.!?]\s+\S/.test(claim)) return null;
+  if (/\?\s*$/.test(claim) || claim.includes("[code]") || claim.includes("[formula]")) return null;
+  const original = text.trim();
+  const start = text.indexOf(original);
+  return { claim_id: "c1", original_text: original, claim, source_span: { start, end: start + original.length } };
 }
 
 export interface CourseSource {
@@ -68,7 +95,8 @@ const REWRITE_SYSTEM = `You write Wikipedia search queries. Given a claim and th
 
 const REWRITE_SCHEMA = { type: "object", properties: { query: { type: "string" } }, required: ["query"] };
 
-async function rewriteQuery(claim: string, tried: string[], llm: LlmOptions): Promise<string> {
+/** Exported so the evaluation harness (eval/harness/appRetrieval.ts) searches exactly as the app does. */
+export async function rewriteQuery(claim: string, tried: string[], llm: LlmOptions): Promise<string> {
   const user = `Claim: ${claim}\nAlready tried:\n${tried.map((q) => `- ${q}`).join("\n")}`;
   const out = await chatJson<{ query: string }>(REWRITE_SYSTEM, user, REWRITE_SCHEMA, llm);
   return out.query?.trim() ?? "";
@@ -85,6 +113,7 @@ async function checkOne(
   retrieval: PipelineOptions["retrieval"] = {},
   context?: CourseQueryContext,
   localOnly = false,
+  verifyLlm: LlmOptions = llm,
 ): Promise<ClaimCard> {
   const tried: string[] = [];
   let wikipediaResult: ClaimCard | undefined;
@@ -99,7 +128,7 @@ async function checkOne(
     log(`${card.claim_id}: ${evidence.length} course passage(s)`);
     if (evidence.length > 0) {
       // course passages are the user's own material, so there is no Wikipedia reliability badge to score
-      const checked = await verifyClaim({ ...card, evidence }, llm, { topic });
+      const checked = await verifyClaim({ ...card, evidence }, verifyLlm, { topic });
       if (checked.verdict !== "Not Enough Info" || course.only || localOnly) return checked;
     } else if (course.only) {
       return { ...card, evidence: [], verdict: "Not Enough Info", explanation: "Your course materials do not cover this claim." };
@@ -125,7 +154,7 @@ async function checkOne(
     const rel = await scoreEvidence(evidence);
     const checked = await verifyClaim(
       { ...card, evidence, reliability: rel.reliability, stubbed: mergeStubbed(card.stubbed, rel.stubbed) },
-      llm,
+      verifyLlm,
       { topic },
     );
     wikipediaResult = checked;
@@ -142,11 +171,13 @@ export async function runFactCheckPipeline(request: FactCheckRequest, opts: Pipe
   configureReliability({ userAgent: opts.userAgent });
 
   const llm: LlmOptions = { ollamaUrl: opts.ollamaUrl, model: opts.model };
+  // Thinking applies only to verdicts. Extraction and query rewrites stay fast.
+  const verifyLlm: LlmOptions = opts.verifierThink ? { ...llm, think: true } : llm;
   const maxRetries = opts.maxRetries ?? 1;
   const pipelineRetrieval = opts.retrieval ?? { pages: 2, candidates: 24, mode: "hybrid" as const };
   const log = opts.log ?? (() => {});
 
-  const claims = opts.directClaims
+  let claims = opts.directClaims
     ? request.text.split(/\r?\n/).map((text, i) => ({
         claim_id: `c${i + 1}`,
         original_text: text,
@@ -156,6 +187,13 @@ export async function runFactCheckPipeline(request: FactCheckRequest, opts: Pipe
         courseClaims: opts.course !== undefined,
         topicContext: opts.topicContext,
       });
+  if (claims.length === 0 && opts.fallbackToText) {
+    const whole = wholeTextClaim(request.text);
+    if (whole) {
+      claims = [whole];
+      log("extraction found no claims, checking the text as one claim");
+    }
+  }
   log(`extracted ${claims.length} claim(s)`);
 
   const cards = new Array<ClaimCard>(claims.length);
@@ -182,6 +220,7 @@ export async function runFactCheckPipeline(request: FactCheckRequest, opts: Pipe
           pipelineRetrieval,
           context,
           opts.localOnly,
+          verifyLlm,
         );
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);

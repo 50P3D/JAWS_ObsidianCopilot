@@ -45,6 +45,19 @@ function metricsBlock(rows: Prediction[]): string {
   return lines.join("\n");
 }
 
+/** MiniCheck runs with retries: every search query, its answer and best score, and which one gave the verdict. */
+function searchList(r: Prediction): string | null {
+  const attempts = r.extra?.attempts as { query: string; yes: boolean | null; best_score: number; n_evidence: number }[] | undefined;
+  if (!Array.isArray(attempts) || attempts.length < 2) return null;
+  const chosen = Number(r.extra?.chosen_attempt ?? -1);
+  return attempts
+    .map((a, i) => {
+      const answer = a.n_evidence === 0 ? "no passages" : a.yes === null ? "unparsed" : a.yes ? "Yes" : "No";
+      return `"${a.query}" (${answer}, ${a.best_score.toFixed(2)})${i === chosen ? " used" : ""}`;
+    })
+    .join("; ");
+}
+
 function failureList(rows: Prediction[]): string {
   const wrong = rows.filter((r) => !r.correct);
   if (wrong.length === 0) return "None.";
@@ -57,6 +70,8 @@ function failureList(rows: Prediction[]): string {
     if (r.explanation) out.push(`  - model said: ${r.explanation.replace(/\s+/g, " ").slice(0, 300)}`);
     else if (r.raw && !r.predicted) out.push(`  - raw output: ${r.raw.replace(/\s+/g, " ").slice(0, 300)}`);
     if (r.evidence?.length) out.push(`  - evidence pages: ${r.evidence.map((e) => e.page_title).join(", ")}`);
+    const searches = searchList(r);
+    if (searches) out.push(`  - searches: ${searches}`);
   }
   return out.join("\n");
 }
