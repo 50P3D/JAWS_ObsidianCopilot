@@ -6,7 +6,7 @@ NoteCheck is an Obsidian plugin that extracts the factual claims from text you s
 
 Built by team **JAWS** for SE201 (AI-Driven Software Engineering), SMU, AY2026-27 Term 1.
 
-> **Status:** final submission due 10 November 2026, 12:00. The core pipeline, course materials checking and live suggestions work. Ghost text is built and awaiting review. The remaining evaluation runs are listed in [Project status](#project-status).
+> **Status:** final submission due 10 November 2026, 12:00. The core pipeline, course materials checking and live suggestions work. Ghost text and meaning selection for ambiguous names are built and tested. The remaining evaluation runs are listed in [Project status](#project-status).
 
 ---
 
@@ -32,7 +32,7 @@ The non-AI alternative is keyword search against Wikipedia plus manual lookup, o
 4. **Source reliability flags.** Each piece of Wikipedia evidence gets a `Low`, `Medium` or `High` badge with reasons, such as a recent unreviewed edit, a POV or Disputed tag or low citation coverage. Flags describe articles and revisions, never individual editors.
 5. **MCP server.** Exposes `fact_check` and retrieval as tools so Claude can review a verdict on request. The same interface runs our evaluation harness.
 
-6. **Ghost text (off by default).** A short grey suggestion from a small local model appears after the cursor when you pause after typing a space. Tab accepts it and Esc dismisses it. It is built and tested on the branch `aadhavan/ghost-text` and awaits review, so it is not in the main build yet.
+6. **Ghost text (off by default).** A short grey suggestion from a small local model appears after the cursor when you pause after typing a space. Tab accepts it and Esc dismisses it. Turn it on with **Enable ghost text** in settings.
 
 An automated Claude judge is a **stretch goal**, not part of the core scope.
 
@@ -65,7 +65,7 @@ Here is what happens when you select a sentence and click check, step by step.
 3. **It picks out the individual facts.** A sentence like "Einstein was born in 1879 in Ulm and won the Nobel Prize in 1921" becomes separate claims that can each be checked on their own.
 4. **It throws away what can't be checked.** Opinions, to-do reminders and questions are skipped. Course-specific claims are skipped too, unless you have set a course materials folder that can check them.
 5. **It rewrites each claim so it makes sense alone.** "He was born in 1879" becomes "Albert Einstein was born in 1879", because the checker will not see the rest of your note.
-6. **It looks the claim up.** If you have set a course folder, it first searches your course notes, which were split into passages and indexed once when you set the folder. If they cover the claim, it skips to step 8. Otherwise it searches Wikipedia: it searches, skips pages that only list several meanings of a name ("Mercury may refer to..."), cuts the articles into small pieces and ranks which pieces are most useful. NoteCheck does not yet choose between meanings itself, so a claim about an ambiguous name may need a more specific wording.
+6. **It looks the claim up.** If you have set a course folder, it first searches your course notes, which were split into passages and indexed once when you set the folder. If they cover the claim, it skips to step 8. Otherwise it searches Wikipedia. If a search lands on a page that only lists several meanings of a name ("Mercury may refer to..."), NoteCheck reads the introduction of each meaning and keeps the one that shares the most words with your claim, so "Mercury is the closest planet to the Sun" goes to Mercury (planet). If two meanings fit about equally, it keeps both. If none fits, it keeps none rather than guessing, so a very vague claim may still need a more specific wording. It then cuts the articles into small pieces and ranks which pieces are most useful.
 7. **It checks how much to trust that article.** It looks at warning banners, recent edits that nobody has reviewed and how often the page gets undone by other editors. This gives a High, Medium or Low badge with reasons.
 8. **The local AI reads the evidence and decides.** It compares the Wikipedia passage with your claim and answers Supported, Refuted or Not Enough Info. If your claim is wrong, it suggests a fix.
 9. **You see the result in a side panel and in your note.** Each claim shows the verdict, the exact passage, a link to the exact version of the Wikipedia page (or your course note) used and the trust badge. Refuted claims are also marked in the note itself, with the suggested change ready to accept.
@@ -122,7 +122,7 @@ Dashed boxes are the only places data leaves the machine.
 | 1 | Preprocess                     | Skips frontmatter, code blocks and LaTeX. Keeps wikilinks as context.                                                                        | Clean text                         |
 | 2 | Claim extraction               | Splits text into atomic claims and filters out opinions, reminders and course-specific content that Wikipedia cannot verify.                 | Claims as JSON                     |
 | 3 | Decontextualisation            | Rewrites each claim to stand alone using the note title, headings and nearby sentences (for example, replacing "he" with the person's name). | Self-contained claims              |
-| 4 | Query generation and retrieval | Builds search queries from entities, searches, skips disambiguation pages (choosing between meanings is not built yet), then chunks and reranks passages.    | Evidence passages and revision IDs |
+| 4 | Query generation and retrieval | Builds search queries from entities, searches, resolves disambiguation pages to the meaning the claim is about (word overlap, no model call), then chunks and reranks passages.    | Evidence passages and revision IDs |
 | 5 | Reliability scoring            | Scores each evidence revision with transparent rules (see below).                                                                            | Badge and reasons                  |
 | 6 | Verification                   | The LLM labels each claim and proposes a correction when it is refuted.                                                                      | Verdict and fix                    |
 
@@ -251,6 +251,11 @@ Open **Settings → NoteCheck**:
 | Live check debounce (ms)     | How long to wait after you stop typing. 1500 is a good start.                                                    |
 | Course materials folder      | Vault path of your course folder, for example `Courses/SE201`. Empty means Wikipedia only.                       |
 | Course materials only        | On to never contact Wikipedia                                                                                    |
+| Enable ghost text            | On to get a grey word suggestion after you pause (off by default)                                                |
+| Ghost text model             | A small, fast model you have pulled, for example `qwen3.5:2b`. Separate from the model above. Empty means no suggestions. |
+| Ghost text delay (ms)        | How long to wait after you stop typing before asking for a suggestion                                            |
+
+**Enable Claude review** appears in settings but does not do anything yet. Claude reviews verdicts through the MCP server instead (see [Features](#features)).
 
 ---
 
@@ -443,8 +448,8 @@ Checkpoint due **18 October 2026**.
 | RAG over the user's course materials, with Wikipedia as fallback      | **Done** — `src/course/`, 11 tests, live smoke test passes. Score threshold not tuned yet |
 | Cache Wikipedia articles and passage embeddings between checks        | **Done** — 1 hour article cache, embedding cache                                          |
 | Live checking with inline, word-level suggestions                     | **Done** — 21 tests. Needs the hands-on checks in [Testing it yourself](#testing-it-yourself) |
-| Ghost text (grey inline autocomplete, Tab to accept)                  | **Built, awaiting review** — branch `aadhavan/ghost-text`, 120 tests, mutation score 86.96% (Stryker). Hands-on check in Obsidian still to do |
-| Choosing between meanings of an ambiguous name                        | Not done — disambiguation pages are skipped for now                                          |
+| Ghost text (grey inline autocomplete, Tab to accept)                  | **Done** — 120 tests, mutation score 86.96% (Stryker, three review rounds). Hands-on check in Obsidian still to do |
+| Choosing between meanings of an ambiguous name                        | **Done** — 59 tests, mutation score 98.53% (Stryker, two passes), live smoke test on Mercury passes. Chooses by word overlap only, weights set by hand |
 | Course RAG evaluation on our own notes, per model size                | Not started                                                                                 |
 | Prefix caching, multi-session, Ollama keep-alive settings             | Not started                                                                                 |
 
