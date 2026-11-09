@@ -45,7 +45,7 @@ export class NoteCheckResultView extends ItemView {
    * Replace the panel contents with a list of rendered claim cards.
    * Called by the plugin after a fact-check run completes.
    */
-  renderCards(cards: ClaimCard[], reviews?: Map<string, CrossCheckResult>): void {
+  renderCards(cards: ClaimCard[], reviews?: Map<string, CrossCheckResult>, skipped?: Map<string, string>): void {
     this.clear();
     const container = this.containerEl.children[1]; // Obsidian reserves [0] for the header
 
@@ -58,7 +58,7 @@ export class NoteCheckResultView extends ItemView {
     }
 
     for (const card of cards) {
-      this.renderOneCard(container, card, reviews?.get(card.claim_id));
+      this.renderOneCard(container, card, reviews?.get(card.claim_id), skipped?.get(card.claim_id));
     }
   }
 
@@ -98,7 +98,7 @@ export class NoteCheckResultView extends ItemView {
   /**
    * Render a single ClaimCard as a DOM subtree inside `parent`.
    */
-  private renderOneCard(parent: Element, card: ClaimCard, review?: CrossCheckResult): void {
+  private renderOneCard(parent: Element, card: ClaimCard, review?: CrossCheckResult, skippedNote?: string): void {
     const cardEl = parent.createEl("div", { cls: "notecheck-card" });
 
     // ── Verdict badge ──────────────────────────────────────────
@@ -138,6 +138,10 @@ export class NoteCheckResultView extends ItemView {
         text: reviewLabel(review),
         cls: `notecheck-claude-review notecheck-claude-${review.stance}`,
       });
+    }
+
+    if (skippedNote && !review) {
+      cardEl.createEl("p", { text: skippedNote, cls: "notecheck-claude-review notecheck-claude-skipped" });
     }
 
     // ── Suggested fix (only for Refuted verdicts) ──────────────

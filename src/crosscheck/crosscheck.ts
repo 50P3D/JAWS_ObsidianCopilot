@@ -146,6 +146,39 @@ export function parseReply(text: string): { stance: Stance; reason: string } {
 
 // ── the cross-check ────────────────────────────────────────────────
 
+/** Words that say the claim is about the writer, so it is probably not general knowledge. */
+const FIRST_PERSON_CASE = /(^|[^A-Za-z0-9'’])I(['’](m|ve|ll|d))?(?![A-Za-z0-9])/;
+const FIRST_PERSON_ANY = /\b(my|me|mine|myself|we|our|ours)\b/i;
+
+const EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
+const LINK = /(https?:\/\/|www\.)\S+/i;
+const PHONE_LIKE = /\+?\d[\d\s().-]{7,}\d/g;
+const YEAR_RANGE = /^\d{4}\s*[-–]\s*\d{4}$/;
+const ID_NUMBER = /\b[STFGM]\d{7}[A-Z]\b/;
+const API_KEY = /\bsk-[A-Za-z0-9_-]{8,}/;
+const LONG_DIGITS = /\d{8,}/;
+
+function hasPhoneNumber(claim: string): boolean {
+  for (const m of claim.match(PHONE_LIKE) ?? []) {
+    const text = m.trim();
+    if (YEAR_RANGE.test(text)) continue;
+    if (text.replace(/\D/g, "").length >= 8) return true;
+  }
+  return false;
+}
+
+/**
+ * Why a claim must not leave the machine, or null when it may. Personal language is reported first.
+ * This is a screen, not a guarantee: it catches obvious cases, nothing more.
+ */
+export function blockReason(claim: string): "personal language" | "private-looking text" | null {
+  if (FIRST_PERSON_CASE.test(claim) || FIRST_PERSON_ANY.test(claim)) return "personal language";
+  if (EMAIL.test(claim) || LINK.test(claim) || API_KEY.test(claim) || ID_NUMBER.test(claim)) return "private-looking text";
+  if (LONG_DIGITS.test(claim)) return "private-looking text";
+  if (hasPhoneNumber(claim)) return "private-looking text";
+  return null;
+}
+
 function shouldCheck(card: ClaimCard): boolean {
   if (!card.verdict || card.verdict === "Not Enough Info") return false;
   if (!card.evidence) return false;
@@ -153,12 +186,19 @@ function shouldCheck(card: ClaimCard): boolean {
   return true;
 }
 
+/** The panel note for a card that was skipped only because of what its claim contains. */
+export function privacyNote(card: ClaimCard): string | null {
+  if (!shouldCheck(card) || card.evidence!.length === 0) return null;
+  const why = blockReason(card.claim);
+  return why === null ? null : `Not sent to Claude: ${why} in the claim.`;
+}
+
 /**
  * Asks Haiku, then Sonnet when Haiku does not agree. Returns null when the card is not eligible or
  * every call failed, so the local verdict simply stands alone.
  */
 export async function crossCheck(card: ClaimCard, opts: CrossCheckOptions): Promise<CrossCheckResult | null> {
-  if (opts.apiKey.trim() === "" || !shouldCheck(card)) return null;
+  if (opts.apiKey.trim() === "" || !shouldCheck(card) || blockReason(card.claim) !== null) return null;
   const sentences = pickEvidenceSentences(card.claim, card.evidence!, opts);
   if (sentences.length === 0) return null;
 

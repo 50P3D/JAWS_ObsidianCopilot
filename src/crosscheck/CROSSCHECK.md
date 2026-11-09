@@ -1,6 +1,6 @@
 # Claude cross-check
 
-Status: 59 tests, all passing. Spec written first, then tests, then code. Stryker mutation score 99.12% on `crosscheck.ts` (two equivalent survivors). Not yet run against the real API (needs an API key). Unit tests use a fake network. Not yet reviewed by a second model.
+Status: 78 tests, all passing. Spec written first, then tests, then code. Stryker mutation score 97.48% on `crosscheck.ts` (the survivors are equivalent mutants: optional-chaining fallbacks, a trim on text that cannot have spaces at its ends, and regex changes that match the same text). Not yet run against the real API (needs an API key). Unit tests use a fake network. Not yet reviewed by a second model.
 
 ## What it is
 
@@ -37,6 +37,12 @@ The evidence sentences are chosen by word overlap with the claim, best first, an
 - the card has no verdict, or the verdict is Not Enough Info
 - the card has no evidence
 - any evidence passage comes from the user's course materials (`source` is `course`). Course notes stay on the machine.
+- the claim is in the first person (`I`, `my`, `me`, `we`, `our` and similar): reported as "personal language"
+- the claim holds an email address, a link, a phone-like number, an ID-style number (for example `S1234567D`), an `sk-` key or eight or more digits in a row: reported as "private-looking text"
+
+When a card is skipped for either of the last two reasons, the panel shows "Not sent to Claude: <reason> in the claim." under the local explanation, so the user knows why there is no second opinion.
+
+Honest limits of the screen: it catches obvious cases only. A claim about a private matter written in the third person ("Sam owes Priya money") passes. Pi written to ten places is read as a long number and skipped. A Roman numeral I ("Part I") is read as the pronoun and skipped. Skipping too much is the safe direction. Title and heading overlap was considered and dropped: a note titled "Mercury" produces ordinary claims that mention Mercury, so the rule would block most real claims.
 
 ## The reply
 

@@ -5,11 +5,13 @@ import {
   HAIKU,
   SONNET,
   askClaude,
+  blockReason,
   buildMessages,
   crossCheck,
   crossCheckCards,
   parseReply,
   pickEvidenceSentences,
+  privacyNote,
   reviewLabel,
 } from "./crosscheck";
 
@@ -471,4 +473,170 @@ test("pickEvidenceSentences drops the space before the cut mark", () => {
 test("askClaude skips an empty entry among the content blocks", async () => {
   const text = await askClaude({ apiKey: KEY, model: HAIKU, system: "s", user: "u", fetch: rawNet({ content: [null, { type: "text", text: "hi" }] }) });
   assert.equal(text, "hi");
+});
+
+// ── keeping private claims off the wire ────────────────────────────
+
+test("ordinary factual claims are not blocked", () => {
+  for (const claim of [
+    "Mercury is the closest planet to the Sun.",
+    "The Treaty of Versailles was signed in 1919.",
+    "The First World War lasted 1914-1918.",
+    "The US entered the war in 1917.",
+    "Albert Einstein won the Nobel Prize in 1921.",
+    "Water boils at 100 degrees Celsius at sea level.",
+  ]) {
+    assert.equal(blockReason(claim), null, claim);
+  }
+});
+
+test("claims in the first person are blocked as personal", () => {
+  for (const claim of [
+    "My friend Sam owes me money.",
+    "I think Paris is the capital of France.",
+    "I'm 20 years old and live in Singapore.",
+    "I've visited Mercury Records.",
+    "We went to the museum last week.",
+    "Our solar system has eight planets.",
+    "This book is mine.",
+    "I did it myself.",
+  ]) {
+    assert.equal(blockReason(claim), "personal language", claim);
+  }
+});
+
+test("a capital I inside a word or the word 'us' in US does not count as personal", () => {
+  assert.equal(blockReason("Iron is a metal."), null);
+  assert.equal(blockReason("The US has fifty states."), null);
+});
+
+test("emails, links, phone numbers, ID numbers and API keys are blocked as private-looking", () => {
+  for (const claim of [
+    "Contact sam@example.com about the 1919 treaty.",
+    "See https://example.com/private for the treaty.",
+    "See www.example.com for the treaty.",
+    "Call +65 9123 4567 about Mercury.",
+    "Call 91234567 about Mercury.",
+    "The record number is S1234567D for Mercury.",
+    "The key sk-ant-api03-abcdefghijklmnop1234 opens Mercury.",
+    "The account 123456789012 holds Mercury.",
+  ]) {
+    assert.equal(blockReason(claim), "private-looking text", claim);
+  }
+});
+
+test("a year range or a short number is not a phone number", () => {
+  assert.equal(blockReason("The war lasted 1914-1918."), null);
+  assert.equal(blockReason("It has 8 planets and 290 moons."), null);
+  assert.equal(blockReason("The population is about 1,400,000,000."), null);
+});
+
+test("personal language is reported before private-looking text", () => {
+  assert.equal(blockReason("My email is sam@example.com."), "personal language");
+});
+
+test("a blocked claim makes no request even when everything else qualifies", async () => {
+  const net = fakeNet([say("agree")]);
+  const r = await crossCheck(card({ claim: "My friend Sam owes me money." }), { apiKey: KEY, fetch: net.fetchFn });
+  assert.equal(r, null);
+  assert.equal(net.calls.length, 0);
+});
+
+test("crossCheckCards leaves a blocked claim out and still checks the others", async () => {
+  const net = fakeNet([say("agree")]);
+  const map = await crossCheckCards(
+    [card({ claim_id: "a", claim: "I think Mercury is small." }), card({ claim_id: "b" })],
+    { apiKey: KEY, fetch: net.fetchFn },
+  );
+  assert.deepEqual([...map.keys()], ["b"]);
+  assert.equal(net.calls.length, 1);
+});
+
+test("privacyNote explains the skip only for a card that would otherwise have been sent", () => {
+  assert.equal(
+    privacyNote(card({ claim: "My friend Sam owes me money." })),
+    "Not sent to Claude: personal language in the claim.",
+  );
+  assert.equal(
+    privacyNote(card({ claim: "Mail sam@example.com about Mercury." })),
+    "Not sent to Claude: private-looking text in the claim.",
+  );
+  assert.equal(privacyNote(card()), null);
+  assert.equal(privacyNote(card({ claim: "My friend Sam owes me money.", verdict: "Not Enough Info" })), null);
+  assert.equal(privacyNote(card({ claim: "My friend Sam owes me money.", evidence: [] })), null);
+  assert.equal(privacyNote(card({ claim: "My friend Sam owes me money.", evidence: [ev("Own note.", { source: "course" })] })), null);
+});
+
+// ── blockReason edges, one rule at a time ──────────────────────────
+
+const PERSONAL = "personal language";
+const PRIVATE = "private-looking text";
+
+test("a lone I counts at the start, after a space, in brackets and with every contraction", () => {
+  for (const claim of ["I did it.", "Then I left.", "(I think so.)", "I'm here.", "I’ve been.", "I'll go.", "I’d go.", "So,I left."]) {
+    assert.equal(blockReason(claim), PERSONAL, claim);
+  }
+});
+
+test("a capital I inside names, codes or numbers does not count", () => {
+  for (const claim of ["IBM makes computers.", "Iron is a metal.", "I2C is a bus.", "The 3I model exists.", "Hi there."]) {
+    assert.equal(blockReason(claim), null, claim);
+  }
+});
+
+test("first-person words match as whole words in any case, but not inside other words", () => {
+  for (const claim of ["WE did it.", "Ours is bigger.", "Tell ME.", "It is MINE.", "Do it Myself."]) {
+    assert.equal(blockReason(claim), PERSONAL, claim);
+  }
+  for (const claim of ["Messi scored.", "Mexico is large.", "Wells is a city.", "The ourang is rare.", "Welcome to Rome."]) {
+    assert.equal(blockReason(claim), null, claim);
+  }
+});
+
+test("emails are blocked in plain and tagged forms but not a bare handle or a one-letter domain", () => {
+  assert.equal(blockReason("Write to a@b.co about Mercury."), PRIVATE);
+  assert.equal(blockReason("Write to user.name+tag@mail.example.org about Mercury."), PRIVATE);
+  assert.equal(blockReason("Follow @mercury for news on Mercury."), null);
+  assert.equal(blockReason("Mail x@y.c about Mercury."), null);
+});
+
+test("links are blocked in any case but a bare www with nothing after it is not", () => {
+  assert.equal(blockReason("See HTTP://EXAMPLE.COM now."), PRIVATE);
+  assert.equal(blockReason("See http://x.y now."), PRIVATE);
+  assert.equal(blockReason("See WWW.example.com now."), PRIVATE);
+  assert.equal(blockReason("Visit www. now."), null);
+  assert.equal(blockReason("The protocol http is old."), null);
+});
+
+test("phone numbers are blocked with spaces, brackets, dashes or dots but not short digit runs", () => {
+  for (const claim of ["Call (65) 9123-4567.", "Call 9123 4567.", "Call 9123.4567.", "Call +6591234567.", "Call 1 2 3 4 5 6 7 8."]) {
+    assert.equal(blockReason(claim), PRIVATE, claim);
+  }
+  for (const claim of ["Call 123-4567.", "The sequence 1 2 3 4 5 continues.", "Use 555 1234."]) {
+    assert.equal(blockReason(claim), null, claim);
+  }
+});
+
+test("year ranges are skipped with either dash and spacing, and a real number after one still blocks", () => {
+  assert.equal(blockReason("It ran 1914–1918."), null);
+  assert.equal(blockReason("It ran 1914 - 1918."), null);
+  assert.equal(blockReason("It ran 1914-1918 and then call 9123 4567."), PRIVATE);
+});
+
+test("ID-style numbers need the full shape", () => {
+  assert.equal(blockReason("Record G1234567X is Mercury."), PRIVATE);
+  assert.equal(blockReason("Record S123456D is Mercury."), null);
+  assert.equal(blockReason("Record s1234567d is Mercury."), null);
+  assert.equal(blockReason("Record XS1234567D is Mercury."), null);
+});
+
+test("API keys need sk- at a word start and eight more characters", () => {
+  assert.equal(blockReason("Key sk-12345678 is Mercury."), PRIVATE);
+  assert.equal(blockReason("Key sk-abc is Mercury."), null);
+  assert.equal(blockReason("The task-force handled Mercury."), null);
+});
+
+test("eight digits in a row are blocked and seven are not", () => {
+  assert.equal(blockReason("Number 12345678 is Mercury."), PRIVATE);
+  assert.equal(blockReason("Number 1234567 is Mercury."), null);
 });

@@ -398,3 +398,4 @@
 .notecheck-claude-agree { border-left-color: var(--color-green); }
 .notecheck-claude-disagree { border-left-color: var(--color-red); color: var(--text-normal); }
 .notecheck-claude-unsure { border-left-color: var(--color-yellow); }
+.notecheck-claude-skipped { font-style: italic; }
