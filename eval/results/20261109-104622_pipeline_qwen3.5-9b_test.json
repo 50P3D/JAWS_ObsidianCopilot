@@ -1,0 +1,1102 @@
+{
+  "run_id": "20261109-104622_pipeline_qwen3.5-9b_test",
+  "started_at": "2026-11-09T10:46:22.900Z",
+  "finished_at": "2026-11-09T10:50:05.028Z",
+  "git_commit": "a91fa47-dirty",
+  "system": {
+    "name": "pipeline",
+    "model": "qwen3.5:9b",
+    "family": "qwen",
+    "config": {
+      "orchestrator": "src/orchestrator/index.ts"
+    }
+  },
+  "dataset": {
+    "path": "eval/datasets/generated.jsonl",
+    "sha256": "eb991f565b24fe4fd1fc3f31c38bd827e96579b4600c430576cebf9b64c8a54d",
+    "split": "test",
+    "count": 30
+  },
+  "predictions": [
+    {
+      "id": "gen-002",
+      "claim": "Magna Carta was sealed by King John in 1265.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 13161,
+      "explanation": "Passage [1] explicitly states that the Magna Carta was 'sealed by King John of England' on 15 June 1215. | Passage [1] states that the Magna Carta was sealed by King John on 15 June 1215, not 1265.",
+      "evidence": [
+        {
+          "page_title": "Magna Carta",
+          "revision_id": 1381090004,
+          "retrieval_score": 0.978
+        },
+        {
+          "page_title": "Magna Carta",
+          "revision_id": 1381090004,
+          "retrieval_score": 0.873
+        },
+        {
+          "page_title": "Magna Carta",
+          "revision_id": 1381090004,
+          "retrieval_score": 0.848
+        },
+        {
+          "page_title": "Magna Carta",
+          "revision_id": 1381090004,
+          "retrieval_score": 0.93
+        },
+        {
+          "page_title": "Magna Carta",
+          "revision_id": 1381090004,
+          "retrieval_score": 0.815
+        },
+        {
+          "page_title": "Magna Carta",
+          "revision_id": 1381090004,
+          "retrieval_score": 0.804
+        }
+      ],
+      "extra": {
+        "cards": 2,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-004",
+      "claim": "Marie Curie won Nobel Prizes in Physics and in Medicine.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 10748,
+      "explanation": "Passage [1] explicitly states that Marie Curie 'shared the 1903 Nobel Prize in Physics' with her husband and Henri Becquerel, and Passage [2] confirms she was awarded the 'Nobel Prize in Physics' in December 1903. | The passages state that Marie Curie won the Nobel Prize in Physics (1903) and Chemistry (1911), not Medicine.",
+      "evidence": [
+        {
+          "page_title": "Marie Curie",
+          "revision_id": 1384248865,
+          "retrieval_score": 0.957
+        },
+        {
+          "page_title": "Marie Curie",
+          "revision_id": 1384248865,
+          "retrieval_score": 0.906
+        },
+        {
+          "page_title": "Marie Curie",
+          "revision_id": 1384248865,
+          "retrieval_score": 0.889
+        },
+        {
+          "page_title": "Marie Curie",
+          "revision_id": 1384248865,
+          "retrieval_score": 0.888
+        },
+        {
+          "page_title": "Marie Curie",
+          "revision_id": 1384248865,
+          "retrieval_score": 0.856
+        },
+        {
+          "page_title": "Marie Curie",
+          "revision_id": 1384248865,
+          "retrieval_score": 0.837
+        }
+      ],
+      "extra": {
+        "cards": 2,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-005",
+      "claim": "Penicillin was discovered by Louis Pasteur in 1928.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 6712,
+      "explanation": "Passage [2] states that Louis Pasteur died on September 28, 1895, which means he could not have made a discovery in 1928. Additionally, the passages do not mention Penicillin; historically, it was Alexander Fleming who discovered it.",
+      "evidence": [
+        {
+          "page_title": "Pasteur Institute",
+          "revision_id": 1383680112,
+          "retrieval_score": 0.832
+        },
+        {
+          "page_title": "Louis Pasteur",
+          "revision_id": 1383911409,
+          "retrieval_score": 0.81
+        },
+        {
+          "page_title": "Louis Pasteur",
+          "revision_id": 1383911409,
+          "retrieval_score": 0.781
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-007",
+      "claim": "Sydney is the capital city of Australia.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 6584,
+      "explanation": "Passage [1] states that Sydney is the capital of New South Wales, and Passage [2] explicitly notes that Canberra ultimately filled the role of Australia's capital city.",
+      "evidence": [
+        {
+          "page_title": "Sydney",
+          "revision_id": 1384207131,
+          "retrieval_score": 0.94
+        },
+        {
+          "page_title": "Sydney",
+          "revision_id": 1384207131,
+          "retrieval_score": 0.916
+        },
+        {
+          "page_title": "Sydney",
+          "revision_id": 1384207131,
+          "retrieval_score": 0.912
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-009",
+      "claim": "Venus is the closest planet to the Sun.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 5723,
+      "explanation": "The passages state that Mercury is 'more often the closest to Earth' and that Venus approaches Earth at inferior conjunction, but they do not claim Venus is the closest planet to the Sun; in fact, general astronomical knowledge (implied by the context of orbits around the Sun) places Mercury closer to the Sun than Venus.",
+      "evidence": [
+        {
+          "page_title": "Venus",
+          "revision_id": 1384282462,
+          "retrieval_score": 0.949
+        },
+        {
+          "page_title": "Venus",
+          "revision_id": 1384282462,
+          "retrieval_score": 0.937
+        },
+        {
+          "page_title": "Venus",
+          "revision_id": 1384282462,
+          "retrieval_score": 0.932
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-010",
+      "claim": "Saturn is the largest planet in the Solar System.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 5757,
+      "explanation": "Passage [1] explicitly states that Saturn is the 'second largest planet in the Solar System, after Jupiter,' which directly contradicts the claim that it is the largest.",
+      "evidence": [
+        {
+          "page_title": "Saturn",
+          "revision_id": 1383736367,
+          "retrieval_score": 0.957
+        },
+        {
+          "page_title": "Saturn",
+          "revision_id": 1383736367,
+          "retrieval_score": 0.945
+        },
+        {
+          "page_title": "Saturn",
+          "revision_id": 1383736367,
+          "retrieval_score": 0.872
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-012",
+      "claim": "The chemical symbol for gold is Ag.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 5376,
+      "explanation": "Passage [1] explicitly states that silver has the symbol Ag, and Passage [2] confirms this symbol comes from the Latin word for silver. The claim incorrectly attributes this symbol to gold.",
+      "evidence": [
+        {
+          "page_title": "Silver",
+          "revision_id": 1382710933,
+          "retrieval_score": 0.855
+        },
+        {
+          "page_title": "Silver",
+          "revision_id": 1382710933,
+          "retrieval_score": 0.827
+        },
+        {
+          "page_title": ".ag",
+          "revision_id": 1375801207,
+          "retrieval_score": 0.674
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-014",
+      "claim": "Pride and Prejudice was written by Charlotte Brontë.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 5464,
+      "explanation": "Passage [2] explicitly states that 'Pride and Prejudice is a novel by English author Jane Austen,' which directly contradicts the claim that Charlotte Brontë wrote it.",
+      "evidence": [
+        {
+          "page_title": "Pride and Prejudice",
+          "revision_id": 1384591658,
+          "retrieval_score": 0.911
+        },
+        {
+          "page_title": "Pride and Prejudice",
+          "revision_id": 1384591658,
+          "retrieval_score": 0.827
+        },
+        {
+          "page_title": "Pride and Prejudice",
+          "revision_id": 1384591658,
+          "retrieval_score": 0.792
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-015",
+      "claim": "George Orwell's Nineteen Eighty-Four was first published in 1959.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 5892,
+      "explanation": "The passages state that the novel was published on 8 June 1949, which contradicts the claim that it was first published in 1959.",
+      "evidence": [
+        {
+          "page_title": "Nineteen Eighty-Four",
+          "revision_id": 1384333965,
+          "retrieval_score": 0.944
+        },
+        {
+          "page_title": "Nineteen Eighty-Four",
+          "revision_id": 1384333965,
+          "retrieval_score": 0.864
+        },
+        {
+          "page_title": "Nineteen Eighty-Four",
+          "revision_id": 1384333965,
+          "retrieval_score": 0.857
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-017",
+      "claim": "Ludwig van Beethoven was born in Vienna.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 5673,
+      "explanation": "Passage [1] explicitly states that Beethoven was 'Born in Bonn,' which directly contradicts the claim that he was born in Vienna.",
+      "evidence": [
+        {
+          "page_title": "Ludwig van Beethoven",
+          "revision_id": 1382728401,
+          "retrieval_score": 0.889
+        },
+        {
+          "page_title": "Johann van Beethoven",
+          "revision_id": 1379448506,
+          "retrieval_score": 0.813
+        },
+        {
+          "page_title": "Ludwig van Beethoven",
+          "revision_id": 1382728401,
+          "retrieval_score": 0.811
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-019",
+      "claim": "RMS Titanic sank in April 1914 on its maiden voyage.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 10805,
+      "explanation": "The passages state that the RMS Titanic sank on April 15, 1912, not April 1914. | Passages [1] and [3] explicitly state that the RMS Titanic sank during her maiden voyage from Southampton to New York City.",
+      "evidence": [
+        {
+          "page_title": "Titanic",
+          "revision_id": 1384179774,
+          "retrieval_score": 0.892
+        },
+        {
+          "page_title": "Sinking of the Titanic",
+          "revision_id": 1384643973,
+          "retrieval_score": 0.884
+        },
+        {
+          "page_title": "Wreck of the Titanic",
+          "revision_id": 1379376573,
+          "retrieval_score": 0.835
+        },
+        {
+          "page_title": "Titanic",
+          "revision_id": 1384179774,
+          "retrieval_score": 0.925
+        },
+        {
+          "page_title": "Sinking of the Titanic",
+          "revision_id": 1384643973,
+          "retrieval_score": 0.917
+        },
+        {
+          "page_title": "Wreck of the Titanic",
+          "revision_id": 1379376573,
+          "retrieval_score": 0.867
+        }
+      ],
+      "extra": {
+        "cards": 2,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-020",
+      "claim": "The United Nations was founded in 1955.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 6591,
+      "explanation": "Passage [2] states that the United Nations was established on 26 June 1945 with the signing of its Charter, which directly contradicts the claim that it was founded in 1955.",
+      "evidence": [
+        {
+          "page_title": "United Nations",
+          "revision_id": 1384538535,
+          "retrieval_score": 0.845
+        },
+        {
+          "page_title": "United Nations",
+          "revision_id": 1384538535,
+          "retrieval_score": 0.835
+        },
+        {
+          "page_title": "United Nations",
+          "revision_id": 1384538535,
+          "retrieval_score": 0.809
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-022",
+      "claim": "Isaac Newton's Principia was first published in 1717.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 6638,
+      "explanation": "Passage [1] explicitly states that the Principia was first published in 1687, not 1717. It notes that a later edition with corrections appeared in 1713.",
+      "evidence": [
+        {
+          "page_title": "Philosophiæ Naturalis Principia Mathematica",
+          "revision_id": 1384221506,
+          "retrieval_score": 0.901
+        },
+        {
+          "page_title": "Isaac Newton",
+          "revision_id": 1383978240,
+          "retrieval_score": 0.868
+        },
+        {
+          "page_title": "Philosophiæ Naturalis Principia Mathematica",
+          "revision_id": 1384221506,
+          "retrieval_score": 0.838
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-024",
+      "claim": "The Amazon River empties into the Pacific Ocean.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 6569,
+      "explanation": "Passage [2] explicitly states that the basin formerly flowed to the Pacific until the Andes formed, causing it to flow eastward towards the Atlantic Ocean, and Passage [3] confirms the river drains from west to east to the Atlantic.",
+      "evidence": [
+        {
+          "page_title": "Amazon River",
+          "revision_id": 1383931063,
+          "retrieval_score": 0.895
+        },
+        {
+          "page_title": "Amazon basin",
+          "revision_id": 1381924653,
+          "retrieval_score": 0.839
+        },
+        {
+          "page_title": "Amazon River",
+          "revision_id": 1383931063,
+          "retrieval_score": 0.825
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-025",
+      "claim": "Mount Everest lies on the border between Nepal and India.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 6009,
+      "explanation": "Passage [1] states that Mount Everest marks the border between China and Nepal, not India.",
+      "evidence": [
+        {
+          "page_title": "Mount Everest",
+          "revision_id": 1384445000,
+          "retrieval_score": 0.869
+        },
+        {
+          "page_title": "Mount Everest",
+          "revision_id": 1384445000,
+          "retrieval_score": 0.793
+        },
+        {
+          "page_title": "Mount Everest",
+          "revision_id": 1384445000,
+          "retrieval_score": 0.784
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-027",
+      "claim": "Singapore became an independent country in 1963.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 6422,
+      "explanation": "The passages state that Singapore became an independent sovereign country in 1965 after being expelled from Malaysia, not in 1963 when it joined the federation.",
+      "evidence": [
+        {
+          "page_title": "Singapore",
+          "revision_id": 1384417824,
+          "retrieval_score": 0.935
+        },
+        {
+          "page_title": "Singapore",
+          "revision_id": 1384417824,
+          "retrieval_score": 0.919
+        },
+        {
+          "page_title": "Singapore",
+          "revision_id": 1384417824,
+          "retrieval_score": 0.899
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-029",
+      "claim": "Python was created by James Gosling.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 6503,
+      "explanation": "Passage [2] explicitly states that the Python programming language was created by Guido van Rossum, not James Gosling.",
+      "evidence": [
+        {
+          "page_title": "Monty Python",
+          "revision_id": 1383076531,
+          "retrieval_score": 0.678
+        },
+        {
+          "page_title": "Monty Python",
+          "revision_id": 1383076531,
+          "retrieval_score": 0.663
+        },
+        {
+          "page_title": "Monty Python",
+          "revision_id": 1383076531,
+          "retrieval_score": 0.633
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-030",
+      "claim": "Linus Torvalds first released the Linux kernel in 1998.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 5980,
+      "explanation": "Passage [1] states that Linus Torvalds is the lead developer of the Linux kernel 'since 1991', which contradicts the claim that he released it in 1998.",
+      "evidence": [
+        {
+          "page_title": "Linus Torvalds",
+          "revision_id": 1383312184,
+          "retrieval_score": 0.906
+        },
+        {
+          "page_title": "Linus Torvalds",
+          "revision_id": 1383312184,
+          "retrieval_score": 0.881
+        },
+        {
+          "page_title": "Linus Torvalds",
+          "revision_id": 1383312184,
+          "retrieval_score": 0.865
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-032",
+      "claim": "The speed of light in a vacuum is about 199,792 kilometres per second.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 8394,
+      "explanation": "The passages discuss spark-gap transmitters and signal rates (e.g., '60 signals per second', 'several thousand hertz'), but they do not mention the speed of light. The claim that the speed of light is about 199,792 km/s contradicts the established scientific fact found in general knowledge (approx. 300,000 km/s), and since the provided passages contain no information to support this specific incorrect number, the claim is refuted based on the lack of supporting evidence in the text combined with the factual error.",
+      "evidence": [
+        {
+          "page_title": "Spark-gap transmitter",
+          "revision_id": 1375136338,
+          "retrieval_score": 0.547
+        },
+        {
+          "page_title": "Spark-gap transmitter",
+          "revision_id": 1375136338,
+          "retrieval_score": 0.546
+        },
+        {
+          "page_title": "Spark-gap transmitter",
+          "revision_id": 1375136338,
+          "retrieval_score": 0.539
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-034",
+      "claim": "The 2008 Summer Olympics were held in Tokyo.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 6978,
+      "explanation": "Passage [1] explicitly states that Beijing hosted the 2008 Summer Olympics, while Tokyo hosted the 1964 and 2020 (held in 2021) Games.",
+      "evidence": [
+        {
+          "page_title": "Summer Olympic Games",
+          "revision_id": 1384537574,
+          "retrieval_score": 0.874
+        },
+        {
+          "page_title": "2020 Summer Olympics",
+          "revision_id": 1383879586,
+          "retrieval_score": 0.867
+        },
+        {
+          "page_title": "2020 Summer Olympics",
+          "revision_id": 1383879586,
+          "retrieval_score": 0.857
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-035",
+      "claim": "Argentina won the 2014 FIFA World Cup.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 7532,
+      "explanation": "Passage [1] explicitly states that Argentina reached the final in 2014 but was defeated by Germany, and Passage [3] lists their World Cup wins as occurring in 1978, 1986, and 2022.",
+      "evidence": [
+        {
+          "page_title": "Argentina national football team",
+          "revision_id": 1383965116,
+          "retrieval_score": 0.899
+        },
+        {
+          "page_title": "Argentina national football team",
+          "revision_id": 1383965116,
+          "retrieval_score": 0.897
+        },
+        {
+          "page_title": "Argentina national football team",
+          "revision_id": 1383965116,
+          "retrieval_score": 0.866
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-037",
+      "claim": "William Shakespeare was born in London.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 6631,
+      "explanation": "The passages explicitly state that Shakespeare was 'born and raised in Stratford-upon-Avon, Warwickshire' and 'born in Stratford-upon-Avon', contradicting the claim that he was born in London.",
+      "evidence": [
+        {
+          "page_title": "William Shakespeare",
+          "revision_id": 1383380297,
+          "retrieval_score": 0.875
+        },
+        {
+          "page_title": "William Shakespeare",
+          "revision_id": 1383380297,
+          "retrieval_score": 0.861
+        },
+        {
+          "page_title": "William Shakespeare",
+          "revision_id": 1383380297,
+          "retrieval_score": 0.762
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-039",
+      "claim": "Photosynthesis in plants takes place in the mitochondria.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 5874,
+      "explanation": "Passage [3] explicitly states that cellular respiration takes place in mitochondria, while Passage [1] identifies chloroplasts as the organelles where photosynthesis occurs in plants.",
+      "evidence": [
+        {
+          "page_title": "Photosynthesis",
+          "revision_id": 1383248806,
+          "retrieval_score": 0.875
+        },
+        {
+          "page_title": "Photosynthesis",
+          "revision_id": 1383248806,
+          "retrieval_score": 0.792
+        },
+        {
+          "page_title": "Photosynthesis",
+          "revision_id": 1383248806,
+          "retrieval_score": 0.789
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-040",
+      "claim": "Oxygen has atomic number 6.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 7841,
+      "explanation": "Passage [1] explicitly states that oxygen has an atomic number of 8, which directly contradicts the claim that it is 6.",
+      "evidence": [
+        {
+          "page_title": "Oxygen",
+          "revision_id": 1382172978,
+          "retrieval_score": 0.88
+        },
+        {
+          "page_title": "Oxygen",
+          "revision_id": 1382172978,
+          "retrieval_score": 0.779
+        },
+        {
+          "page_title": "Oxygen",
+          "revision_id": 1382172978,
+          "retrieval_score": 0.777
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-042",
+      "claim": "Julius Caesar was assassinated in 27 BC.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 6257,
+      "explanation": "The passages state that Julius Caesar was assassinated in 44 BC, not 27 BC.",
+      "evidence": [
+        {
+          "page_title": "Assassination of Julius Caesar",
+          "revision_id": 1384031052,
+          "retrieval_score": 0.853
+        },
+        {
+          "page_title": "Julius Caesar",
+          "revision_id": 1384290551,
+          "retrieval_score": 0.848
+        },
+        {
+          "page_title": "Julius Caesar",
+          "revision_id": 1384290551,
+          "retrieval_score": 0.818
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-044",
+      "claim": "The Statue of Liberty was a gift from the people of the United Kingdom.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 6547,
+      "explanation": "The passages state that the Statue of Liberty was a gift from the people of France, not the United Kingdom.",
+      "evidence": [
+        {
+          "page_title": "Statue of Liberty",
+          "revision_id": 1383719217,
+          "retrieval_score": 0.895
+        },
+        {
+          "page_title": "Statue of Liberty",
+          "revision_id": 1383719217,
+          "retrieval_score": 0.849
+        },
+        {
+          "page_title": "Statue of Liberty",
+          "revision_id": 1383719217,
+          "retrieval_score": 0.808
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-045",
+      "claim": "The Hubble Space Telescope was launched in 1980.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 6541,
+      "explanation": "Passage [1] and Passage [2] both explicitly state that the Hubble Space Telescope was launched in 1990, which contradicts the claim that it was launched in 1980.",
+      "evidence": [
+        {
+          "page_title": "Hubble Space Telescope",
+          "revision_id": 1384231189,
+          "retrieval_score": 0.937
+        },
+        {
+          "page_title": "Hubble Space Telescope",
+          "revision_id": 1384231189,
+          "retrieval_score": 0.914
+        },
+        {
+          "page_title": "Hubble Space Telescope",
+          "revision_id": 1384231189,
+          "retrieval_score": 0.892
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-047",
+      "claim": "Albert Einstein received the Nobel Prize in Physics for his theory of relativity.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 10620,
+      "explanation": "Passage [1] explicitly states that Einstein 'received the 1921 Nobel Prize in Physics' for his work on the photoelectric effect, and Passage [2] confirms he was awarded this prize. | The passages state that Einstein received the Nobel Prize 'especially for his discovery of the law of the photoelectric effect,' not for his theory of relativity.",
+      "evidence": [
+        {
+          "page_title": "Albert Einstein",
+          "revision_id": 1384436628,
+          "retrieval_score": 0.97
+        },
+        {
+          "page_title": "Albert Einstein",
+          "revision_id": 1384436628,
+          "retrieval_score": 0.899
+        },
+        {
+          "page_title": "Albert Einstein",
+          "revision_id": 1384436628,
+          "retrieval_score": 0.85
+        },
+        {
+          "page_title": "Albert Einstein",
+          "revision_id": 1384436628,
+          "retrieval_score": 0.982
+        },
+        {
+          "page_title": "Albert Einstein",
+          "revision_id": 1384436628,
+          "retrieval_score": 0.874
+        },
+        {
+          "page_title": "Albert Einstein",
+          "revision_id": 1384436628,
+          "retrieval_score": 0.827
+        }
+      ],
+      "extra": {
+        "cards": 2,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-049",
+      "claim": "Nelson Mandela was released from prison in 1994.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 6740,
+      "explanation": "Passage [1] explicitly states that President F. W. de Klerk released Mandela in 1990, not 1994.",
+      "evidence": [
+        {
+          "page_title": "Nelson Mandela",
+          "revision_id": 1383801313,
+          "retrieval_score": 0.915
+        },
+        {
+          "page_title": "Nelson Mandela",
+          "revision_id": 1383801313,
+          "retrieval_score": 0.882
+        },
+        {
+          "page_title": "Nelson Mandela",
+          "revision_id": 1383801313,
+          "retrieval_score": 0.855
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-050",
+      "claim": "The Rosetta Stone is displayed in the Egyptian Museum in Cairo.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 15564,
+      "explanation": "Passage [2] states that the Rosetta Stone is housed in the British Museum (referencing its move to safety there during WWI and conservation work in 1999), whereas the claim incorrectly identifies it as being in the Egyptian Museum in Cairo.",
+      "evidence": [
+        {
+          "page_title": "Rosetta Stone",
+          "revision_id": 1383715042,
+          "retrieval_score": 0.749
+        },
+        {
+          "page_title": "Rosetta Stone",
+          "revision_id": 1383715042,
+          "retrieval_score": 0.732
+        },
+        {
+          "page_title": "Rosetta Stone",
+          "revision_id": 1383715042,
+          "retrieval_score": 0.729
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    }
+  ]
+}

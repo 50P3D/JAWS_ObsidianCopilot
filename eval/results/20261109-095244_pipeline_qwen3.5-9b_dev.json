@@ -1,0 +1,124 @@
+{
+  "run_id": "20261109-095244_pipeline_qwen3.5-9b_dev",
+  "started_at": "2026-11-09T09:52:44.930Z",
+  "finished_at": "2026-11-09T09:54:41.585Z",
+  "git_commit": "a91fa47-dirty",
+  "system": {
+    "name": "pipeline",
+    "model": "qwen3.5:9b",
+    "family": "qwen",
+    "config": {
+      "orchestrator": "src/orchestrator/index.ts"
+    }
+  },
+  "dataset": {
+    "path": "eval/datasets/generated.jsonl",
+    "sha256": "eb991f565b24fe4fd1fc3f31c38bd827e96579b4600c430576cebf9b64c8a54d",
+    "split": "dev",
+    "count": 3
+  },
+  "predictions": [
+    {
+      "id": "gen-001",
+      "claim": "The Berlin Wall fell in November 1991.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 97694,
+      "explanation": "The passages state that the fall of the Berlin Wall occurred on November 9, 1989 (Passage [1]), while Passage [3] clarifies that the official demolition and dismantling of the wall was completed in November 1991. The claim incorrectly identifies the date of the 'fall' as November 1991.",
+      "evidence": [
+        {
+          "page_title": "Berlin Wall",
+          "revision_id": 1384097904,
+          "retrieval_score": 0.817
+        },
+        {
+          "page_title": "Berlin Wall",
+          "revision_id": 1384097904,
+          "retrieval_score": 0.817
+        },
+        {
+          "page_title": "Fall of the Berlin Wall",
+          "revision_id": 1384616118,
+          "retrieval_score": 0.816
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-003",
+      "claim": "Apollo 11 landed on the Moon in July 1971.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 7422,
+      "explanation": "Passage [1] explicitly states that Apollo 11 landed on July 20, 1969, whereas the claim incorrectly cites July 1971.",
+      "evidence": [
+        {
+          "page_title": "Apollo program",
+          "revision_id": 1378112034,
+          "retrieval_score": 0.883
+        },
+        {
+          "page_title": "Apollo program",
+          "revision_id": 1378112034,
+          "retrieval_score": 0.813
+        },
+        {
+          "page_title": "Apollo program",
+          "revision_id": 1378112034,
+          "retrieval_score": 0.807
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-006",
+      "claim": "Mount Kilimanjaro is in Kenya.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 11537,
+      "explanation": "Passage [2] explicitly states that Mount Kilimanjaro is located in Tanzania, not Kenya.",
+      "evidence": [
+        {
+          "page_title": "Mount Kilimanjaro",
+          "revision_id": 1384642529,
+          "retrieval_score": 0.855
+        },
+        {
+          "page_title": "Mount Kilimanjaro",
+          "revision_id": 1384642529,
+          "retrieval_score": 0.818
+        },
+        {
+          "page_title": "Kilimanjaro Region",
+          "revision_id": 1384009012,
+          "retrieval_score": 0.789
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    }
+  ]
+}

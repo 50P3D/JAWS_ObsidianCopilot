@@ -1,0 +1,717 @@
+{
+  "run_id": "20261109-095630_pipeline_qwen3.5-9b_dev",
+  "started_at": "2026-11-09T09:56:30.405Z",
+  "finished_at": "2026-11-09T10:00:16.361Z",
+  "git_commit": "a91fa47-dirty",
+  "system": {
+    "name": "pipeline",
+    "model": "qwen3.5:9b",
+    "family": "qwen",
+    "config": {
+      "orchestrator": "src/orchestrator/index.ts"
+    }
+  },
+  "dataset": {
+    "path": "eval/datasets/generated.jsonl",
+    "sha256": "eb991f565b24fe4fd1fc3f31c38bd827e96579b4600c430576cebf9b64c8a54d",
+    "split": "dev",
+    "count": 20
+  },
+  "predictions": [
+    {
+      "id": "gen-001",
+      "claim": "The Berlin Wall fell in November 1991.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 6987,
+      "explanation": "The passages state that the fall of the Berlin Wall occurred on November 9, 1989 (Passage [1]), while Passage [3] clarifies that the official demolition and dismantling of the wall was completed in November 1991. The claim incorrectly attributes the 'fall' to the later date of the completion of demolition.",
+      "evidence": [
+        {
+          "page_title": "Berlin Wall",
+          "revision_id": 1384097904,
+          "retrieval_score": 0.817
+        },
+        {
+          "page_title": "Berlin Wall",
+          "revision_id": 1384097904,
+          "retrieval_score": 0.817
+        },
+        {
+          "page_title": "Fall of the Berlin Wall",
+          "revision_id": 1384616118,
+          "retrieval_score": 0.816
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-003",
+      "claim": "Apollo 11 landed on the Moon in July 1971.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 5717,
+      "explanation": "Passage [1] explicitly states that Apollo 11 landed on July 20, 1969, whereas the claim incorrectly cites July 1971.",
+      "evidence": [
+        {
+          "page_title": "Apollo program",
+          "revision_id": 1378112034,
+          "retrieval_score": 0.883
+        },
+        {
+          "page_title": "Apollo program",
+          "revision_id": 1378112034,
+          "retrieval_score": 0.813
+        },
+        {
+          "page_title": "Apollo program",
+          "revision_id": 1378112034,
+          "retrieval_score": 0.807
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-006",
+      "claim": "Mount Kilimanjaro is in Kenya.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 5372,
+      "explanation": "Passage [2] explicitly states that Mount Kilimanjaro is located in Tanzania, not Kenya.",
+      "evidence": [
+        {
+          "page_title": "Mount Kilimanjaro",
+          "revision_id": 1384642529,
+          "retrieval_score": 0.855
+        },
+        {
+          "page_title": "Mount Kilimanjaro",
+          "revision_id": 1384642529,
+          "retrieval_score": 0.818
+        },
+        {
+          "page_title": "Kilimanjaro Region",
+          "revision_id": 1384009012,
+          "retrieval_score": 0.789
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-008",
+      "claim": "The Danube flows into the Adriatic Sea.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 11417,
+      "explanation": "The passages state that the Danube flows into the Black Sea via the Danube Delta in Romania and Ukraine, contradicting the claim that it flows into the Adriatic Sea.",
+      "evidence": [
+        {
+          "page_title": "Danube",
+          "revision_id": 1381819022,
+          "retrieval_score": 0.901
+        },
+        {
+          "page_title": "Danube",
+          "revision_id": 1381819022,
+          "retrieval_score": 0.878
+        },
+        {
+          "page_title": "Danube",
+          "revision_id": 1381819022,
+          "retrieval_score": 0.813
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-011",
+      "claim": "James Watson and Francis Crick described the double-helix structure of DNA in 1963.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 6549,
+      "explanation": "The passages state that Watson and Crick published their paper on the double-helix structure in 1953, not 1963.",
+      "evidence": [
+        {
+          "page_title": "James Watson",
+          "revision_id": 1384482141,
+          "retrieval_score": 0.892
+        },
+        {
+          "page_title": "Nucleic acid double helix",
+          "revision_id": 1373038059,
+          "retrieval_score": 0.891
+        },
+        {
+          "page_title": "Nucleic acid double helix",
+          "revision_id": 1373038059,
+          "retrieval_score": 0.886
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-013",
+      "claim": "The adult human skeleton has 306 bones.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 18144,
+      "explanation": "The provided passages discuss various types of lists (such as shopping lists, track lists, and best-of lists) but do not mention the human skeleton or the number of bones in it.",
+      "evidence": [
+        {
+          "page_title": "List",
+          "revision_id": 1356928089,
+          "retrieval_score": 0.632
+        },
+        {
+          "page_title": "List",
+          "revision_id": 1356928089,
+          "retrieval_score": 0.546
+        },
+        {
+          "page_title": "List",
+          "revision_id": 1356928089,
+          "retrieval_score": 0.535
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-016",
+      "claim": "The Mona Lisa is displayed in the Uffizi Gallery in Florence.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 10108,
+      "explanation": "Passage [1] states that after being stolen and held by Peruggia, the Mona Lisa was exhibited in the Uffizi Gallery for only two weeks before being returned to the Louvre on January 4, 1914. This contradicts the claim that it is currently displayed there. | Passage [1] explicitly states that the Uffizi Gallery is located in the Historic Centre of Florence, Italy.",
+      "evidence": [
+        {
+          "page_title": "Mona Lisa",
+          "revision_id": 1384258052,
+          "retrieval_score": 0.863
+        },
+        {
+          "page_title": "Mona Lisa",
+          "revision_id": 1384258052,
+          "retrieval_score": 0.782
+        },
+        {
+          "page_title": "Mona Lisa",
+          "revision_id": 1384258052,
+          "retrieval_score": 0.761
+        },
+        {
+          "page_title": "Uffizi",
+          "revision_id": 1381944285,
+          "retrieval_score": 0.868
+        },
+        {
+          "page_title": "Tribuna of the Uffizi",
+          "revision_id": 1348820215,
+          "retrieval_score": 0.799
+        },
+        {
+          "page_title": "Uffizi",
+          "revision_id": 1381944285,
+          "retrieval_score": 0.793
+        }
+      ],
+      "extra": {
+        "cards": 2,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-018",
+      "claim": "The Eiffel Tower was completed in 1899.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 5934,
+      "explanation": "Passage [1] states that the Eiffel Tower was completed in 1889, and Passage [2] specifies that main structural work finished at the end of March 1889.",
+      "evidence": [
+        {
+          "page_title": "Eiffel Tower",
+          "revision_id": 1384328455,
+          "retrieval_score": 0.897
+        },
+        {
+          "page_title": "Eiffel Tower",
+          "revision_id": 1384328455,
+          "retrieval_score": 0.868
+        },
+        {
+          "page_title": "Eiffel Tower",
+          "revision_id": 1384328455,
+          "retrieval_score": 0.864
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-021",
+      "claim": "Thomas Edison was granted the first US patent for the telephone in 1876.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 7294,
+      "explanation": "The passages confirm that Edison received a patent for 'Telephones or speaking-telegraphs' (US 203018) published on April 30, 1878, not in 1876. While the text mentions he began improving telephones in 1876, the specific patent grant date provided is 1878.",
+      "evidence": [
+        {
+          "page_title": "Thomas Edison",
+          "revision_id": 1381361637,
+          "retrieval_score": 0.82
+        },
+        {
+          "page_title": "Thomas Edison",
+          "revision_id": 1381361637,
+          "retrieval_score": 0.795
+        },
+        {
+          "page_title": "Thomas Edison",
+          "revision_id": 1381361637,
+          "retrieval_score": 0.791
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-023",
+      "claim": "Charles Darwin's On the Origin of Species was published in 1879.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 5972,
+      "explanation": "Passage [1] explicitly states that the book was published on 24 November 1859, which contradicts the claim that it was published in 1879.",
+      "evidence": [
+        {
+          "page_title": "On the Origin of Species",
+          "revision_id": 1384221011,
+          "retrieval_score": 0.89
+        },
+        {
+          "page_title": "On the Origin of Species",
+          "revision_id": 1384221011,
+          "retrieval_score": 0.826
+        },
+        {
+          "page_title": "On the Origin of Species",
+          "revision_id": 1384221011,
+          "retrieval_score": 0.823
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-026",
+      "claim": "Lake Baikal is in Mongolia.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 5976,
+      "explanation": "Passage [1] explicitly states that Lake Baikal is situated in southern Siberia, Russia, between Irkutsk Oblast and the Republic of Buryatia, contradicting the claim that it is in Mongolia.",
+      "evidence": [
+        {
+          "page_title": "Lake Baikal",
+          "revision_id": 1384282010,
+          "retrieval_score": 0.854
+        },
+        {
+          "page_title": "Lake Baikal",
+          "revision_id": 1384282010,
+          "retrieval_score": 0.851
+        },
+        {
+          "page_title": "Lake Baikal",
+          "revision_id": 1384282010,
+          "retrieval_score": 0.838
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-028",
+      "claim": "Stamford Raffles established a British trading post in Singapore in 1829.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 7018,
+      "explanation": "The passages state that Raffles established the post on 29 January 1819 and left Singapore on 7 February 1819, contradicting the claim of an establishment date in 1829.",
+      "evidence": [
+        {
+          "page_title": "Stamford Raffles",
+          "revision_id": 1380138519,
+          "retrieval_score": 0.9
+        },
+        {
+          "page_title": "Stamford Raffles",
+          "revision_id": 1380138519,
+          "retrieval_score": 0.841
+        },
+        {
+          "page_title": "Stamford Raffles",
+          "revision_id": 1380138519,
+          "retrieval_score": 0.833
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-031",
+      "claim": "Tim Berners-Lee invented the World Wide Web while working at MIT.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Not Enough Info",
+      "correct": false,
+      "ms": 79750,
+      "explanation": "Passage [2] explicitly states that Tim Berners-Lee is 'best known as the inventor of the World Wide Web' and details his proposal and implementation of the system. | Could not check this claim: Failed to parse JSON from Ollama response: {\n  \"verdict\": \"Refuted\",\n  \"explanation\": \"The passages state that Berners-Lee was a senior researcher at MIT when he proposed the system in 1989, but they also explicitly identify him as a professor",
+      "evidence": [
+        {
+          "page_title": "Tim Berners-Lee",
+          "revision_id": 1384351970,
+          "retrieval_score": 0.885
+        },
+        {
+          "page_title": "Tim Berners-Lee",
+          "revision_id": 1384351970,
+          "retrieval_score": 0.881
+        },
+        {
+          "page_title": "Tim Berners-Lee",
+          "revision_id": 1384351970,
+          "retrieval_score": 0.866
+        }
+      ],
+      "extra": {
+        "cards": 2,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-033",
+      "claim": "Insulin was first isolated at the University of Oxford in 1921.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 6280,
+      "explanation": "Passage [1] states that Frederick Banting and Charles Best isolated insulin in 1921 while working at the University of Toronto, not the University of Oxford.",
+      "evidence": [
+        {
+          "page_title": "Insulin",
+          "revision_id": 1382459861,
+          "retrieval_score": 0.86
+        },
+        {
+          "page_title": "Insulin",
+          "revision_id": 1382459861,
+          "retrieval_score": 0.858
+        },
+        {
+          "page_title": "Insulin",
+          "revision_id": 1382459861,
+          "retrieval_score": 0.812
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-036",
+      "claim": "Usain Bolt's 100 metres world record is 9.68 seconds.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 6849,
+      "explanation": "Passage [1] explicitly states that Usain Bolt's personal best and world record in the 100 metres is 9.58 seconds, not 9.68 seconds.",
+      "evidence": [
+        {
+          "page_title": "Usain Bolt",
+          "revision_id": 1383845261,
+          "retrieval_score": 0.858
+        },
+        {
+          "page_title": "Usain Bolt",
+          "revision_id": 1383845261,
+          "retrieval_score": 0.841
+        },
+        {
+          "page_title": "Justin Gatlin",
+          "revision_id": 1381198196,
+          "retrieval_score": 0.837
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-038",
+      "claim": "The Great Barrier Reef lies off the coast of Western Australia.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 6839,
+      "explanation": "Passage [1] explicitly states that the reef is located 'off the coast of Queensland, Australia,' which contradicts the claim that it lies off the coast of Western Australia.",
+      "evidence": [
+        {
+          "page_title": "Great Barrier Reef",
+          "revision_id": 1381928932,
+          "retrieval_score": 0.87
+        },
+        {
+          "page_title": "Great Barrier Reef",
+          "revision_id": 1381928932,
+          "retrieval_score": 0.833
+        },
+        {
+          "page_title": "Great Barrier Reef",
+          "revision_id": 1381928932,
+          "retrieval_score": 0.817
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-041",
+      "claim": "Napoleon died in exile on Elba in 1821.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 9777,
+      "explanation": "The passages state that Napoleon was exiled to Elba in 1814 but escaped from there in February 1815; he died later while exiled on Saint Helena, not Elba.",
+      "evidence": [
+        {
+          "page_title": "Napoleon",
+          "revision_id": 1384365195,
+          "retrieval_score": 0.925
+        },
+        {
+          "page_title": "Napoleon",
+          "revision_id": 1384365195,
+          "retrieval_score": 0.919
+        },
+        {
+          "page_title": "Napoleonic Wars",
+          "revision_id": 1384386838,
+          "retrieval_score": 0.863
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-043",
+      "claim": "Johannes Gutenberg developed his printing press in Venice.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 5551,
+      "explanation": "Passage [1] explicitly identifies Johannes Gutenberg as a 'German inventor' whose invention spread across Europe, implying he was based in Germany rather than Venice.",
+      "evidence": [
+        {
+          "page_title": "Johannes Gutenberg",
+          "revision_id": 1383488206,
+          "retrieval_score": 0.83
+        },
+        {
+          "page_title": "Johannes Gutenberg",
+          "revision_id": 1383488206,
+          "retrieval_score": 0.818
+        },
+        {
+          "page_title": "Gutenberg Bible",
+          "revision_id": 1384518651,
+          "retrieval_score": 0.78
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-046",
+      "claim": "Toronto is the capital of Canada.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 7219,
+      "explanation": "Passage [2] explicitly states that since 1865, Ottawa has been the capital of Canada, while Toronto is only the capital of the province of Ontario.",
+      "evidence": [
+        {
+          "page_title": "Toronto",
+          "revision_id": 1384409879,
+          "retrieval_score": 0.937
+        },
+        {
+          "page_title": "Toronto",
+          "revision_id": 1384409879,
+          "retrieval_score": 0.922
+        },
+        {
+          "page_title": "Toronto",
+          "revision_id": 1384409879,
+          "retrieval_score": 0.905
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    },
+    {
+      "id": "gen-048",
+      "claim": "Pluto was reclassified as a dwarf planet in 2016.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 7190,
+      "explanation": "Passage [2] states that the International Astronomical Union (IAU) formally redefined the term planet and excluded dwarf planets like Pluto in 2006, not 2016.",
+      "evidence": [
+        {
+          "page_title": "Pluto",
+          "revision_id": 1384638819,
+          "retrieval_score": 0.853
+        },
+        {
+          "page_title": "Pluto",
+          "revision_id": 1384638819,
+          "retrieval_score": 0.842
+        },
+        {
+          "page_title": "Pluto",
+          "revision_id": 1384638819,
+          "retrieval_score": 0.837
+        }
+      ],
+      "extra": {
+        "cards": 1,
+        "models_used": [
+          "qwen3.5:9b"
+        ],
+        "stubbed": []
+      }
+    }
+  ]
+}

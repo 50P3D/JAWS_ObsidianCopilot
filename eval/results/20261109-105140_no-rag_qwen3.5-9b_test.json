@@ -1,0 +1,355 @@
+{
+  "run_id": "20261109-105140_no-rag_qwen3.5-9b_test",
+  "started_at": "2026-11-09T10:51:40.548Z",
+  "finished_at": "2026-11-09T10:55:47.443Z",
+  "git_commit": "a91fa47-dirty",
+  "system": {
+    "name": "no-rag",
+    "model": "qwen3.5:9b",
+    "family": "qwen",
+    "config": {
+      "prompt_version": "no-rag-v1",
+      "think": false,
+      "temperature": 0,
+      "seed": 201
+    }
+  },
+  "dataset": {
+    "path": "eval/datasets/generated.jsonl",
+    "sha256": "eb991f565b24fe4fd1fc3f31c38bd827e96579b4600c430576cebf9b64c8a54d",
+    "split": "test",
+    "count": 30
+  },
+  "predictions": [
+    {
+      "id": "gen-002",
+      "claim": "Magna Carta was sealed by King John in 1265.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 1246,
+      "explanation": "The Magna Carta was originally sealed by King John in 1215, not 1265.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"The Magna Carta was originally sealed by King John in 1215, not 1265.\"}"
+    },
+    {
+      "id": "gen-004",
+      "claim": "Marie Curie won Nobel Prizes in Physics and in Medicine.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Supported",
+      "correct": false,
+      "ms": 3539,
+      "explanation": "Marie Curie was the first person to win Nobel Prizes in two different scientific fields, receiving them in both Physics (1903) and Chemistry (1911), though the claim incorrectly states she won one for Medicine.",
+      "raw": "{\"verdict\": \"Supported\", \"explanation\": \"Marie Curie was the first person to win Nobel Prizes in two different scientific fields, receiving them in both Physics (1903) and Chemistry (1911), though the claim incorrectly states she won one for Medicine.\"}"
+    },
+    {
+      "id": "gen-005",
+      "claim": "Penicillin was discovered by Louis Pasteur in 1928.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 1616,
+      "explanation": "Penicillin was discovered by Alexander Fleming in 1928, not Louis Pasteur.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Penicillin was discovered by Alexander Fleming in 1928, not Louis Pasteur.\"}"
+    },
+    {
+      "id": "gen-007",
+      "claim": "Sydney is the capital city of Australia.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 1508,
+      "explanation": "Sydney is a major city in Australia, but Canberra is the capital.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Sydney is a major city in Australia, but Canberra is the capital.\"}"
+    },
+    {
+      "id": "gen-009",
+      "claim": "Venus is the closest planet to the Sun.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 1521,
+      "explanation": "Mercury is the closest planet to the Sun, not Venus.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Mercury is the closest planet to the Sun, not Venus.\"}"
+    },
+    {
+      "id": "gen-010",
+      "claim": "Saturn is the largest planet in the Solar System.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 1459,
+      "explanation": "Jupiter is the largest planet in the Solar System, not Saturn.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Jupiter is the largest planet in the Solar System, not Saturn.\"}"
+    },
+    {
+      "id": "gen-012",
+      "claim": "The chemical symbol for gold is Ag.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 1557,
+      "explanation": "The chemical symbol for gold is Au, while Ag is the symbol for silver.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"The chemical symbol for gold is Au, while Ag is the symbol for silver.\"}"
+    },
+    {
+      "id": "gen-014",
+      "claim": "Pride and Prejudice was written by Charlotte Brontë.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 1422,
+      "explanation": "Pride and Prejudice was written by Jane Austen, not Charlotte Brontë.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Pride and Prejudice was written by Jane Austen, not Charlotte Brontë.\"}"
+    },
+    {
+      "id": "gen-015",
+      "claim": "George Orwell's Nineteen Eighty-Four was first published in 1959.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 1562,
+      "explanation": "Nineteen Eighty-Four was first published in 1949, not 1959.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Nineteen Eighty-Four was first published in 1949, not 1959.\"}"
+    },
+    {
+      "id": "gen-017",
+      "claim": "Ludwig van Beethoven was born in Vienna.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 1006,
+      "explanation": "Ludwig van Beethoven was born in Bonn, not Vienna.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Ludwig van Beethoven was born in Bonn, not Vienna.\"}"
+    },
+    {
+      "id": "gen-019",
+      "claim": "RMS Titanic sank in April 1914 on its maiden voyage.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 1595,
+      "explanation": "The RMS Titanic sank in April 1912, not 1914.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"The RMS Titanic sank in April 1912, not 1914.\"}"
+    },
+    {
+      "id": "gen-020",
+      "claim": "The United Nations was founded in 1955.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 3068,
+      "explanation": "The United Nations was actually founded in 1945, not 1955.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"The United Nations was actually founded in 1945, not 1955.\"}"
+    },
+    {
+      "id": "gen-022",
+      "claim": "Isaac Newton's Principia was first published in 1717.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 1550,
+      "explanation": "Isaac Newton's Principia was first published in 1687, not 1717.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Isaac Newton's Principia was first published in 1687, not 1717.\"}"
+    },
+    {
+      "id": "gen-024",
+      "claim": "The Amazon River empties into the Pacific Ocean.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 848,
+      "explanation": "The Amazon River flows eastward and empties into the Atlantic Ocean, not the Pacific Ocean.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"The Amazon River flows eastward and empties into the Atlantic Ocean, not the Pacific Ocean.\"}"
+    },
+    {
+      "id": "gen-025",
+      "claim": "Mount Everest lies on the border between Nepal and India.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Supported",
+      "correct": false,
+      "ms": 914,
+      "explanation": "Mount Everest is located on the border between Nepal and China (specifically the Tibet Autonomous Region), not India.",
+      "raw": "{\"verdict\": \"Supported\", \"explanation\": \"Mount Everest is located on the border between Nepal and China (specifically the Tibet Autonomous Region), not India.\"}"
+    },
+    {
+      "id": "gen-027",
+      "claim": "Singapore became an independent country in 1963.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Supported",
+      "correct": false,
+      "ms": 1306,
+      "explanation": "Singapore joined Malaysia as a sovereign state on September 16, 1963, and is widely recognized as having achieved independence at that time before separating from Malaysia in 1965.",
+      "raw": "{\"verdict\": \"Supported\", \"explanation\": \"Singapore joined Malaysia as a sovereign state on September 16, 1963, and is widely recognized as having achieved independence at that time before separating from Malaysia in 1965.\"}"
+    },
+    {
+      "id": "gen-029",
+      "claim": "Python was created by James Gosling.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 1075,
+      "explanation": "Python was created by Guido van Rossum, while James Gosling is the creator of Java.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Python was created by Guido van Rossum, while James Gosling is the creator of Java.\"}"
+    },
+    {
+      "id": "gen-030",
+      "claim": "Linus Torvalds first released the Linux kernel in 1998.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 40028,
+      "explanation": "Linus Torvalds first released the Linux kernel in 1991, not 1998.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Linus Torvalds first released the Linux kernel in 1991, not 1998.\"}"
+    },
+    {
+      "id": "gen-032",
+      "claim": "The speed of light in a vacuum is about 199,792 kilometres per second.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 9807,
+      "explanation": "The speed of light in a vacuum is approximately 299,792 kilometres per second, not 199,792.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"The speed of light in a vacuum is approximately 299,792 kilometres per second, not 199,792.\"}"
+    },
+    {
+      "id": "gen-034",
+      "claim": "The 2008 Summer Olympics were held in Tokyo.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 9853,
+      "explanation": "The 2008 Summer Olympics were held in Beijing, China, not Tokyo.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"The 2008 Summer Olympics were held in Beijing, China, not Tokyo.\"}"
+    },
+    {
+      "id": "gen-035",
+      "claim": "Argentina won the 2014 FIFA World Cup.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 24156,
+      "explanation": "Germany won the 2014 FIFA World Cup, defeating Argentina in the final.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Germany won the 2014 FIFA World Cup, defeating Argentina in the final.\"}"
+    },
+    {
+      "id": "gen-037",
+      "claim": "William Shakespeare was born in London.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Supported",
+      "correct": false,
+      "ms": 2695,
+      "explanation": "Historical records confirm that William Shakespeare was born in Stratford-upon-Avon, not London.",
+      "raw": "{\"verdict\": \"Supported\", \"explanation\": \"Historical records confirm that William Shakespeare was born in Stratford-upon-Avon, not London.\"}"
+    },
+    {
+      "id": "gen-039",
+      "claim": "Photosynthesis in plants takes place in the mitochondria.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 5790,
+      "explanation": "Photosynthesis occurs in chloroplasts, not mitochondria, which are responsible for cellular respiration.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Photosynthesis occurs in chloroplasts, not mitochondria, which are responsible for cellular respiration.\"}"
+    },
+    {
+      "id": "gen-040",
+      "claim": "Oxygen has atomic number 6.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 7404,
+      "explanation": "Oxygen has an atomic number of 8, not 6 (which is Carbon).",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Oxygen has an atomic number of 8, not 6 (which is Carbon).\"}"
+    },
+    {
+      "id": "gen-042",
+      "claim": "Julius Caesar was assassinated in 27 BC.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 21898,
+      "explanation": "Julius Caesar was assassinated in 44 BC, not 27 BC.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Julius Caesar was assassinated in 44 BC, not 27 BC.\"}"
+    },
+    {
+      "id": "gen-044",
+      "claim": "The Statue of Liberty was a gift from the people of the United Kingdom.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 36408,
+      "explanation": "The Statue of Liberty was a gift from the people of France, not the United Kingdom.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"The Statue of Liberty was a gift from the people of France, not the United Kingdom.\"}"
+    },
+    {
+      "id": "gen-045",
+      "claim": "The Hubble Space Telescope was launched in 1980.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 32299,
+      "explanation": "The Hubble Space Telescope was actually launched in 1990, not 1980.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"The Hubble Space Telescope was actually launched in 1990, not 1980.\"}"
+    },
+    {
+      "id": "gen-047",
+      "claim": "Albert Einstein received the Nobel Prize in Physics for his theory of relativity.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 9828,
+      "explanation": "Albert Einstein was awarded the Nobel Prize in Physics in 1921 specifically for his discovery of the law of the photoelectric effect, not for the theory of relativity.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Albert Einstein was awarded the Nobel Prize in Physics in 1921 specifically for his discovery of the law of the photoelectric effect, not for the theory of relativity.\"}"
+    },
+    {
+      "id": "gen-049",
+      "claim": "Nelson Mandela was released from prison in 1994.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 10529,
+      "explanation": "Nelson Mandela was released from prison in 1990, not 1994.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Nelson Mandela was released from prison in 1990, not 1994.\"}"
+    },
+    {
+      "id": "gen-050",
+      "claim": "The Rosetta Stone is displayed in the Egyptian Museum in Cairo.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Supported",
+      "correct": false,
+      "ms": 9391,
+      "explanation": "The Rosetta Stone has been housed in the Egyptian Museum in Cairo since 1802.",
+      "raw": "{\"verdict\": \"Supported\", \"explanation\": \"The Rosetta Stone has been housed in the Egyptian Museum in Cairo since 1802.\"}"
+    }
+  ]
+}

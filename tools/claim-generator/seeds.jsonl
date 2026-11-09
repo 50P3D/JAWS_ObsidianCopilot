@@ -1,0 +1,52 @@
+// True seed facts for tools/claim-generator. One per line: id, fact, Wikipedia page that states it.
+// Check each against the page before generating. Ids carry through to eval/datasets/generated.jsonl.
+{"id": "gen-001", "fact": "The Berlin Wall fell in November 1989.", "page": "Berlin Wall"}
+{"id": "gen-002", "fact": "Magna Carta was sealed by King John in 1215.", "page": "Magna Carta"}
+{"id": "gen-003", "fact": "Apollo 11 landed on the Moon in July 1969.", "page": "Apollo 11"}
+{"id": "gen-004", "fact": "Marie Curie won Nobel Prizes in Physics and in Chemistry.", "page": "Marie Curie"}
+{"id": "gen-005", "fact": "Penicillin was discovered by Alexander Fleming in 1928.", "page": "Penicillin"}
+{"id": "gen-006", "fact": "Mount Kilimanjaro is in Tanzania.", "page": "Mount Kilimanjaro"}
+{"id": "gen-007", "fact": "Canberra is the capital city of Australia.", "page": "Canberra"}
+{"id": "gen-008", "fact": "The Danube flows into the Black Sea.", "page": "Danube"}
+{"id": "gen-009", "fact": "Mercury is the closest planet to the Sun.", "page": "Mercury (planet)"}
+{"id": "gen-010", "fact": "Jupiter is the largest planet in the Solar System.", "page": "Jupiter"}
+{"id": "gen-011", "fact": "James Watson and Francis Crick described the double-helix structure of DNA in 1953.", "page": "Nucleic acid double helix"}
+{"id": "gen-012", "fact": "The chemical symbol for gold is Au.", "page": "Gold"}
+{"id": "gen-013", "fact": "The adult human skeleton has 206 bones.", "page": "Human skeleton"}
+{"id": "gen-014", "fact": "Pride and Prejudice was written by Jane Austen.", "page": "Pride and Prejudice"}
+{"id": "gen-015", "fact": "George Orwell's Nineteen Eighty-Four was first published in 1949.", "page": "Nineteen Eighty-Four"}
+{"id": "gen-016", "fact": "The Mona Lisa is displayed in the Louvre in Paris.", "page": "Mona Lisa"}
+{"id": "gen-017", "fact": "Ludwig van Beethoven was born in Bonn.", "page": "Ludwig van Beethoven"}
+{"id": "gen-018", "fact": "The Eiffel Tower was completed in 1889.", "page": "Eiffel Tower"}
+{"id": "gen-019", "fact": "RMS Titanic sank in April 1912 on its maiden voyage.", "page": "Titanic"}
+{"id": "gen-020", "fact": "The United Nations was founded in 1945.", "page": "United Nations"}
+{"id": "gen-021", "fact": "Alexander Graham Bell was granted the first US patent for the telephone in 1876.", "page": "Alexander Graham Bell"}
+{"id": "gen-022", "fact": "Isaac Newton's Principia was first published in 1687.", "page": "Philosophiæ Naturalis Principia Mathematica"}
+{"id": "gen-023", "fact": "Charles Darwin's On the Origin of Species was published in 1859.", "page": "On the Origin of Species"}
+{"id": "gen-024", "fact": "The Amazon River empties into the Atlantic Ocean.", "page": "Amazon River"}
+{"id": "gen-025", "fact": "Mount Everest lies on the border between Nepal and China.", "page": "Mount Everest"}
+{"id": "gen-026", "fact": "Lake Baikal is in Russia.", "page": "Lake Baikal"}
+{"id": "gen-027", "fact": "Singapore became an independent country in 1965.", "page": "Singapore"}
+{"id": "gen-028", "fact": "Stamford Raffles established a British trading post in Singapore in 1819.", "page": "Stamford Raffles"}
+{"id": "gen-029", "fact": "Python was created by Guido van Rossum.", "page": "Python (programming language)"}
+{"id": "gen-030", "fact": "Linus Torvalds first released the Linux kernel in 1991.", "page": "Linux kernel"}
+{"id": "gen-031", "fact": "Tim Berners-Lee invented the World Wide Web while working at CERN.", "page": "World Wide Web"}
+{"id": "gen-032", "fact": "The speed of light in a vacuum is about 299,792 kilometres per second.", "page": "Speed of light"}
+{"id": "gen-033", "fact": "Insulin was first isolated at the University of Toronto in 1921.", "page": "Insulin"}
+{"id": "gen-034", "fact": "The 2008 Summer Olympics were held in Beijing.", "page": "2008 Summer Olympics"}
+{"id": "gen-035", "fact": "Germany won the 2014 FIFA World Cup.", "page": "2014 FIFA World Cup"}
+{"id": "gen-036", "fact": "Usain Bolt's 100 metres world record is 9.58 seconds.", "page": "Usain Bolt"}
+{"id": "gen-037", "fact": "William Shakespeare was born in Stratford-upon-Avon.", "page": "William Shakespeare"}
+{"id": "gen-038", "fact": "The Great Barrier Reef lies off the coast of Queensland, Australia.", "page": "Great Barrier Reef"}
+{"id": "gen-039", "fact": "Photosynthesis in plants takes place in the chloroplasts.", "page": "Chloroplast"}
+{"id": "gen-040", "fact": "Oxygen has atomic number 8.", "page": "Oxygen"}
+{"id": "gen-041", "fact": "Napoleon died in exile on Saint Helena in 1821.", "page": "Napoleon"}
+{"id": "gen-042", "fact": "Julius Caesar was assassinated in 44 BC.", "page": "Assassination of Julius Caesar"}
+{"id": "gen-043", "fact": "Johannes Gutenberg developed his printing press in Mainz.", "page": "Johannes Gutenberg"}
+{"id": "gen-044", "fact": "The Statue of Liberty was a gift from the people of France.", "page": "Statue of Liberty"}
+{"id": "gen-045", "fact": "The Hubble Space Telescope was launched in 1990.", "page": "Hubble Space Telescope"}
+{"id": "gen-046", "fact": "Ottawa is the capital of Canada.", "page": "Ottawa"}
+{"id": "gen-047", "fact": "Albert Einstein received the Nobel Prize in Physics for his explanation of the photoelectric effect.", "page": "Albert Einstein"}
+{"id": "gen-048", "fact": "Pluto was reclassified as a dwarf planet in 2006.", "page": "Pluto"}
+{"id": "gen-049", "fact": "Nelson Mandela was released from prison in 1990.", "page": "Nelson Mandela"}
+{"id": "gen-050", "fact": "The Rosetta Stone is displayed in the British Museum.", "page": "Rosetta Stone"}

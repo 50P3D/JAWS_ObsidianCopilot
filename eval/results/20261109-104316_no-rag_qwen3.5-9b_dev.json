@@ -1,0 +1,245 @@
+{
+  "run_id": "20261109-104316_no-rag_qwen3.5-9b_dev",
+  "started_at": "2026-11-09T10:43:16.256Z",
+  "finished_at": "2026-11-09T10:43:30.759Z",
+  "git_commit": "a91fa47-dirty",
+  "system": {
+    "name": "no-rag",
+    "model": "qwen3.5:9b",
+    "family": "qwen",
+    "config": {
+      "prompt_version": "no-rag-v1",
+      "think": false,
+      "temperature": 0,
+      "seed": 201
+    }
+  },
+  "dataset": {
+    "path": "eval/datasets/generated.jsonl",
+    "sha256": "eb991f565b24fe4fd1fc3f31c38bd827e96579b4600c430576cebf9b64c8a54d",
+    "split": "dev",
+    "count": 20
+  },
+  "predictions": [
+    {
+      "id": "gen-001",
+      "claim": "The Berlin Wall fell in November 1991.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 695,
+      "explanation": "The Berlin Wall fell in November 1989, not 1991.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"The Berlin Wall fell in November 1989, not 1991.\"}"
+    },
+    {
+      "id": "gen-003",
+      "claim": "Apollo 11 landed on the Moon in July 1971.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 709,
+      "explanation": "Apollo 11 landed on the Moon in July 1969, not 1971.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Apollo 11 landed on the Moon in July 1969, not 1971.\"}"
+    },
+    {
+      "id": "gen-006",
+      "claim": "Mount Kilimanjaro is in Kenya.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 554,
+      "explanation": "Mount Kilimanjaro is located in Tanzania, not Kenya.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Mount Kilimanjaro is located in Tanzania, not Kenya.\"}"
+    },
+    {
+      "id": "gen-008",
+      "claim": "The Danube flows into the Adriatic Sea.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 618,
+      "explanation": "The Danube River flows into the Black Sea, not the Adriatic Sea.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"The Danube River flows into the Black Sea, not the Adriatic Sea.\"}"
+    },
+    {
+      "id": "gen-011",
+      "claim": "James Watson and Francis Crick described the double-helix structure of DNA in 1963.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 820,
+      "explanation": "James Watson and Francis Crick published their description of the DNA double-helix structure in 1953, not 1963.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"James Watson and Francis Crick published their description of the DNA double-helix structure in 1953, not 1963.\"}"
+    },
+    {
+      "id": "gen-013",
+      "claim": "The adult human skeleton has 306 bones.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 675,
+      "explanation": "The adult human skeleton typically consists of 206 bones, not 306.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"The adult human skeleton typically consists of 206 bones, not 306.\"}"
+    },
+    {
+      "id": "gen-016",
+      "claim": "The Mona Lisa is displayed in the Uffizi Gallery in Florence.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 727,
+      "explanation": "The Mona Lisa is currently housed in the Louvre Museum in Paris, not the Uffizi Gallery in Florence.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"The Mona Lisa is currently housed in the Louvre Museum in Paris, not the Uffizi Gallery in Florence.\"}"
+    },
+    {
+      "id": "gen-018",
+      "claim": "The Eiffel Tower was completed in 1899.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 755,
+      "explanation": "The Eiffel Tower was officially completed and opened to the public in 1889, not 1899.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"The Eiffel Tower was officially completed and opened to the public in 1889, not 1899.\"}"
+    },
+    {
+      "id": "gen-021",
+      "claim": "Thomas Edison was granted the first US patent for the telephone in 1876.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 1013,
+      "explanation": "Alexander Graham Bell, not Thomas Edison, was granted the first US patent for the telephone (Patent No. 174,465) on March 7, 1876.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Alexander Graham Bell, not Thomas Edison, was granted the first US patent for the telephone (Patent No. 174,465) on March 7, 1876.\"}"
+    },
+    {
+      "id": "gen-023",
+      "claim": "Charles Darwin's On the Origin of Species was published in 1879.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 723,
+      "explanation": "Charles Darwin's On the Origin of Species was first published in 1859, not 1879.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Charles Darwin's On the Origin of Species was first published in 1859, not 1879.\"}"
+    },
+    {
+      "id": "gen-026",
+      "claim": "Lake Baikal is in Mongolia.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 510,
+      "explanation": "Lake Baikal is located entirely within Russia, not Mongolia.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Lake Baikal is located entirely within Russia, not Mongolia.\"}"
+    },
+    {
+      "id": "gen-028",
+      "claim": "Stamford Raffles established a British trading post in Singapore in 1829.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 739,
+      "explanation": "Stamford Raffles established the British trading post in Singapore in 1819, not 1829.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Stamford Raffles established the British trading post in Singapore in 1819, not 1829.\"}"
+    },
+    {
+      "id": "gen-031",
+      "claim": "Tim Berners-Lee invented the World Wide Web while working at MIT.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 649,
+      "explanation": "Tim Berners-Lee invented the World Wide Web while working at CERN, not MIT.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Tim Berners-Lee invented the World Wide Web while working at CERN, not MIT.\"}"
+    },
+    {
+      "id": "gen-033",
+      "claim": "Insulin was first isolated at the University of Oxford in 1921.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 846,
+      "explanation": "Insulin was first successfully isolated by Frederick Banting and Charles Best at the University of Toronto in 1921, not the University of Oxford.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Insulin was first successfully isolated by Frederick Banting and Charles Best at the University of Toronto in 1921, not the University of Oxford.\"}"
+    },
+    {
+      "id": "gen-036",
+      "claim": "Usain Bolt's 100 metres world record is 9.68 seconds.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Supported",
+      "correct": false,
+      "ms": 1368,
+      "explanation": "Usain Bolt set the official world record of 9.58 seconds in 2009, but he also ran a time of 9.68 seconds at the 2011 World Championships, which is often cited as his second-best or previous record before the 2009 performance.",
+      "raw": "{\"verdict\": \"Supported\", \"explanation\": \"Usain Bolt set the official world record of 9.58 seconds in 2009, but he also ran a time of 9.68 seconds at the 2011 World Championships, which is often cited as his second-best or previous record before the 2009 performance.\"}"
+    },
+    {
+      "id": "gen-038",
+      "claim": "The Great Barrier Reef lies off the coast of Western Australia.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 584,
+      "explanation": "The Great Barrier Reef is located off the coast of Queensland, not Western Australia.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"The Great Barrier Reef is located off the coast of Queensland, not Western Australia.\"}"
+    },
+    {
+      "id": "gen-041",
+      "claim": "Napoleon died in exile on Elba in 1821.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 645,
+      "explanation": "Napoleon died in exile on Saint Helena, not Elba, in 1821.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Napoleon died in exile on Saint Helena, not Elba, in 1821.\"}"
+    },
+    {
+      "id": "gen-043",
+      "claim": "Johannes Gutenberg developed his printing press in Venice.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 576,
+      "explanation": "Johannes Gutenberg developed his printing press in Mainz, Germany, not Venice.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Johannes Gutenberg developed his printing press in Mainz, Germany, not Venice.\"}"
+    },
+    {
+      "id": "gen-046",
+      "claim": "Toronto is the capital of Canada.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 519,
+      "explanation": "Ottawa is the capital of Canada, not Toronto.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Ottawa is the capital of Canada, not Toronto.\"}"
+    },
+    {
+      "id": "gen-048",
+      "claim": "Pluto was reclassified as a dwarf planet in 2016.",
+      "gold": "Refuted",
+      "source": "generated",
+      "predicted": "Refuted",
+      "correct": true,
+      "ms": 760,
+      "explanation": "Pluto was reclassified as a dwarf planet by the IAU in 2006, not 2016.",
+      "raw": "{\"verdict\": \"Refuted\", \"explanation\": \"Pluto was reclassified as a dwarf planet by the IAU in 2006, not 2016.\"}"
+    }
+  ]
+}
