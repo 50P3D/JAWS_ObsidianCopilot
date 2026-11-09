@@ -18,15 +18,18 @@
 
 import {
   Editor,
+  FileSystemAdapter,
   MarkdownFileInfo,
   MarkdownView,
   Notice,
   Plugin,
   TFile,
   WorkspaceLeaf,
+  loadPdfJs,
   normalizePath,
   requestUrl,
 } from "obsidian";
+import { courseTarget, inCourseTarget, isCourseExtension, pdfText, relativeToTarget, type PdfJs } from "./courseFiles.js";
 import type { ClaimCard, FactCheckRequest } from "../contract/claimCard.js";
 import { factCheck, type PipelineOptions } from "../orchestrator/index.js";
 import { CourseIndex, type CourseFile, type IndexStore } from "../course/index.js";
@@ -160,9 +163,13 @@ export default class NoteCheckPlugin extends Plugin {
         }
         try {
           const r = await this.syncCourseIndex();
+          const { files } = await this.courseIndex.stats();
           new Notice(
-            `NoteCheck: Course index has ${r.passages} passages ` +
-            `(${r.added} new, ${r.updated} updated, ${r.removed} removed files).`
+            files === 0
+              ? `NoteCheck: No .md or .pdf files found at "${this.settings.courseFolder.trim()}". ` +
+                "Use a path inside this vault, such as Courses/SE201."
+              : `NoteCheck: Course index has ${r.passages} passages from ${files} files ` +
+                `(${r.added} new, ${r.updated} updated, ${r.removed} removed files).`
           );
         } catch (err) {
           new Notice(`NoteCheck: Indexing failed: ${err instanceof Error ? err.message : String(err)}`);
@@ -392,8 +399,7 @@ export default class NoteCheckPlugin extends Plugin {
 
     await this.syncCourseIndex();
     const exclude = notePath ? [notePath] : [];
-    const folder = normalizePath(this.settings.courseFolder.trim()).replace(/\/+$/, "");
-    const relative = notePath?.startsWith(`${folder}/`) ? notePath.slice(folder.length + 1) : "";
+    const relative = notePath ? relativeToTarget(notePath, this.courseTarget()) : "";
     const courseTopics = relative ? [relative.split("/")[0]] : [];
     const enrichedContext = {
       ...context,
@@ -414,14 +420,39 @@ export default class NoteCheckPlugin extends Plugin {
     return this.courseIndex.sync(this.courseFiles(), (msg) => console.log(`[NoteCheck course] ${msg}`));
   }
 
-  /** Markdown files inside the configured course folder (and its subfolders). */
+  /** The course setting as a lower-case vault-relative path ("" is the whole vault, null is off). */
+  private courseTarget(): string | null {
+    const adapter = this.app.vault.adapter;
+    const base = adapter instanceof FileSystemAdapter ? adapter.getBasePath() : undefined;
+    return courseTarget(this.settings.courseFolder, base);
+  }
+
+  /** Markdown and PDF files in the configured course folder (and its subfolders), or the one configured file. */
   private courseFiles(): CourseFile[] {
-    const folder = normalizePath(this.settings.courseFolder.trim());
-    const prefix = folder === "/" ? "" : `${folder}/`;
-    return this.app.vault
-      .getMarkdownFiles()
-      .filter((f: TFile) => f.path.startsWith(prefix))
-      .map((f: TFile) => ({ path: f.path, mtime: f.stat.mtime, read: () => this.app.vault.cachedRead(f) }));
+    const target = this.courseTarget();
+    if (target === null) return [];
+    const files = this.app.vault
+      .getFiles()
+      .filter((f: TFile) => isCourseExtension(f.extension) && inCourseTarget(f.path, target));
+    if (files.length === 0) {
+      console.warn(`[NoteCheck course] no .md or .pdf files found at "${this.settings.courseFolder}"`);
+    }
+    return files.map((f: TFile) => ({
+      path: f.path,
+      mtime: f.stat.mtime,
+      read: () => (f.extension.toLowerCase() === "pdf" ? this.readPdf(f) : this.app.vault.cachedRead(f)),
+    }));
+  }
+
+  /** The text layer of a PDF. A PDF that cannot be read gives no passages rather than failing the sync. */
+  private async readPdf(file: TFile): Promise<string> {
+    try {
+      const pdfjs = (await loadPdfJs()) as PdfJs;
+      return await pdfText(await this.app.vault.readBinary(file), pdfjs);
+    } catch (err) {
+      console.warn(`[NoteCheck course] could not read ${file.path}:`, err);
+      return "";
+    }
   }
 
   /** An IndexStore backed by a JSON file in this plugin's folder. */

@@ -230,9 +230,9 @@ export function hashText(text: string): number {
   return h >>> 0;
 }
 
-/** "Lecture 3.md" from "Courses/DB/Lecture 3.md", without the extension. */
+/** "Lecture 3" from "Courses/DB/Lecture 3.md" or "Courses/DB/Lecture 3.pdf", without the extension. */
 export function fileTitle(path: string): string {
-  return (path.split("/").pop() ?? path).replace(/\.md$/i, "");
+  return (path.split("/").pop() ?? path).replace(/\.(md|pdf)$/i, "");
 }
 
 // The file name and heading go into the embedding too, because a bullet like "- removes partial
