@@ -250,7 +250,10 @@ export default class NoteCheckPlugin extends Plugin {
 
       new Notice(`NoteCheck: Checking claims for "${request.note_title ?? "selection"}"...`);
 
-      const response = await factCheck(request, await this.pipelineOptions(notePath));
+      const response = await factCheck(request, await this.pipelineOptions(notePath, {
+        noteTitle: request.note_title,
+        headings: request.headings,
+      }));
 
       // claim positions come back relative to the selection; make them positions in the note
       const cards = target
@@ -280,7 +283,7 @@ export default class NoteCheckPlugin extends Plugin {
    * With a course folder set, the course index is synced first (only changed files are
    * re-embedded) and the note being checked is left out, so a note never confirms itself.
    */
-  async pipelineOptions(notePath?: string): Promise<PipelineOptions> {
+  async pipelineOptions(notePath?: string, context?: { noteTitle?: string; headings?: string[]; topics?: string[]; fast?: boolean }): Promise<PipelineOptions> {
     const opts: PipelineOptions = {
       ollamaUrl: this.settings.ollamaUrl,
       model: this.settings.modelName,
@@ -290,10 +293,19 @@ export default class NoteCheckPlugin extends Plugin {
 
     await this.syncCourseIndex();
     const exclude = notePath ? [notePath] : [];
+    const folder = normalizePath(this.settings.courseFolder.trim()).replace(/\/+$/, "");
+    const relative = notePath?.startsWith(`${folder}/`) ? notePath.slice(folder.length + 1) : "";
+    const courseTopics = relative ? [relative.split("/")[0]] : [];
+    const enrichedContext = {
+      ...context,
+      topics: [...courseTopics, ...(context?.topics ?? [])],
+    };
     opts.course = {
-      search: (claim) => this.courseIndex.search(claim, { exclude }),
+      search: (claim, queryContext) =>
+        this.courseIndex.search(claim, { exclude, context: queryContext ?? enrichedContext }),
       only: this.settings.courseOnly,
     };
+    opts.topicContext = enrichedContext.topics;
     return opts;
   }
 

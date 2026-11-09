@@ -18,6 +18,7 @@ import { extractSmartContext } from "./paragraphExtractor";
 import { clearFindings, findingFor, setSuggestionHandlers, showFindings, type Finding } from "./inlineDecorations";
 import { checkableUnits, type Unit } from "./liveText";
 import type { ClaimCard, Evidence } from "../contract/claimCard";
+import { openEvidence } from "./evidence";
 
 interface LiveCheckerState {
   /** Debounce timer ID. */
@@ -87,6 +88,10 @@ export function setLiveCheckEnabled(plugin: Plugin, enabled: boolean): void {
     new Notice("NoteCheck: Live fact-checking enabled");
   } else {
     stopPolling();
+    if (state.debounceTimer) {
+      clearTimeout(state.debounceTimer);
+      state.debounceTimer = null;
+    }
     state.abortController?.abort();
     // Clear suggestions from all editors
     clearAllHighlights();
@@ -116,8 +121,7 @@ function suggestionHandlers(app: App) {
       dismissed.add(f.id);
     },
     openEvidence: (ev: Evidence) => {
-      if (ev.source === "course") void app.workspace.openLinkText(ev.section ? `${ev.url}#${ev.section}` : ev.url, "", true);
-      else window.open(ev.url, "_blank");
+      openEvidence(app, ev);
     },
   };
 }
@@ -188,9 +192,6 @@ function pollEditors(workspace: any): void {
   // Check each tracked editor for changes
   for (const [editor, lastContent] of state.lastContent) {
     // Skip if editor is no longer active
-    const view = workspace.getActiveViewOfType(MarkdownView);
-    if (!view || view.editor !== editor) continue;
-
     const currentContent = editor.getValue();
     if (currentContent !== lastContent) {
       state.lastContent.set(editor, currentContent);
@@ -227,6 +228,7 @@ function onEditorChange(editor: Editor): void {
 
   // Debounce the fact-check
   state.debounceTimer = setTimeout(() => {
+    state.debounceTimer = null;
     runLiveCheck(editor);
   }, state.debounceMs);
 }
@@ -311,11 +313,14 @@ async function checkNewSentences(editor: Editor): Promise<void> {
 
     // Same options as the command (including the course index), when the plugin is loaded
     const base = plugin?.pipelineOptions
-      ? await plugin.pipelineOptions(file?.path)
+      ? await plugin.pipelineOptions(file?.path, { noteTitle: file?.basename, headings: context.headings, fast: true })
       : { ollamaUrl: getOllamaUrl(), model: getModelName(), userAgent: getWikiUserAgent() };
     state.abortController = new AbortController();
     const response = await factCheck(request, {
       ...base,
+      directClaims: true,
+      maxRetries: 0,
+      retrieval: { pages: 1, candidates: 8, mode: "keyword" },
       signal: state.abortController.signal,
       log: (msg) => console.log(`[NoteCheck Live] ${msg}`),
     });

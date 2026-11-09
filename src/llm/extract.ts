@@ -32,6 +32,8 @@ export interface ExtractOptions {
    * facts as the course teaches them) are then kept, because the course index can check them.
    */
   courseClaims?: boolean;
+  /** Subject labels supplied by the caller, such as the course folder name. */
+  topicContext?: string[];
 }
 
 const WIKI_ONLY_RULES = `- Keep only claims Wikipedia could confirm or deny: dates, places, people, numbers, events, definitions.
@@ -87,6 +89,7 @@ export async function extractClaims(
   if (!text) return [];
 
   const user = [
+    `Topic context: ${extract.topicContext?.join(" > ") || "(none)"}`,
     `Note title: ${request.note_title ?? "(none)"}`,
     `Headings: ${request.headings?.join(" > ") || "(none)"}`,
     "",

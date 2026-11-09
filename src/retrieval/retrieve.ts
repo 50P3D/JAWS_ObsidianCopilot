@@ -53,6 +53,9 @@ interface Candidate {
 }
 
 const CONTEXT_CHARS = 200;
+const RETRIEVAL_CACHE_TTL_MS = 10 * 60 * 1000;
+const retrievalCache = new Map<string, { at: number; value: Evidence[] }>();
+const retrievalInFlight = new Map<string, Promise<Evidence[]>>();
 
 async function timed<T>(log: RetrieveOptions["log"], step: string, fn: () => Promise<T>): Promise<T> {
   const t0 = performance.now();
@@ -62,6 +65,32 @@ async function timed<T>(log: RetrieveOptions["log"], step: string, fn: () => Pro
 }
 
 export async function retrieveEvidence(claim: string, opts: RetrieveOptions = {}): Promise<Evidence[]> {
+  const mode = opts.mode ?? "hybrid";
+  const pageLimit = opts.pages ?? 3;
+  const top = opts.top ?? 3;
+  const candidateLimit = opts.candidates ?? 60;
+  const minRatio = opts.minRatio ?? 0;
+  const log = opts.log;
+  const cacheKey = JSON.stringify([claim, mode, pageLimit, top, candidateLimit, minRatio]);
+  const cached = retrievalCache.get(cacheKey);
+  if (cached && Date.now() - cached.at < RETRIEVAL_CACHE_TTL_MS) return cached.value;
+  if (cached) retrievalCache.delete(cacheKey);
+  const pending = retrievalInFlight.get(cacheKey);
+  if (pending) return pending;
+
+  const request = retrieveEvidenceUncached(claim, opts);
+  retrievalInFlight.set(cacheKey, request);
+  try {
+    const result = await request;
+    retrievalCache.set(cacheKey, { at: Date.now(), value: result });
+    while (retrievalCache.size > 256) retrievalCache.delete(retrievalCache.keys().next().value!);
+    return result;
+  } finally {
+    retrievalInFlight.delete(cacheKey);
+  }
+}
+
+async function retrieveEvidenceUncached(claim: string, opts: RetrieveOptions): Promise<Evidence[]> {
   const mode = opts.mode ?? "hybrid";
   const pageLimit = opts.pages ?? 3;
   const top = opts.top ?? 3;
