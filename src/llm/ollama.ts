@@ -1,3 +1,7 @@
+// Helper for talking to a local model through Ollama.
+export interface LlmOptions {
+  ollamaUrl?: string;
+  model?: string;
 // Helper for talking to local model through ollama
 // In our case, qwen3.5 4b or 9b
 export interface LlmOptions{
@@ -6,79 +10,91 @@ model?: string;
 /** Let qwen3.x reason before answering. Slower. Off by default; the pipeline only turns it on for the verifier. */
 think?: boolean;
 }
-// The default Ollama URL and model can be overridden by environment variables
-const env = (globalThis as any).process?.env ?? {};
-export const DEFAULT_OLLAMA_URL = env.OLLAMA_URL ?? "http://localhost:11434"; // default ollama url
-export const DEFAULT_MODEL = env.OLLAMA_MODEL ?? "qwen3.5:4b"; // default model
 
-// Custom fetch function that can be overridden (e.g., for Obsidian's requestUrl)
+const env = (globalThis as any).process?.env ?? {};
+export const DEFAULT_OLLAMA_URL = env.OLLAMA_URL ?? "http://localhost:11434";
+export const DEFAULT_MODEL = env.OLLAMA_MODEL ?? "qwen3.5:4b";
+
 let customFetch: ((url: string, init?: RequestInit) => Promise<Response>) | null = null;
 
 export function setCustomFetch(fn: (url: string, init?: RequestInit) => Promise<Response>): void {
   customFetch = fn;
+  responseCache.clear();
 }
 
 export function clearCustomFetch(): void {
   customFetch = null;
+  responseCache.clear();
 }
+
+const responseCache = new Map<string, { expiresAt: number; value: unknown }>();
+const inFlight = new Map<string, Promise<unknown>>();
+const CACHE_TTL_MS = 10 * 60 * 1000;
+const MAX_CACHE_ENTRIES = 256;
 
 async function ollamaFetch(url: string, init?: RequestInit): Promise<Response> {
-  if (customFetch) {
-    return customFetch(url, init);
-  }
-  // Fallback to global fetch (for Node.js / tests)
-  return fetch(url, init);
+  return customFetch ? customFetch(url, init) : fetch(url, init);
 }
 
-// Helper function to send a chat message to the Ollama API and get a JSON response
-export async function chatJson<T>(system: string, user: string, schema: object, opts: LlmOptions = {}): 
-Promise<T> {
-    // url and model from opts or defaults
-    const url = opts.ollamaUrl ?? DEFAULT_OLLAMA_URL;
-    const model = opts.model ?? DEFAULT_MODEL;
+function cacheKey(url: string, model: string, system: string, user: string, schema: object): string {
+  return JSON.stringify([url, model, system, user, schema]);
+}
 
-    // Make a POST request to the Ollama API    
+export async function chatJson<T>(system: string, user: string, schema: object, opts: LlmOptions = {}): Promise<T> {
+  const url = opts.ollamaUrl ?? DEFAULT_OLLAMA_URL;
+  const model = opts.model ?? DEFAULT_MODEL;
+  const key = cacheKey(url, model, system, user, schema);
+  const cached = responseCache.get(key);
+  if (cached && cached.expiresAt > Date.now()) return cached.value as T;
+  if (cached) responseCache.delete(key);
+  const existing = inFlight.get(key);
+  if (existing) return (await existing) as T;
+
+  const request = (async (): Promise<T> => {
     let res: Response;
-    // Fetch the response from Ollama
     try {
-        res = await ollamaFetch(`${url}/api/chat`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                model,
-                messages: [
-                    { role: "system", content: system },
-                    { role: "user", content: user },
-                ],
-                format: schema,  // specify the expected output format/schema
-                stream: false, // we want the full response, not a stream
-                // qwen3.5 thinks before answering by default, which is slow; Ollama keeps the reasoning
-                // in message.thinking, so the JSON answer stays in message.content either way
-                think: opts.think ?? false,
-                options: { temperature: 0}, // deterministic output
-                keep_alive: "10m", // keep the model loaded in memory between calls, so later calls are fast
-            }),
-        });
-    // If the fetch fails (e.g., network error), throw an error
+      res = await ollamaFetch(`${url}/api/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: system },
+            { role: "user", content: user },
+          ],
+          format: schema,
+          stream: false,
+          think: false,
+          options: { temperature: 0 },
+          keep_alive: "10m",
+        }),
+      });
     } catch {
-        throw new Error (`Could not connect to Ollama at ${url}. Is the Ollama server running?`);
+      throw new Error(`Could not connect to Ollama at ${url}. Is the Ollama server running?`);
     }
-    // If the response is not OK, throw an error with the status and a hint to pull the model
     if (!res.ok) {
-        const body = await res.text();
-        throw new Error(`Ollama API request failed with status ${res.status}: ${body.slice (0, 200)} Did you run: ollama pull ${model} ?`);
+      const body = await res.text();
+      throw new Error(`Ollama API request failed with status ${res.status}: ${body.slice(0, 200)} Did you run: ollama pull ${model} ?`);
     }
-    // Parse the JSON response
     const data: any = await res.json();
-    const text: string = data.message?.content ??  "";
+    const text: string = data.message?.content ?? "";
     if (!text.trim()) {
-        throw new Error(`Ollama returned an empty answer (done_reason: ${data.done_reason ?? "unknown"}).`);
+      throw new Error(`Ollama returned an empty answer (done_reason: ${data.done_reason ?? "unknown"}).`);
     }
     try {
-        return JSON.parse(text) as T;
-    } catch{
-        throw new Error(`Failed to parse JSON from Ollama response: ${text.slice(0, 200)}`);
+      return JSON.parse(text) as T;
+    } catch {
+      throw new Error(`Failed to parse JSON from Ollama response: ${text.slice(0, 200)}`);
     }
+  })();
+
+  inFlight.set(key, request);
+  try {
+    const value = await request;
+    responseCache.set(key, { expiresAt: Date.now() + CACHE_TTL_MS, value });
+    while (responseCache.size > MAX_CACHE_ENTRIES) responseCache.delete(responseCache.keys().next().value!);
+    return value;
+  } finally {
+    inFlight.delete(key);
+  }
 }

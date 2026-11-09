@@ -14,12 +14,14 @@ const SYSTEM = `You check one claim against evidence passages from Wikipedia or 
 
 Rules:
 - Use only the passages. Ignore anything you know from elsewhere.
-- Judge the claim exactly as written, including words like "not", "never", "only", "all" and "exactly". If the claim says "X was not born in 1961" and a passage says X was born in 1961, the claim is Refuted. If a passage says X was born in 1958, the claim is Supported.
-- Supported: a passage says the claim is true. Different wording is fine.
-- Refuted: a passage says something that cannot be true at the same time as the claim, for example a different date, place or number, or a different person in the same role.
-- Not Enough Info: the passages do not say whether the claim is true. A passage about the right subject that never mentions the specific fact is Not Enough Info, not Refuted. A fact being missing from the passages does not make the claim false.
-- explanation: write this first. One or two plain sentences: what the passages say about the claim, and for Refuted the passage text that conflicts with it. If no passage text conflicts with the claim, the verdict cannot be Refuted.
-- suggested_fix: only when Refuted, the claim rewritten to match the passage. Otherwise an empty string.`;
+- Supported: a passage clearly says the claim is true. Different wording is fine.
+- Refuted: a passage clearly contradicts the claim, for example a different date, place or number.
+- Not Enough Info: the passages do not settle it either way. Only choose this when the evidence is truly irrelevant or missing.
+- If a passage partially addresses the claim (e.g., mentions the entity and topic but not the specific fact), prefer Supported or Refuted based on the closest match.
+- explanation: one or two plain sentences pointing to what the passage says.
+- suggested_fix: when Refuted, ALWAYS provide the complete corrected sentence, using the claim's wording
+  and changing only the contradicted fact. It must not be empty. Otherwise use an empty string.
+- The corrected sentence must be directly supported by one of the passages; never guess or use outside knowledge.`;
 
 // explanation comes before verdict, so the model states what the passages say before it decides
 const SCHEMA = {
@@ -38,7 +40,11 @@ interface VerifyResult {
   suggested_fix: string;
 }
 
-export async function verifyClaim(card: ClaimCard, opts: LlmOptions = {}): Promise<ClaimCard> {
+export interface VerifyContext {
+  topic?: string;
+}
+
+export async function verifyClaim(card: ClaimCard, opts: LlmOptions = {}, context?: VerifyContext): Promise<ClaimCard> {
   const evidence = card.evidence ?? [];
   const model = opts.model ?? DEFAULT_MODEL;
 
@@ -50,10 +56,11 @@ export async function verifyClaim(card: ClaimCard, opts: LlmOptions = {}): Promi
   const passages = evidence
     .map((e, i) => `[${i + 1}] ${e.page_title}${e.section ? ` (${e.section})` : ""}:\n${e.passage}`)
     .join("\n\n");
-  const user = `Claim: ${card.claim}\n\nPassages:\n${passages}`;
+  const topic = context?.topic ? `\nTopic context (use only to interpret the claim, not as evidence): ${context.topic}\n` : "";
+  const user = `Claim: ${card.claim}${topic}\nPassages:\n${passages}`;
 
   const out = await chatJson<VerifyResult>(SYSTEM, user, SCHEMA, opts);
-  const fix = out.suggested_fix?.trim();
+  const fix = out.suggested_fix?.trim().replace(/\s+/g, " ");
 
   // Return the original card with the verdict, explanation, suggested fix (if any), and model used
   return {
