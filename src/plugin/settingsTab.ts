@@ -80,8 +80,11 @@ export class NoteCheckSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("Enable Claude review")
       .setDesc(
-        "Run an additional Claude-based review pass after the local LLM verdict. " +
-        "This improves accuracy but requires an Anthropic API key and uses credits."
+        "After a selection check, ask Claude for a second opinion on each Supported or Refuted verdict. " +
+        "Claude Haiku answers first and Claude Sonnet is asked when Haiku does not agree. " +
+        "It never changes the local verdict. What is sent to Anthropic: the claim, the verdict and up to three " +
+        "Wikipedia sentences. Not sent: your note text, note title, headings or any course material. " +
+        "Needs an API key and uses credits."
       )
       .addToggle((toggle) =>
         toggle
@@ -91,6 +94,24 @@ export class NoteCheckSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
+
+    // ── Claude API key ───────────────────────────────────────────
+    new Setting(containerEl)
+      .setName("Anthropic API key")
+      .setDesc(
+        "Used only for the Claude review. Obsidian stores plugin settings in plain text in this vault's " +
+        "plugin data file, so anyone who can read that file can read the key. Do not sync or share it."
+      )
+      .addText((text) => {
+        text.inputEl.type = "password";
+        text
+          .setPlaceholder("sk-ant-...")
+          .setValue(this.plugin.settings.claudeApiKey)
+          .onChange(async (value) => {
+            this.plugin.settings.claudeApiKey = value.trim();
+            await this.plugin.saveSettings();
+          });
+      });
 
     // ── Live fact-checking toggle ────────────────────────────────
     new Setting(containerEl)
@@ -181,6 +202,58 @@ export class NoteCheckSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.courseOnly = value;
             await this.plugin.saveSettings();
+          })
+      );
+
+    containerEl.createEl("h3", { text: "Ghost text" });
+
+    // ── Ghost text toggle ────────────────────────────────────────
+    new Setting(containerEl)
+      .setName("Enable ghost text")
+      .setDesc(
+        "Show a short grey suggestion after the cursor when you pause after typing a space. " +
+        "Press Tab to accept it or Esc to dismiss it. Uses a small local model through Ollama."
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.enableGhostText)
+          .onChange(async (value) => {
+            this.plugin.settings.enableGhostText = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    // ── Ghost model ──────────────────────────────────────────────
+    new Setting(containerEl)
+      .setName("Ghost text model")
+      .setDesc(
+        "A small, fast Ollama model, for example qwen3.5:2b. Run `ollama pull` for it first. " +
+        "It is separate from the model used for fact-checking."
+      )
+      .addText((text) =>
+        text
+          .setPlaceholder("qwen3.5:2b")
+          .setValue(this.plugin.settings.ghostModel)
+          .onChange(async (value) => {
+            this.plugin.settings.ghostModel = value.trim();
+            await this.plugin.saveSettings();
+          })
+      );
+
+    // ── Ghost debounce ───────────────────────────────────────────
+    new Setting(containerEl)
+      .setName("Ghost text delay (ms)")
+      .setDesc("Wait this long after you stop typing before asking for a suggestion.")
+      .addText((text) =>
+        text
+          .setPlaceholder("400")
+          .setValue(String(this.plugin.settings.ghostDebounceMs))
+          .onChange(async (value) => {
+            const ms = parseInt(value, 10);
+            if (!isNaN(ms) && ms >= 100) {
+              this.plugin.settings.ghostDebounceMs = ms;
+              await this.plugin.saveSettings();
+            }
           })
       );
   }

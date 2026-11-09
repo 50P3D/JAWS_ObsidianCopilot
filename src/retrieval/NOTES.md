@@ -61,7 +61,7 @@ The claims and the expected pages were written from general knowledge. Check the
 
 ## Known limits and stubs
 
-- **Disambiguation is a stub.** Pages that say "may refer to" are skipped, nothing smarter yet.
+- **Disambiguation picks one meaning by word overlap.** When a search lands on a page like "Mercury may refer to: ...", `disambiguate.ts` reads the introductions of the pages it links to and keeps the meaning that shares the most words with the claim (plus a bonus when the claim names the bracketed word, as in "planet"). Two meanings that score within 0.1 are both kept. If none scores at least 0.25, none is kept. The weights are set by hand, not tuned on the test set, and a claim that never mentions the meaning's topic words can still pick wrongly. Check live with `npm run smoke:disambiguation`.
 - **The title penalty can misfire.** "Mercury (planet)" is penalised if the claim never says "planet". The boost and penalty sizes (`config.ts`) were set by eye on a few claims and need tuning on the test set.
 - **The keyword pre-filter can miss paraphrases.** A passage that says the same thing in different words may not reach the embedding step. Raising `candidates` helps.
 - **Wording and numbers.** "Signed in 1920" and "signed in 1919" look almost the same to embeddings. The year bonus in `score.ts` keeps a conflicting date in the running, and the verifier makes the final call.

@@ -1,7 +1,7 @@
 # ANNA.md: Aadhavan's progress log
 
 Branch: `ANNA`. Area: retrieval (`src/retrieval/`), the claim card contract (`src/contract/`) and project set-up.
-Last updated: 13 October 2026.
+Last updated: 3 November 2026.
 
 ## AI disclaimer
 
@@ -15,6 +15,27 @@ Aadhavan directed the work, ran the code on his own machine, pasted back the res
 - the 20 test claims in `src/retrieval/testdata/claims.json`, which were written from general knowledge and have not yet been checked against Wikipedia by a human
 
 This should also be recorded in `docs/ai-use-log.md`.
+
+## AI use not yet logged (as of 3 November 2026)
+
+`docs/ai-use-log.md` has one row for me so far: the 12 October README draft. The list above is still missing from the log. Rows to add, with dates to confirm:
+
+1. Retrieval: `src/retrieval/` code, tests, `NOTES.md` and the evaluation script (Claude Code and Claude chat)
+2. Claim card contract: `src/contract/claimCard.ts` and the example JSON cards (Claude)
+3. Set-up files: `OWNER.md` files, `.gitignore` additions, `package.json` and `tsconfig.json` (Claude)
+4. The 20 retrieval test claims in `src/retrieval/testdata/claims.json`, written by Claude from general knowledge and not yet checked by a human
+
+No other AI provider has been used in this branch. That stays true until the planned uses below start.
+
+Planned AI use, not started. Each one gets a log row when it happens:
+
+- `tools/claim-generator`: Claude rewrites true Wikipedia facts into believable false claims, with a `label` field, and a sample is checked by hand
+- A reviewer model (Groq or Claude) for development only: it critiques tests and triages mutation-testing and scanner output, in a read-only checkout
+- Fine-tuning data, if we fine-tune: the source of every training claim is recorded, and the test set is kept apart
+
+The model inside the product stays local (Qwen through Ollama). Claude and Groq are development tools only. They never run inside the product or score the final results.
+
+Other gap found: step 6 of the README says NoteCheck picks the right article when a name has several meanings. The code only skips "may refer to" pages, so either implement disambiguation or correct the README.
 
 ## What the retrieval code does
 

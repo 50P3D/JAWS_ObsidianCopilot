@@ -3,7 +3,8 @@
  *
  * Steps:
  *   1. Build short search queries from the claim (named things first).
- *   2. Search Wikipedia and fetch the top articles with their revision ids.
+ *   2. Search Wikipedia and fetch the top articles with their revision ids. A disambiguation
+ *      page is replaced by the meaning the claim is about (see disambiguate.ts).
  *   3. Cut each article into passages.
  *   4. Pick the best candidates by keyword match (cheap).
  *   5. Re-rank the candidates by meaning using embeddings (unless mode is "keyword").
@@ -24,7 +25,8 @@ import { embedDocuments, embedQuery } from "./embed";
 import { buildQueries, extractEntities } from "./query";
 import { cosine, keywordScore } from "./score";
 import { titleAdjustment } from "./title";
-import { fetchPage, isDisambiguation, searchPages, type SearchHit, type WikiPage } from "./wikipedia";
+import { expandDisambiguations } from "./disambiguate";
+import { fetchPage, fetchSenses, searchPages, type SearchHit, type WikiPage } from "./wikipedia";
 
 export type Mode = "keyword" | "embedding" | "hybrid";
 
@@ -119,7 +121,10 @@ async function retrieveEvidenceUncached(claim: string, opts: RetrieveOptions): P
   const fetched = await timed(log, "fetch articles", () =>
     Promise.all(hits.slice(0, pageLimit).map((h) => fetchPage(h.title))),
   );
-  const pages = fetched.filter((p): p is WikiPage => p !== null && !isDisambiguation(p));
+  // a page like "Mercury may refer to: ..." is swapped for the meaning the claim is about
+  const pages = await timed(log, "resolve disambiguation", () =>
+    expandDisambiguations(claim, fetched, { fetchSenses, fetchPage }),
+  );
 
   // 3 and 4: chunk, then keyword pre-filter
   const all: Candidate[] = [];
