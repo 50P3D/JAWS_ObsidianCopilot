@@ -241,17 +241,30 @@ export default class NoteCheckPlugin extends Plugin {
     if (!update.transactions.some((tr) => tr.isUserEvent("input.type"))) return;
     // typing the suggestion's own letters keeps the ghost showing, so nothing new is needed
     if (currentGhost(update.view)) return;
-    this.ghostTimer = window.setTimeout(() => void this.requestGhost(update.view), this.settings.ghostDebounceMs);
+    const head = update.state.selection.main.head;
+    this.ghostTimer = window.setTimeout(() => void this.requestGhost(update.view, head), this.settings.ghostDebounceMs);
   }
 
-  private async requestGhost(view: EditorView): Promise<void> {
+  /** How often to look again while a live check is running. */
+  private static readonly GHOST_RETRY_MS = 500;
+
+  private async requestGhost(view: EditorView, head: number): Promise<void> {
     this.ghostTimer = undefined;
+    if (!this.settings.enableGhostText || !view.dom.isConnected) return;
+    // the user clicked somewhere else while waiting
+    const start = view.state.selection.main;
+    if (!start.empty || start.head !== head) return;
+    // a live check is using Ollama: ask once it is done instead of dropping the suggestion.
+    // Typing again cancels this timer like any other (cancelGhost).
+    if (isLiveChecking()) {
+      this.ghostTimer = window.setTimeout(() => void this.requestGhost(view, head), NoteCheckPlugin.GHOST_RETRY_MS);
+      return;
+    }
     const input = suggestInputFromState(view.state, this.settings.enableGhostText, isLiveChecking());
     if (!shouldSuggest(input) || !this.settings.ghostModel.trim()) return;
 
     const controller = new AbortController();
     this.ghostAbort = controller;
-    const head = view.state.selection.main.head;
     try {
       const text = await fetchCompletion({
         before: input.before,
