@@ -27,7 +27,7 @@ The non-AI alternative is keyword search against Wikipedia plus manual lookup, o
 ## Features
 
 1. **Fact-check on demand.** Select text and run the command. NoteCheck extracts atomic claims, retrieves Wikipedia passages and labels each claim `Supported`, `Refuted` or `Not Enough Info`, with the evidence and a link to the exact revision used.
-2. **Check against your own course materials.** Point NoteCheck at a folder of lecture notes and readings. Claims are checked against that folder first, and Wikipedia is only used when the course does not cover a claim. Course-specific claims ("2NF removes partial dependencies") can now be checked too. A "course only" mode never contacts Wikipedia.
+2. **Check against your own course materials.** Point NoteCheck at the root folder containing lecture notes and readings, for example `Courses`. Claims are checked against the relevant course subfolder first, using the note title, headings and subfolder name as topic context. Wikipedia is used when the course does not cover a claim or the course evidence is inconclusive. Course-specific claims ("2NF removes partial dependencies") can now be checked too. A "course only" mode never contacts Wikipedia.
 3. **Live suggestions as you type.** With live checking on, every sentence you finish is checked in the background. A wrong claim gets a wavy underline, the wrong words are struck through and the fix appears next to them, like tracked changes: "signed in ~~1920~~ **1919**". Click it to see the evidence, then Accept or Dismiss.
 4. **Source reliability flags.** Each piece of Wikipedia evidence gets a `Low`, `Medium` or `High` badge with reasons, such as a recent unreviewed edit, a POV or Disputed tag or low citation coverage. Flags describe articles and revisions, never individual editors.
 5. **MCP server.** Exposes `fact_check` and retrieval as tools so Claude can review a verdict on request. The same interface runs our evaluation harness.
@@ -41,7 +41,7 @@ An automated Claude judge is a **stretch goal**, not part of the core scope.
 | Settings                                     | Claims are checked against                                                                                               |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | No course folder (default)                   | Wikipedia only                                                                                                           |
-| Course folder set                            | Your course folder first. Wikipedia when no course passage is close enough, or the course passages give Not Enough Info |
+| Course folder set                            | The relevant course subfolder first. Wikipedia when no course passage is close enough, or the course passages give Not Enough Info |
 | Course folder set and **Course materials only** on | Your course folder only. Claims the course does not cover come back Not Enough Info, and Wikipedia is never contacted |
 
 Course evidence shows "Course material" in the results and links to the heading in your note. It has no reliability badge, because the badge signals (edit history, maintenance tags) only exist for Wikipedia.
@@ -65,13 +65,13 @@ Here is what happens when you select a sentence and click check, step by step.
 3. **It picks out the individual facts.** A sentence like "Einstein was born in 1879 in Ulm and won the Nobel Prize in 1921" becomes separate claims that can each be checked on their own.
 4. **It throws away what can't be checked.** Opinions, to-do reminders and questions are skipped. Course-specific claims are skipped too, unless you have set a course materials folder that can check them.
 5. **It rewrites each claim so it makes sense alone.** "He was born in 1879" becomes "Albert Einstein was born in 1879", because the checker will not see the rest of your note.
-6. **It looks the claim up.** If you have set a course folder, it first searches your course notes, which were split into passages and indexed once when you set the folder. If they cover the claim, it skips to step 8. Otherwise it searches Wikipedia. If a search lands on a page that only lists several meanings of a name ("Mercury may refer to..."), NoteCheck reads the introduction of each meaning and keeps the one that shares the most words with your claim, so "Mercury is the closest planet to the Sun" goes to Mercury (planet). If two meanings fit about equally, it keeps both. If none fits, it keeps none rather than guessing, so a very vague claim may still need a more specific wording. It then cuts the articles into small pieces and ranks which pieces are most useful.
+6. **It looks the claim up.** If you have set a course folder, it first searches the relevant course materials, which were split into passages and indexed once when you set the folder. Live checks use a faster keyword search; manual checks use semantic retrieval. If course evidence verifies the claim, it skips to step 8. Otherwise it searches Wikipedia. If a search lands on a page that only lists several meanings of a name ("Mercury may refer to..."), NoteCheck reads the introduction of each meaning and keeps the one that shares the most words with your claim, so "Mercury is the closest planet to the Sun" goes to Mercury (planet). If two meanings fit about equally, it keeps both. If none fits, it keeps none rather than guessing, so a very vague claim may still need a more specific wording. It then cuts the articles into small pieces and ranks which pieces are most useful.
 7. **It checks how much to trust that article.** It looks at warning banners, recent edits that nobody has reviewed and how often the page gets undone by other editors. This gives a High, Medium or Low badge with reasons.
 8. **The local AI reads the evidence and decides.** It compares the Wikipedia passage with your claim and answers Supported, Refuted or Not Enough Info. If your claim is wrong, it suggests a fix.
 9. **You see the result in a side panel and in your note.** Each claim shows the verdict, the exact passage, a link to the exact version of the Wikipedia page (or your course note) used and the trust badge. Refuted claims are also marked in the note itself, with the suggested change ready to accept.
 10. **Optional second opinion.** If you choose to, Claude can look at a verdict through the MCP server and say whether it agrees. Nothing goes to Claude unless you set this up.
 
-If the Wikipedia evidence is weak (the AI says Not Enough Info), NoteCheck rewrites its search and tries again, up to three more times, before giving up.
+If the Wikipedia evidence is weak (the AI says Not Enough Info), a manual check can rewrite its search and try again. Live checks make one fast Wikipedia attempt and do not generate slower retry queries, so typing remains responsive.
 
 ---
 
@@ -249,7 +249,7 @@ Open **Settings → NoteCheck**:
 | Wikimedia User-Agent         | `NoteCheck/0.1 (your-email@example.com)`. Wikimedia asks every client for a contact.                             |
 | Enable live fact-checking    | On to get suggestions as you type (see below)                                                                   |
 | Live check debounce (ms)     | How long to wait after you stop typing. 1500 is a good start.                                                    |
-| Course materials folder      | Vault path of your course folder, for example `Courses/SE201`. Empty means Wikipedia only.                       |
+| Course materials folder      | Root vault folder, for example `Courses`. Empty means Wikipedia only. Subfolders such as `Courses/Excel` provide topic context. |
 | Course materials only        | On to never contact Wikipedia                                                                                    |
 | Enable ghost text            | On to get a grey word suggestion after you pause (off by default)                                                |
 | Ghost text model             | A small, fast model you have pulled, for example `qwen3.5:2b`. Separate from the model above. Empty means no suggestions. |
@@ -286,9 +286,10 @@ Expect each new sentence to take roughly 10 to 60 seconds on a laptop with the 9
 
 ### Check against your course materials
 
-1. Put your course materials in a vault folder as markdown, one file per lecture or reading. Headings help, because each passage is labelled with the heading above it.
-2. Set **Course materials folder** to that folder and click **Index now**, or run **NoteCheck: Index course materials**. The notice shows how many passages were indexed.
-3. Check notes as usual. Course evidence is marked "Course material", and its link jumps to the heading in your course note.
+1. Put your course materials in a vault folder as markdown, one file per lecture or reading. A layout such as `Courses/Excel/...` and `Courses/Databases/...` lets the subfolder guide retrieval. Headings help, because each passage is labelled with the heading above it.
+2. Set **Course materials folder** to the root folder (`Courses`) and click **Index now**, or run **NoteCheck: Index course materials**. The notice shows how many passages were indexed.
+3. Keep the note being checked outside the source-material folder when possible. Check notes as usual. Course evidence is marked "Course material", and its link jumps to the heading in your course note.
+4. If a course passage is unrelated or only says that it lacks enough detail, NoteCheck falls back to Wikipedia unless **Course materials only** is enabled.
 
 The index updates itself before each check. Only files that changed since the last check are re-embedded. It is saved in the plugin folder (`.obsidian/plugins/notecheck/course-index.json`), not among your notes. The note being checked is always left out of the search, so a note in the course folder can never confirm itself.
 
@@ -326,7 +327,7 @@ Work through these in order. Parts A and B run without Obsidian. Part C is the h
 
 ```bash
 npm run typecheck          # no output means no type errors
-npm run test:plugin        # 21 tests: inline suggestions, word-level fixes, sentence splitting
+npm run test:plugin        # 23 tests: inline suggestions, word-level fixes, sentence splitting
 npm run test:course        # 11 tests: course chunking, indexing, search
 npm run test:llm           # 9 tests: note preprocessing, extraction prompt
 npm test                   # 28 tests: retrieval
@@ -354,7 +355,7 @@ Expected, give or take wording:
 
 | Claim                                              | Verdict   | Evidence                                  |
 | -------------------------------------------------- | --------- | ----------------------------------------- |
-| Second normal form removes transitive dependencies | Refuted   | course: Week 3 - Normalisation, § 3NF and § 2NF |
+| Second normal form removes transitive dependencies | Refuted   | course: Week 3 - Normalisation, § 3NF and § 2NF, or Wikipedia if course verification is inconclusive |
 | Read Committed prevents dirty reads                | Supported | course: Week 5 - Transactions             |
 | The Treaty of Versailles was signed in 1920        | Refuted   | wikipedia: Treaty of Versailles           |
 
@@ -366,7 +367,7 @@ Run it a second time. The first line should say `0 file(s) embedded`, which show
 
 1. Build and install the plugin (Getting started, steps 2 and 3) into a **test vault**.
 2. Copy the folder `src/course/testdata/sample-course` into the vault as `Courses/Databases`.
-3. In NoteCheck's settings, set the model, the Wikimedia User-Agent, **Course materials folder** = `Courses/Databases`, and turn on **Enable live fact-checking**.
+3. In NoteCheck's settings, set the model, the Wikimedia User-Agent, **Course materials folder** = `Courses`, and turn on **Enable live fact-checking**.
 4. Open the developer console (`Ctrl+Shift+I` on Windows/Linux, `Cmd+Option+I` on macOS). NoteCheck logs lines starting with `[NoteCheck Live]` and `[NoteCheck course]`, which help when something looks wrong.
 5. Create a new note called `Test` **outside** the course folder.
 

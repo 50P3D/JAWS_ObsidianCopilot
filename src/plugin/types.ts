@@ -50,6 +50,15 @@ export interface NoteCheckSettings {
 
   /** When true, only the course folder is used and Wikipedia is never searched. */
   courseOnly: boolean;
+
+  /** When true, a short grey suggestion appears after the cursor as you type. Tab accepts it. */
+  enableGhostText: boolean;
+
+  /** Small Ollama model for ghost text. Kept separate so it can be much smaller than modelName. */
+  ghostModel: string;
+
+  /** Milliseconds to wait after typing stops before asking for a ghost suggestion. */
+  ghostDebounceMs: number;
 }
 
 /**
@@ -65,4 +74,7 @@ export const DEFAULT_SETTINGS: NoteCheckSettings = {
   liveCheckDebounceMs: 1500,
   courseFolder: "",
   courseOnly: false,
+  enableGhostText: false,
+  ghostModel: "qwen3.5:2b",
+  ghostDebounceMs: 400,
 };

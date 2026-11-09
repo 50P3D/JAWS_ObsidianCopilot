@@ -30,6 +30,18 @@ export interface PipelineOptions {
   userAgent?: string;
   /** Extra search attempts when a claim is Not Enough Info. The README plan says 2. */
   maxRetries?: number;
+  /** Maximum claims checked at once. Keep at 1 for a single local Ollama model. */
+  parallelClaims?: number;
+  /** Retrieval tuning for latency-sensitive clients. */
+  retrieval?: { pages?: number; candidates?: number; mode?: "keyword" | "embedding" | "hybrid" };
+  /** Additional subject labels, such as the course folder containing the note. */
+  topicContext?: string[];
+  /** Use keyword-only course search for responsive live checking. */
+  fast?: boolean;
+  /** Do not call Wikipedia when local course evidence is inconclusive. */
+  localOnly?: boolean;
+  /** Skip extraction when the caller already supplied one complete claim per line. */
+  directClaims?: boolean;
   /** Progress messages, for the smoke script or a loading message in the plugin. */
   log?: (msg: string) => void;
   /** Abort signal for cancellation (e.g., live check debounce). */
@@ -40,9 +52,16 @@ export interface PipelineOptions {
 
 export interface CourseSource {
   /** Course passages for a claim, best first. Empty when the course does not cover it. */
-  search: (claim: string) => Promise<Evidence[]>;
+  search: (claim: string, context?: CourseQueryContext) => Promise<Evidence[]>;
   /** Never fall back to Wikipedia. */
   only?: boolean;
+}
+
+export interface CourseQueryContext {
+  noteTitle?: string;
+  headings?: string[];
+  topics?: string[];
+  fast?: boolean;
 }
 
 const REWRITE_SYSTEM = `You write Wikipedia search queries. Given a claim and the queries already tried, write one new short query (2 to 6 words) that is more likely to find the Wikipedia article that confirms or denies the claim. Use the main article's likely title where you can.`;
@@ -63,18 +82,25 @@ async function checkOne(
   log: (m: string) => void,
   signal?: AbortSignal,
   course?: CourseSource,
+  retrieval: PipelineOptions["retrieval"] = {},
+  context?: CourseQueryContext,
+  localOnly = false,
 ): Promise<ClaimCard> {
   const tried: string[] = [];
-  let first: ClaimCard | undefined;
+  let wikipediaResult: ClaimCard | undefined;
+  const topic = [
+    ...(context?.topics ?? []),
+    context?.noteTitle,
+    ...(context?.headings ?? []),
+  ].filter(Boolean).join(" > ");
 
   if (course) {
-    const evidence = await course.search(card.claim);
+    const evidence = await course.search(card.claim, context);
     log(`${card.claim_id}: ${evidence.length} course passage(s)`);
     if (evidence.length > 0) {
       // course passages are the user's own material, so there is no Wikipedia reliability badge to score
-      const checked = await verifyClaim({ ...card, evidence }, llm);
-      if (checked.verdict !== "Not Enough Info" || course.only) return checked;
-      first = checked;
+      const checked = await verifyClaim({ ...card, evidence }, llm, { topic });
+      if (checked.verdict !== "Not Enough Info" || course.only || localOnly) return checked;
     } else if (course.only) {
       return { ...card, evidence: [], verdict: "Not Enough Info", explanation: "Your course materials do not cover this claim." };
     }
@@ -91,18 +117,23 @@ async function checkOne(
     tried.push(query);
     log(`${card.claim_id}: searching "${query}"`);
 
-    const evidence = await retrieveEvidence(query);
+    const evidence = await retrieveEvidence(query, {
+      pages: retrieval.pages,
+      candidates: retrieval.candidates,
+      mode: retrieval.mode,
+    });
     const rel = await scoreEvidence(evidence);
     const checked = await verifyClaim(
       { ...card, evidence, reliability: rel.reliability, stubbed: mergeStubbed(card.stubbed, rel.stubbed) },
       llm,
+      { topic },
     );
-    first ??= checked;
+    wikipediaResult = checked;
     if (checked.verdict !== "Not Enough Info") return checked;
   }
 
-  // every attempt was Not Enough Info: keep the first, whose evidence was searched with the claim itself
-  return first ?? { ...card, verdict: "Not Enough Info", explanation: "No search could be run for this claim." };
+  // Do not return an inconclusive course passage after Wikipedia has been tried.
+  return wikipediaResult ?? { ...card, verdict: "Not Enough Info", explanation: "No search could be run for this claim." };
 }
 
 export async function runFactCheckPipeline(request: FactCheckRequest, opts: PipelineOptions = {}): Promise<FactCheckResponse> {
@@ -111,23 +142,55 @@ export async function runFactCheckPipeline(request: FactCheckRequest, opts: Pipe
   configureReliability({ userAgent: opts.userAgent });
 
   const llm: LlmOptions = { ollamaUrl: opts.ollamaUrl, model: opts.model };
-  const maxRetries = opts.maxRetries ?? 3; // Increased from 2 to 3 for better coverage
+  const maxRetries = opts.maxRetries ?? 1;
+  const pipelineRetrieval = opts.retrieval ?? { pages: 2, candidates: 24, mode: "hybrid" as const };
   const log = opts.log ?? (() => {});
 
-  const claims = await extractClaims(request, llm, { courseClaims: opts.course !== undefined });
+  const claims = opts.directClaims
+    ? request.text.split(/\r?\n/).map((text, i) => ({
+        claim_id: `c${i + 1}`,
+        original_text: text,
+        claim: text,
+      }))
+    : await extractClaims(request, llm, {
+        courseClaims: opts.course !== undefined,
+        topicContext: opts.topicContext,
+      });
   log(`extracted ${claims.length} claim(s)`);
 
-  const cards: ClaimCard[] = [];
-  // one claim at a time, so the local model is not asked to do several things at once
-  for (const claim of claims) {
-    try {
-      cards.push(await checkOne(claim, llm, maxRetries, log, opts.signal, opts.course));
-    } catch (err) {
-      // one failed claim (for example Wikipedia not answering) should not lose the others
-      const msg = err instanceof Error ? err.message : String(err);
-      if (msg === "Aborted") throw err; // Re-throw abort to cancel entire pipeline
-      cards.push({ ...claim, verdict: "Not Enough Info", explanation: `Could not check this claim: ${msg}` });
+  const cards = new Array<ClaimCard>(claims.length);
+  const context: CourseQueryContext = {
+    noteTitle: request.note_title,
+    headings: request.headings,
+    topics: opts.topicContext,
+    fast: opts.fast,
+  };
+  let next = 0;
+  const worker = async (): Promise<void> => {
+    while (true) {
+      const index = next++;
+      if (index >= claims.length) return;
+      const claim = claims[index];
+      try {
+        cards[index] = await checkOne(
+          claim,
+          llm,
+          maxRetries,
+          log,
+          opts.signal,
+          opts.course,
+          pipelineRetrieval,
+          context,
+          opts.localOnly,
+        );
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg === "Aborted") throw err;
+        cards[index] = { ...claim, verdict: "Not Enough Info", explanation: `Could not check this claim: ${msg}` };
+      }
     }
-  }
+  };
+  const parallelClaims = Math.max(1, Math.min(opts.parallelClaims ?? 1, claims.length));
+  await Promise.all(Array.from({ length: parallelClaims }, () => worker()));
   return { cards };
 }

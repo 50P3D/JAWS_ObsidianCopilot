@@ -41,6 +41,21 @@ test("findingFor places the edit on the wrong word only", () => {
   assert.equal(findingFor({ ...card, verdict: "Supported" }, unit), null);
 });
 
+test("findingFor exposes a full rewritten suggestion when word matching is unsafe", () => {
+  const original = "He signed it that year.";
+  const unit = { text: original, from: 0, to: original.length };
+  const f = findingFor(
+    {
+      ...card,
+      original_text: original,
+      claim: "Wilson signed the Treaty of Versailles in 1920.",
+      suggested_fix: "Wilson signed the Treaty of Versailles in 1919.",
+    },
+    unit,
+  )!;
+  assert.deepEqual(f.edit, { from: 0, to: original.length, insert: "Wilson signed the Treaty of Versailles in 1919." });
+});
+
 test("accepting a suggestion edits only the wrong word and reports the new sentence", () => {
   let accepted = "";
   setSuggestionHandlers({ onAccept: (_f, text) => (accepted = text), onDismiss: () => {}, openEvidence: () => {} });
