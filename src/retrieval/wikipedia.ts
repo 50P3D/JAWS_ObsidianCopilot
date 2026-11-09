@@ -22,7 +22,17 @@ export interface WikiPage {
   url: string;
   /** Plain text of the whole article. Section headings look like "== History ==". */
   text: string;
+  /** True when this is a disambiguation page ("Mercury may refer to: ..."), not an article. */
+  disambiguation?: boolean;
 }
+
+/** One meaning of an ambiguous name: the linked article's title and its short introduction. */
+export interface Sense {
+  title: string;
+  intro: string;
+}
+
+const MAY_REFER_TO = /\bmay (also )?refer to\b/i;
 
 // Optional in-memory cache, off by default. The evaluation script turns it on so repeated runs do
 // not hit Wikipedia again. The plugin turns it on with a time limit, so a long-running session
@@ -113,7 +123,8 @@ export async function searchPages(query: string, limit = 3): Promise<SearchHit[]
 export async function fetchPage(title: string): Promise<WikiPage | null> {
   const data = await wikiGet({
     action: "query",
-    prop: "extracts|revisions",
+    prop: "extracts|revisions|pageprops",
+    ppprop: "disambiguation",
     titles: title,
     redirects: "1",
     explaintext: "1",
@@ -135,13 +146,75 @@ export async function fetchPage(title: string): Promise<WikiPage | null> {
     revision_timestamp: rev.timestamp,
     url: `https://en.wikipedia.org/w/index.php?title=${slug}&oldid=${rev.revid}`,
     text,
+    disambiguation: page.pageprops?.disambiguation !== undefined || MAY_REFER_TO.test(text.slice(0, 400)),
   };
 }
 
 /**
- * Simple check for disambiguation pages ("Mercury may refer to: ...").
- * TODO (Aadhavan): replace with proper disambiguation handling. For now such pages are skipped.
+ * Chooses which linked pages of a disambiguation page to read. Titles that start with the page's
+ * own name followed by a bracket ("Mercury (planet)") are the real senses, so they go first;
+ * the other links follow in the order Wikipedia gave them. Leaves out the page itself,
+ * "(disambiguation)" pages and repeats.
+ */
+export function pickSenseTitles(name: string, links: string[], limit: number): string[] {
+  const lower = name.toLowerCase();
+  const seen = new Set<string>();
+  const qualified: string[] = [];
+  const rest: string[] = [];
+  for (const link of links) {
+    const key = link.toLowerCase();
+    if (key === lower || key.includes("(disambiguation)") || seen.has(key)) continue;
+    seen.add(key);
+    (key.startsWith(`${lower} (`) ? qualified : rest).push(link);
+  }
+  return [...qualified, ...rest].slice(0, limit);
+}
+
+/**
+ * Reads the senses listed on a disambiguation page: first the page's links, then the
+ * introductions of the chosen ones (Wikipedia returns at most 20 introductions per request).
+ * Pages that are missing, have no introduction or are disambiguation pages themselves (flagged, or
+ * saying "may refer to" near the top) are left out.
+ */
+export async function fetchSenses(title: string, limit = 40): Promise<Sense[]> {
+  const linkData = await wikiGet({
+    action: "query",
+    prop: "links",
+    titles: title,
+    plnamespace: "0",
+    pllimit: "max",
+    redirects: "1",
+  });
+  const linkPages: any[] = linkData?.query?.pages ?? [];
+  const links: string[] = linkPages.flatMap((p) => (p.links ?? []).map((l: any) => String(l.title)));
+  const titles = pickSenseTitles(title, links, limit);
+  const batches: string[][] = [];
+  for (let i = 0; i < titles.length; i += 20) batches.push(titles.slice(i, i + 20));
+  const results = await Promise.all(
+    batches.map((batch) =>
+      wikiGet({
+        action: "query",
+        titles: batch.join("|"),
+        prop: "extracts|pageprops",
+        exintro: "1",
+        explaintext: "1",
+        exlimit: "max",
+        ppprop: "disambiguation",
+        redirects: "1",
+      }),
+    ),
+  );
+  const pages: any[] = results.flatMap((d) => d?.query?.pages ?? []);
+  return pages
+    .filter((p) => !p.missing && p.title !== title && p.pageprops?.disambiguation === undefined)
+    .map((p) => ({ title: String(p.title), intro: String(p.extract ?? "").trim() }))
+    .filter((p) => p.intro !== "" && !MAY_REFER_TO.test(p.intro.slice(0, 400)));
+}
+
+/**
+ * True for a disambiguation page. Uses Wikipedia's own flag, and falls back to the words
+ * "may refer to" near the top of the text when the flag is not there.
  */
 export function isDisambiguation(page: WikiPage): boolean {
-  return /\bmay (also )?refer to\b/i.test(page.text.slice(0, 400));
+  return page.disambiguation ?? MAY_REFER_TO.test(page.text.slice(0, 400));
 }
