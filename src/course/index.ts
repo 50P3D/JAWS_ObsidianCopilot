@@ -84,6 +84,8 @@ export interface CourseSearchOptions {
   minScore?: number;
   /** Paths to leave out, such as the note being checked, so a note never confirms itself. */
   exclude?: string[];
+  /** Topic context from the note being checked, used to disambiguate local material. */
+  context?: { noteTitle?: string; headings?: string[]; topics?: string[]; fast?: boolean };
 }
 
 export class CourseIndex {
@@ -117,15 +119,28 @@ export class CourseIndex {
     }
     if (candidates.length === 0) return [];
 
-    const queryVec = await this.embedder.query(claim);
+    const topic = [
+      ...(opts.context?.topics ?? []),
+      opts.context?.noteTitle,
+      ...(opts.context?.headings ?? []),
+    ].filter(Boolean).join(" > ");
+    const queryVec = opts.context?.fast ? undefined : await this.embedder.query(topic ? `${topic}: ${claim}` : claim);
+    const topicTerms = topic ? `${topic} ${claim}` : claim;
     return candidates
       .map((c) => ({
         ...c,
+        keyword: keywordScore(claim, c.passage.text),
         score:
-          HYBRID_EMBEDDING_WEIGHT * cosine(queryVec, c.passage.vector) +
-          HYBRID_KEYWORD_WEIGHT * keywordScore(claim, c.passage.text),
+          (queryVec
+            ? HYBRID_EMBEDDING_WEIGHT * cosine(queryVec, c.passage.vector) +
+              HYBRID_KEYWORD_WEIGHT * keywordScore(claim, c.passage.text)
+            : keywordScore(claim, c.passage.text)) +
+          (topic ? 0.1 * keywordScore(topic, `${c.path} ${c.passage.section}`) : 0),
       }))
-      .filter((c) => c.score >= minScore)
+      // Semantic similarity alone can match unrelated notes (for example a finance passage
+      // for a claim about Singapore's age). Require at least one meaningful shared token before
+      // course material can be used as evidence; Wikipedia remains the fallback otherwise.
+      .filter((c) => c.keyword > 0 && c.score >= minScore)
       .sort((a, b) => b.score - a.score)
       .slice(0, top)
       .map((c) => toEvidence(claim, c.path, c.file, c.passage, c.score));

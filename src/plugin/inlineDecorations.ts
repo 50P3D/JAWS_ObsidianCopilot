@@ -2,8 +2,9 @@
  * Inline suggestions in the editor, like tracked changes.
  *
  * A refuted claim gets a wavy underline. The wrong words are struck through and the suggested
- * words appear right after them, so "signed in ~~1920~~ 1919" reads at a glance. Clicking either
- * opens a card with the explanation, the evidence and Accept / Dismiss buttons.
+ * words appear right after them, so "signed in ~~1920~~ 1919" reads at a glance. Clicking the
+ * suggested wording applies it; clicking the refuted text opens a card with the explanation,
+ * evidence and Dismiss button.
  *
  * Obsidian's editor is CodeMirror 6, so this is a CM6 state field registered with
  * registerEditorExtension. The field maps every suggestion through each edit, so suggestions stay
@@ -26,7 +27,7 @@ export interface Finding {
   /** The whole sentence it sits in. Editing anywhere in it drops the suggestion. */
   unitFrom: number;
   unitTo: number;
-  /** The inline change, or null when the fix could not be placed word by word. */
+  /** The inline change. Falls back to replacing the sentence for a full rewritten fix. */
   edit: TextEdit | null;
   card: ClaimCard;
 }
@@ -51,7 +52,9 @@ export function findingFor(card: ClaimCard, unit: Unit): Finding | null {
   const at = original ? unit.text.indexOf(original) : -1;
   const from = at >= 0 ? unit.from + at : unit.from;
   const text = at >= 0 ? original : unit.text;
-  const edit = card.suggested_fix ? minimalEdit(text, card.claim, card.suggested_fix) : null;
+  const edit = card.suggested_fix
+    ? minimalEdit(text, card.claim, card.suggested_fix) ?? { from: 0, to: text.length, insert: card.suggested_fix }
+    : null;
   return {
     id: `${unit.text}\u0000${card.claim}`,
     from,
@@ -126,18 +129,25 @@ class SuggestionWidget extends WidgetType {
     el.className = edit && edit.insert ? "notecheck-live-insert" : "notecheck-live-chip";
     el.textContent = edit ? edit.insert || "remove" : "check";
     el.setAttribute("aria-label", "NoteCheck suggestion, click to review");
-    el.addEventListener("mousedown", (e) => {
+    el.addEventListener("pointerdown", (e) => {
       e.preventDefault(); // keep the cursor where it is
       e.stopPropagation();
-      openPopover(view, id, el);
+      if (edit) {
+        accept(view, id);
+        view.focus();
+      } else {
+        openPopover(view, id, el);
+      }
     });
-    // the widget can sit inside the underline, whose click handler would open the popover again
-    el.addEventListener("click", (e) => e.stopPropagation());
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
     return el;
   }
 
   ignoreEvent(): boolean {
-    return true;
+    return false;
   }
 }
 

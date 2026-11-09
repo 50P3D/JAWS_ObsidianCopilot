@@ -4,7 +4,7 @@
  * Usage (from the repo root):
  *   npx tsx eval/harness/run.ts --system constant:Supported
  *   npx tsx eval/harness/run.ts --system no-rag --model qwen3.5:9b
- *   npx tsx eval/harness/run.ts --system minicheck --retrieval-mode hybrid --nei-threshold 0.5
+ *   npx tsx eval/harness/run.ts --system minicheck --nei-threshold 0.5 --retries 3 --rewrite-model qwen3.5:9b
  *   npx tsx eval/harness/run.ts --system pipeline
  *
  * Options:

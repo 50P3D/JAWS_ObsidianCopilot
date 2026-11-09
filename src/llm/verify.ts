@@ -7,6 +7,9 @@
 import type { ClaimCard, Verdict } from "../contract/claimCard";
 import { chatJson, DEFAULT_MODEL, type LlmOptions } from "./ollama";
 
+// Missing is not false: on the FEVER dev set the old prompt ("prefer Supported or Refuted based
+// on the closest match") made qwen3.5:9b call 14 of 16 unverifiable claims Refuted, often while
+// writing that the passages "never mention" the fact. See eval/README.md.
 const SYSTEM = `You check one claim against evidence passages from Wikipedia or the student's course materials.
 
 Rules:
@@ -16,16 +19,19 @@ Rules:
 - Not Enough Info: the passages do not settle it either way. Only choose this when the evidence is truly irrelevant or missing.
 - If a passage partially addresses the claim (e.g., mentions the entity and topic but not the specific fact), prefer Supported or Refuted based on the closest match.
 - explanation: one or two plain sentences pointing to what the passage says.
-- suggested_fix: only when Refuted, the claim rewritten to match the passage. Otherwise an empty string.`;
+- suggested_fix: when Refuted, ALWAYS provide the complete corrected sentence, using the claim's wording
+  and changing only the contradicted fact. It must not be empty. Otherwise use an empty string.
+- The corrected sentence must be directly supported by one of the passages; never guess or use outside knowledge.`;
 
+// explanation comes before verdict, so the model states what the passages say before it decides
 const SCHEMA = {
   type: "object",
   properties: {
-    verdict: { type: "string", enum: ["Supported", "Refuted", "Not Enough Info"] },
     explanation: { type: "string" },
+    verdict: { type: "string", enum: ["Supported", "Refuted", "Not Enough Info"] },
     suggested_fix: { type: "string" },
   },
-  required: ["verdict", "explanation", "suggested_fix"],
+  required: ["explanation", "verdict", "suggested_fix"],
 };
 
 interface VerifyResult {
@@ -34,7 +40,11 @@ interface VerifyResult {
   suggested_fix: string;
 }
 
-export async function verifyClaim(card: ClaimCard, opts: LlmOptions = {}): Promise<ClaimCard> {
+export interface VerifyContext {
+  topic?: string;
+}
+
+export async function verifyClaim(card: ClaimCard, opts: LlmOptions = {}, context?: VerifyContext): Promise<ClaimCard> {
   const evidence = card.evidence ?? [];
   const model = opts.model ?? DEFAULT_MODEL;
 
@@ -46,10 +56,11 @@ export async function verifyClaim(card: ClaimCard, opts: LlmOptions = {}): Promi
   const passages = evidence
     .map((e, i) => `[${i + 1}] ${e.page_title}${e.section ? ` (${e.section})` : ""}:\n${e.passage}`)
     .join("\n\n");
-  const user = `Claim: ${card.claim}\n\nPassages:\n${passages}`;
+  const topic = context?.topic ? `\nTopic context (use only to interpret the claim, not as evidence): ${context.topic}\n` : "";
+  const user = `Claim: ${card.claim}${topic}\nPassages:\n${passages}`;
 
   const out = await chatJson<VerifyResult>(SYSTEM, user, SCHEMA, opts);
-  const fix = out.suggested_fix?.trim();
+  const fix = out.suggested_fix?.trim().replace(/\s+/g, " ");
 
   // Return the original card with the verdict, explanation, suggested fix (if any), and model used
   return {

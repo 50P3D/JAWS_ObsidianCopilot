@@ -3,7 +3,8 @@
  *
  * Steps:
  *   1. Build short search queries from the claim (named things first).
- *   2. Search Wikipedia and fetch the top articles with their revision ids.
+ *   2. Search Wikipedia and fetch the top articles with their revision ids. A disambiguation
+ *      page is replaced by the meaning the claim is about (see disambiguate.ts).
  *   3. Cut each article into passages.
  *   4. Pick the best candidates by keyword match (cheap).
  *   5. Re-rank the candidates by meaning using embeddings (unless mode is "keyword").
@@ -24,7 +25,8 @@ import { embedDocuments, embedQuery } from "./embed";
 import { buildQueries, extractEntities } from "./query";
 import { cosine, keywordScore } from "./score";
 import { titleAdjustment } from "./title";
-import { fetchPage, isDisambiguation, searchPages, type SearchHit, type WikiPage } from "./wikipedia";
+import { expandDisambiguations } from "./disambiguate";
+import { fetchPage, fetchSenses, searchPages, type SearchHit, type WikiPage } from "./wikipedia";
 
 export type Mode = "keyword" | "embedding" | "hybrid";
 
@@ -53,6 +55,9 @@ interface Candidate {
 }
 
 const CONTEXT_CHARS = 200;
+const RETRIEVAL_CACHE_TTL_MS = 10 * 60 * 1000;
+const retrievalCache = new Map<string, { at: number; value: Evidence[] }>();
+const retrievalInFlight = new Map<string, Promise<Evidence[]>>();
 
 async function timed<T>(log: RetrieveOptions["log"], step: string, fn: () => Promise<T>): Promise<T> {
   const t0 = performance.now();
@@ -62,6 +67,32 @@ async function timed<T>(log: RetrieveOptions["log"], step: string, fn: () => Pro
 }
 
 export async function retrieveEvidence(claim: string, opts: RetrieveOptions = {}): Promise<Evidence[]> {
+  const mode = opts.mode ?? "hybrid";
+  const pageLimit = opts.pages ?? 3;
+  const top = opts.top ?? 3;
+  const candidateLimit = opts.candidates ?? 60;
+  const minRatio = opts.minRatio ?? 0;
+  const log = opts.log;
+  const cacheKey = JSON.stringify([claim, mode, pageLimit, top, candidateLimit, minRatio]);
+  const cached = retrievalCache.get(cacheKey);
+  if (cached && Date.now() - cached.at < RETRIEVAL_CACHE_TTL_MS) return cached.value;
+  if (cached) retrievalCache.delete(cacheKey);
+  const pending = retrievalInFlight.get(cacheKey);
+  if (pending) return pending;
+
+  const request = retrieveEvidenceUncached(claim, opts);
+  retrievalInFlight.set(cacheKey, request);
+  try {
+    const result = await request;
+    retrievalCache.set(cacheKey, { at: Date.now(), value: result });
+    while (retrievalCache.size > 256) retrievalCache.delete(retrievalCache.keys().next().value!);
+    return result;
+  } finally {
+    retrievalInFlight.delete(cacheKey);
+  }
+}
+
+async function retrieveEvidenceUncached(claim: string, opts: RetrieveOptions): Promise<Evidence[]> {
   const mode = opts.mode ?? "hybrid";
   const pageLimit = opts.pages ?? 3;
   const top = opts.top ?? 3;
@@ -90,7 +121,10 @@ export async function retrieveEvidence(claim: string, opts: RetrieveOptions = {}
   const fetched = await timed(log, "fetch articles", () =>
     Promise.all(hits.slice(0, pageLimit).map((h) => fetchPage(h.title))),
   );
-  const pages = fetched.filter((p): p is WikiPage => p !== null && !isDisambiguation(p));
+  // a page like "Mercury may refer to: ..." is swapped for the meaning the claim is about
+  const pages = await timed(log, "resolve disambiguation", () =>
+    expandDisambiguations(claim, fetched, { fetchSenses, fetchPage }),
+  );
 
   // 3 and 4: chunk, then keyword pre-filter
   const all: Candidate[] = [];

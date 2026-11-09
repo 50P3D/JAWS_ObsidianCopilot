@@ -32,12 +32,27 @@ export function combineCards(cards: ClaimCard[]): Verdict | null {
   return "Not Enough Info";
 }
 
-export function pipelineSystem(opts: { model?: string } = {}): System {
+/**
+ * Bump when the app's verifier prompt, extraction fallback or query building changes, so run
+ * files say which version produced them.
+ *   1: first pipeline round (verifier preferred Supported/Refuted on partial matches)
+ *   2: missing-is-not-false verifier, negation rule, explanation before verdict,
+ *      extraction fallback, subject and bracket-title search queries
+ */
+export const PIPELINE_VERSION = 2;
+
+export function pipelineSystem(opts: { model?: string; think?: boolean } = {}): System {
   let factCheck: FactCheck | null = null;
   const model = opts.model ?? "qwen3.5:9b";
+  const think = opts.think ?? false;
 
   return {
-    info: { name: "pipeline", model, family: modelFamily(model), config: { orchestrator: "src/orchestrator/index.ts" } },
+    info: {
+      name: "pipeline",
+      model,
+      family: modelFamily(model),
+      config: { orchestrator: "src/orchestrator/index.ts", pipeline_version: PIPELINE_VERSION, verifier_think: think, fallback_to_text: true },
+    },
     async setup() {
       try {
         const mod: any = await import(ORCHESTRATOR);
@@ -55,7 +70,8 @@ export function pipelineSystem(opts: { model?: string } = {}): System {
     },
     async check(item: EvalItem) {
       if (!factCheck) throw new Error("pipeline.setup() was not run");
-      const res = await factCheck({ text: item.claim }, { model });
+      // fallbackToText as in the plugin's selection command: each test claim is one selected sentence
+      const res = await factCheck({ text: item.claim }, { model, fallbackToText: true, verifierThink: think });
       const cards = res.cards ?? [];
       const models = [...new Set(cards.map((c) => c.model_used).filter(Boolean))];
       const stubbed = [...new Set(cards.flatMap((c) => c.stubbed ?? []))];

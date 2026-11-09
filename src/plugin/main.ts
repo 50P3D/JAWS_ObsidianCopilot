@@ -11,6 +11,7 @@
  *   5. Dispatches fact-check requests to the real orchestrator pipeline
  *   6. Runs live fact-checking as you type (when enabled)
  *   7. Keeps the course index (RAG over the user's course folder) up to date
+ *   8. Shows ghost text (a grey inline suggestion from a small local model) when enabled
  *
  * Owner: Medapati Williams Smith
  */
@@ -33,20 +34,30 @@ import { enableCache as enableWikiCache } from "../retrieval/wikipedia.js";
 import { DEFAULT_SETTINGS, type NoteCheckSettings } from "./types.js";
 import { NoteCheckSettingTab } from "./settingsTab.js";
 import { NoteCheckResultView, VIEW_TYPE_NOTECHECK } from "./resultView.js";
-import { initLiveChecker, setLiveCheckEnabled, setLiveCheckDebounce } from "./liveChecker.js";
+import { crossCheckCards, privacyNote, type CrossCheckResult, type FetchFn } from "../crosscheck/crosscheck.js";
+import { initLiveChecker, isLiveChecking, setLiveCheckEnabled, setLiveCheckDebounce } from "./liveChecker.js";
 import { acceptAtCursor, findingFor, liveSuggestionsExtension, showFindings, type Finding } from "./inlineDecorations.js";
 import { minimalEdit } from "./liveText.js";
-import type { EditorView } from "@codemirror/view";
+import { currentGhost, fetchCompletion, ghostTextExtension, shouldSuggest, showGhost, suggestInputFromState } from "./ghostText.js";
+import { EditorView, type ViewUpdate } from "@codemirror/view";
 import { setCustomFetch as setWikiFetch, clearCustomFetch as clearWikiFetch } from "../retrieval/wikipedia.js";
 import { setCustomFetch as setEmbedFetch, clearCustomFetch as clearEmbedFetch } from "../retrieval/embed.js";
 import { setCustomFetch as setOllamaFetch, clearCustomFetch as clearOllamaFetch } from "../llm/ollama.js";
 import { setCustomFetch as setReliabilityFetch, clearCustomFetch as clearReliabilityFetch } from "../reliability/http.js";
 
 export default class NoteCheckPlugin extends Plugin {
+  /** Obsidian's network call, kept for the Claude review. */
+  private httpFetch?: FetchFn;
+
   settings: NoteCheckSettings = DEFAULT_SETTINGS;
   courseIndex!: CourseIndex;
   /** The editor of the last "Fact-check selection", so "Apply fix" in the sidebar knows where to edit. */
   private lastCheckedEditor: Editor | null = null;
+  /** Fetch that works inside Obsidian (see onload). Ghost text uses it for the Ollama call. */
+  private obsidianFetch: typeof fetch | null = null;
+  private ghostTimer: number | undefined;
+  private ghostAbort: AbortController | null = null;
+  private ghostWarned = false;
 
   async onload(): Promise<void> {
     console.log("Loading NoteCheck plugin...");
@@ -77,6 +88,9 @@ export default class NoteCheckPlugin extends Plugin {
         headers: { "Content-Type": "application/json" },
       });
     };
+
+    this.httpFetch = obsidianFetch;
+    this.obsidianFetch = obsidianFetch as typeof fetch;
 
     // Inject custom fetch into all network modules
     setWikiFetch(obsidianFetch);
@@ -120,6 +134,12 @@ export default class NoteCheckPlugin extends Plugin {
 
     // Inline suggestions (tracked-changes style) for live checks and selection checks
     this.registerEditorExtension(liveSuggestionsExtension());
+
+    // Ghost text: the grey suggestion itself, and a listener that asks for one after typing stops
+    this.registerEditorExtension([
+      ghostTextExtension(),
+      EditorView.updateListener.of((update) => this.onGhostUpdate(update)),
+    ]);
 
     this.addCommand({
       id: "accept-suggestion",
@@ -165,6 +185,7 @@ export default class NoteCheckPlugin extends Plugin {
 
   onunload(): void {
     console.log("Unloading NoteCheck plugin.");
+    this.cancelGhost();
     // Clean up custom fetch
     clearWikiFetch();
     clearEmbedFetch();
@@ -199,6 +220,60 @@ export default class NoteCheckPlugin extends Plugin {
    */
   onLiveCheckDebounceChange(debounceMs: number): void {
     setLiveCheckDebounce(debounceMs);
+  }
+
+  // ── Ghost text ───────────────────────────────────────────────────
+
+  /** Drop any waiting or running ghost request. */
+  private cancelGhost(): void {
+    window.clearTimeout(this.ghostTimer);
+    this.ghostTimer = undefined;
+    this.ghostAbort?.abort();
+    this.ghostAbort = null;
+  }
+
+  /** Called on every editor update. After typing stops, asks for a suggestion. */
+  private onGhostUpdate(update: ViewUpdate): void {
+    if (!update.docChanged) return;
+    this.cancelGhost();
+    if (!this.settings.enableGhostText) return;
+    // only react to typing, not to accepting a suggestion, pasting or the plugin's own edits
+    if (!update.transactions.some((tr) => tr.isUserEvent("input.type"))) return;
+    // typing the suggestion's own letters keeps the ghost showing, so nothing new is needed
+    if (currentGhost(update.view)) return;
+    this.ghostTimer = window.setTimeout(() => void this.requestGhost(update.view), this.settings.ghostDebounceMs);
+  }
+
+  private async requestGhost(view: EditorView): Promise<void> {
+    this.ghostTimer = undefined;
+    const input = suggestInputFromState(view.state, this.settings.enableGhostText, isLiveChecking());
+    if (!shouldSuggest(input) || !this.settings.ghostModel.trim()) return;
+
+    const controller = new AbortController();
+    this.ghostAbort = controller;
+    const head = view.state.selection.main.head;
+    try {
+      const text = await fetchCompletion({
+        before: input.before,
+        model: this.settings.ghostModel.trim(),
+        ollamaUrl: this.settings.ollamaUrl,
+        signal: controller.signal,
+        fetchFn: this.obsidianFetch ?? undefined,
+      });
+      // the user may have moved on while the model was thinking
+      const sel = view.state.selection.main;
+      if (controller.signal.aborted || !text || !sel.empty || sel.head !== head) return;
+      showGhost(view, text);
+    } catch (err) {
+      // a missing model or Ollama being off is not worth a popup on every pause, so say it once
+      console.warn("[NoteCheck ghost]", err);
+      if (!this.ghostWarned) {
+        this.ghostWarned = true;
+        new Notice(`NoteCheck ghost text: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    } finally {
+      if (this.ghostAbort === controller) this.ghostAbort = null;
+    }
   }
 
   // ── Sidebar view activation ──────────────────────────────────────
@@ -250,7 +325,10 @@ export default class NoteCheckPlugin extends Plugin {
 
       new Notice(`NoteCheck: Checking claims for "${request.note_title ?? "selection"}"...`);
 
-      const response = await factCheck(request, await this.pipelineOptions(notePath));
+      const response = await factCheck(request, await this.pipelineOptions(notePath, {
+        noteTitle: request.note_title,
+        headings: request.headings,
+      }));
 
       // claim positions come back relative to the selection; make them positions in the note
       const cards = target
@@ -265,7 +343,18 @@ export default class NoteCheckPlugin extends Plugin {
         this.lastCheckedEditor = target.editor;
         this.showSelectionSuggestions(target.editor, cards, target.offset, target.offset + request.text.length);
       }
-      view.renderCards(cards);
+      let reviews: Map<string, CrossCheckResult> | undefined;
+      let skipped: Map<string, string> | undefined;
+      if (this.settings.enableClaudeReview && this.settings.claudeApiKey.trim() !== "" && this.httpFetch) {
+        new Notice("NoteCheck: asking Claude for a second opinion...");
+        skipped = new Map();
+        for (const c of cards) {
+          const note = privacyNote(c);
+          if (note) skipped.set(c.claim_id, note);
+        }
+        reviews = await crossCheckCards(cards, { apiKey: this.settings.claudeApiKey, fetch: this.httpFetch });
+      }
+      view.renderCards(cards, reviews, skipped);
       new Notice("NoteCheck: Fact-check complete!");
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
@@ -280,7 +369,7 @@ export default class NoteCheckPlugin extends Plugin {
    * With a course folder set, the course index is synced first (only changed files are
    * re-embedded) and the note being checked is left out, so a note never confirms itself.
    */
-  async pipelineOptions(notePath?: string): Promise<PipelineOptions> {
+  async pipelineOptions(notePath?: string, context?: { noteTitle?: string; headings?: string[]; topics?: string[]; fast?: boolean }): Promise<PipelineOptions> {
     const opts: PipelineOptions = {
       ollamaUrl: this.settings.ollamaUrl,
       model: this.settings.modelName,
@@ -290,10 +379,19 @@ export default class NoteCheckPlugin extends Plugin {
 
     await this.syncCourseIndex();
     const exclude = notePath ? [notePath] : [];
+    const folder = normalizePath(this.settings.courseFolder.trim()).replace(/\/+$/, "");
+    const relative = notePath?.startsWith(`${folder}/`) ? notePath.slice(folder.length + 1) : "";
+    const courseTopics = relative ? [relative.split("/")[0]] : [];
+    const enrichedContext = {
+      ...context,
+      topics: [...courseTopics, ...(context?.topics ?? [])],
+    };
     opts.course = {
-      search: (claim) => this.courseIndex.search(claim, { exclude }),
+      search: (claim, queryContext) =>
+        this.courseIndex.search(claim, { exclude, context: queryContext ?? enrichedContext }),
       only: this.settings.courseOnly,
     };
+    opts.topicContext = enrichedContext.topics;
     return opts;
   }
 

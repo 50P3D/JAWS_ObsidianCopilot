@@ -58,8 +58,9 @@ export function checkableUnits(text: string, base: number, cursor: number): Unit
       const from = contentStart + s.start + lead;
       const to = from + sentence.length;
       const finished = /[.!?]["')\]]*$/.test(sentence) || !cursorOnLine;
-      // the sentence still being typed is left alone until it is finished
-      if (!finished || (cursor > from && cursor < to)) continue;
+      // A completed sentence can be checked even while the cursor is still inside it. Only
+      // unfinished text is deferred, otherwise typing the final full stop never triggers a check.
+      if (!finished) continue;
       units.push({ text: sentence, from, to });
     }
   }

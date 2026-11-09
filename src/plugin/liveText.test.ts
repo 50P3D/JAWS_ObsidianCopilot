@@ -76,6 +76,15 @@ test("checkableUnits skips the sentence still being typed", () => {
   assert.deepEqual(units.map((u) => u.text), ["Paris is the capital of France."]);
 });
 
+test("checkableUnits checks a completed sentence while the cursor is inside it", () => {
+  const text = "Paris is the capital of France. Berlin is the capital of Germany.";
+  const cursor = text.indexOf("capital");
+  assert.deepEqual(checkableUnits(text, 0, cursor).map((u) => u.text), [
+    "Paris is the capital of France.",
+    "Berlin is the capital of Germany.",
+  ]);
+});
+
 test("checkableUnits keeps a bullet without a full stop once the cursor moves on", () => {
   const text = "- 2NF removes partial dependencies\n- 3NF removes transitive";
   const units = checkableUnits(text, 0, text.length);

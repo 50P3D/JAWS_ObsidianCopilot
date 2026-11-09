@@ -6,7 +6,7 @@ NoteCheck is an Obsidian plugin that extracts the factual claims from text you s
 
 Built by team **JAWS** for SE201 (AI-Driven Software Engineering), SMU, AY2026-27 Term 1.
 
-> **Status:** past the 18 October checkpoint, now working on instructor feedback. See [Project status](#project-status) for what works today.
+> **Status:** final submission due 10 November 2026, 12:00. The core pipeline, course materials checking and live suggestions work. Ghost text and meaning selection for ambiguous names are built and tested. The remaining evaluation runs are listed in [Project status](#project-status).
 
 ---
 
@@ -27,19 +27,21 @@ The non-AI alternative is keyword search against Wikipedia plus manual lookup, o
 ## Features
 
 1. **Fact-check on demand.** Select text and run the command. NoteCheck extracts atomic claims, retrieves Wikipedia passages and labels each claim `Supported`, `Refuted` or `Not Enough Info`, with the evidence and a link to the exact revision used.
-2. **Check against your own course materials.** Point NoteCheck at a folder of lecture notes and readings. Claims are checked against that folder first, and Wikipedia is only used when the course does not cover a claim. Course-specific claims ("2NF removes partial dependencies") can now be checked too. A "course only" mode never contacts Wikipedia.
+2. **Check against your own course materials.** Point NoteCheck at the root folder containing lecture notes and readings, for example `Courses`. Claims are checked against the relevant course subfolder first, using the note title, headings and subfolder name as topic context. Wikipedia is used when the course does not cover a claim or the course evidence is inconclusive. Course-specific claims ("2NF removes partial dependencies") can now be checked too. A "course only" mode never contacts Wikipedia.
 3. **Live suggestions as you type.** With live checking on, every sentence you finish is checked in the background. A wrong claim gets a wavy underline, the wrong words are struck through and the fix appears next to them, like tracked changes: "signed in ~~1920~~ **1919**". Click it to see the evidence, then Accept or Dismiss.
 4. **Source reliability flags.** Each piece of Wikipedia evidence gets a `Low`, `Medium` or `High` badge with reasons, such as a recent unreviewed edit, a POV or Disputed tag or low citation coverage. Flags describe articles and revisions, never individual editors.
 5. **MCP server.** Exposes `fact_check` and retrieval as tools so Claude can review a verdict on request. The same interface runs our evaluation harness.
 
-Inline autocomplete (ghost text from a small local model) and an automated Claude judge are **stretch goals**, not part of the core scope.
+6. **Ghost text (off by default).** A short grey suggestion from a small local model appears after the cursor when you pause after typing a space. Tab accepts it and Esc dismisses it. Turn it on with **Enable ghost text** in settings.
+
+An automated Claude judge is a **stretch goal**, not part of the core scope.
 
 ### Where the evidence comes from
 
 | Settings                                     | Claims are checked against                                                                                               |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | No course folder (default)                   | Wikipedia only                                                                                                           |
-| Course folder set                            | Your course folder first. Wikipedia when no course passage is close enough, or the course passages give Not Enough Info |
+| Course folder set                            | The relevant course subfolder first. Wikipedia when no course passage is close enough, or the course passages give Not Enough Info |
 | Course folder set and **Course materials only** on | Your course folder only. Claims the course does not cover come back Not Enough Info, and Wikipedia is never contacted |
 
 Course evidence shows "Course material" in the results and links to the heading in your note. It has no reliability badge, because the badge signals (edit history, maintenance tags) only exist for Wikipedia.
@@ -63,13 +65,13 @@ Here is what happens when you select a sentence and click check, step by step.
 3. **It picks out the individual facts.** A sentence like "Einstein was born in 1879 in Ulm and won the Nobel Prize in 1921" becomes separate claims that can each be checked on their own.
 4. **It throws away what can't be checked.** Opinions, to-do reminders and questions are skipped. Course-specific claims are skipped too, unless you have set a course materials folder that can check them.
 5. **It rewrites each claim so it makes sense alone.** "He was born in 1879" becomes "Albert Einstein was born in 1879", because the checker will not see the rest of your note.
-6. **It looks the claim up.** If you have set a course folder, it first searches your course notes, which were split into passages and indexed once when you set the folder. If they cover the claim, it skips to step 8. Otherwise it searches Wikipedia: it searches, picks the right article when a name has several meanings (Mercury the planet or the metal), cuts the article into small pieces and ranks which pieces are most useful.
+6. **It looks the claim up.** If you have set a course folder, it first searches the relevant course materials, which were split into passages and indexed once when you set the folder. Live checks use a faster keyword search; manual checks use semantic retrieval. If course evidence verifies the claim, it skips to step 8. Otherwise it searches Wikipedia. If a search lands on a page that only lists several meanings of a name ("Mercury may refer to..."), NoteCheck reads the introduction of each meaning and keeps the one that shares the most words with your claim, so "Mercury is the closest planet to the Sun" goes to Mercury (planet). If two meanings fit about equally, it keeps both. If none fits, it keeps none rather than guessing, so a very vague claim may still need a more specific wording. It then cuts the articles into small pieces and ranks which pieces are most useful.
 7. **It checks how much to trust that article.** It looks at warning banners, recent edits that nobody has reviewed and how often the page gets undone by other editors. This gives a High, Medium or Low badge with reasons.
 8. **The local AI reads the evidence and decides.** It compares the Wikipedia passage with your claim and answers Supported, Refuted or Not Enough Info. If your claim is wrong, it suggests a fix.
 9. **You see the result in a side panel and in your note.** Each claim shows the verdict, the exact passage, a link to the exact version of the Wikipedia page (or your course note) used and the trust badge. Refuted claims are also marked in the note itself, with the suggested change ready to accept.
 10. **Optional second opinion.** If you choose to, Claude can look at a verdict through the MCP server and say whether it agrees. Nothing goes to Claude unless you set this up.
 
-If the Wikipedia evidence is weak (the AI says Not Enough Info), NoteCheck rewrites its search and tries again, up to three more times, before giving up.
+If the Wikipedia evidence is weak (the AI says Not Enough Info), a manual check can rewrite its search and try again. Live checks make one fast Wikipedia attempt and do not generate slower retry queries, so typing remains responsive.
 
 ---
 
@@ -120,7 +122,7 @@ Dashed boxes are the only places data leaves the machine.
 | 1 | Preprocess                     | Skips frontmatter, code blocks and LaTeX. Keeps wikilinks as context.                                                                        | Clean text                         |
 | 2 | Claim extraction               | Splits text into atomic claims and filters out opinions, reminders and course-specific content that Wikipedia cannot verify.                 | Claims as JSON                     |
 | 3 | Decontextualisation            | Rewrites each claim to stand alone using the note title, headings and nearby sentences (for example, replacing "he" with the person's name). | Self-contained claims              |
-| 4 | Query generation and retrieval | Builds search queries from entities, disambiguates pages (Mercury the planet or the element), then searches, chunks and reranks passages.    | Evidence passages and revision IDs |
+| 4 | Query generation and retrieval | Builds search queries from entities, searches, resolves disambiguation pages to the meaning the claim is about (word overlap, no model call), then chunks and reranks passages.    | Evidence passages and revision IDs |
 | 5 | Reliability scoring            | Scores each evidence revision with transparent rules (see below).                                                                            | Badge and reasons                  |
 | 6 | Verification                   | The LLM labels each claim and proposes a correction when it is refuted.                                                                      | Verdict and fix                    |
 
@@ -196,7 +198,8 @@ The scorer is rule-based on purpose, so every badge can be explained and the cos
 | Evidence source                   | MediaWiki Action API, Wikimedia Lift Wing                 |
 | MCP server                        | MCP TypeScript SDK                                        |
 | Baseline checker                  | Bespoke-MiniCheck                                         |
-| Judge and test generation         | Claude (via Claude Desktop or the API)                    |
+| Test claim generation (planned)   | Claude, used only to create evaluation data               |
+| Development tools                 | Claude, Groq-hosted open models and Grok (in Cursor) help write and review code and tests. They are never part of the product. See [AI use disclosure](#ai-use-disclosure). |
 
 ---
 
@@ -246,8 +249,13 @@ Open **Settings → NoteCheck**:
 | Wikimedia User-Agent         | `NoteCheck/0.1 (your-email@example.com)`. Wikimedia asks every client for a contact.                             |
 | Enable live fact-checking    | On to get suggestions as you type (see below)                                                                   |
 | Live check debounce (ms)     | How long to wait after you stop typing. 1500 is a good start.                                                    |
-| Course materials folder      | Vault path of your course folder, for example `Courses/SE201`. Empty means Wikipedia only.                       |
+| Course materials folder      | Root vault folder, for example `Courses`. Empty means Wikipedia only. Subfolders such as `Courses/Excel` provide topic context. |
 | Course materials only        | On to never contact Wikipedia                                                                                    |
+| Enable ghost text            | On to get a grey word suggestion after you pause (off by default)                                                |
+| Ghost text model             | A small, fast model you have pulled, for example `qwen3.5:2b`. Separate from the model above. Empty means no suggestions. |
+| Ghost text delay (ms)        | How long to wait after you stop typing before asking for a suggestion                                            |
+
+**Enable Claude review** is off by default. When it is on and an Anthropic API key is set, each Supported or Refuted verdict gets an optional second opinion from Claude: Haiku first, then Sonnet if Haiku does not agree. Claude sees only the claim, the local verdict and up to three Wikipedia sentences. It never sees your note, the note title, headings or course material. Claims in the first person or holding emails, links, phone-like numbers or ID-style numbers are never sent, and the panel says so. Claude never changes the local verdict. See [`src/crosscheck/CROSSCHECK.md`](src/crosscheck/CROSSCHECK.md). The key is stored in plain text in the plugin settings.
 
 ---
 
@@ -278,9 +286,10 @@ Expect each new sentence to take roughly 10 to 60 seconds on a laptop with the 9
 
 ### Check against your course materials
 
-1. Put your course materials in a vault folder as markdown, one file per lecture or reading. Headings help, because each passage is labelled with the heading above it.
-2. Set **Course materials folder** to that folder and click **Index now**, or run **NoteCheck: Index course materials**. The notice shows how many passages were indexed.
-3. Check notes as usual. Course evidence is marked "Course material", and its link jumps to the heading in your course note.
+1. Put your course materials in a vault folder as markdown, one file per lecture or reading. A layout such as `Courses/Excel/...` and `Courses/Databases/...` lets the subfolder guide retrieval. Headings help, because each passage is labelled with the heading above it.
+2. Set **Course materials folder** to the root folder (`Courses`) and click **Index now**, or run **NoteCheck: Index course materials**. The notice shows how many passages were indexed.
+3. Keep the note being checked outside the source-material folder when possible. Check notes as usual. Course evidence is marked "Course material", and its link jumps to the heading in your course note.
+4. If a course passage is unrelated or only says that it lacks enough detail, NoteCheck falls back to Wikipedia unless **Course materials only** is enabled.
 
 The index updates itself before each check. Only files that changed since the last check are re-embedded. It is saved in the plugin folder (`.obsidian/plugins/notecheck/course-index.json`), not among your notes. The note being checked is always left out of the search, so a note in the course folder can never confirm itself.
 
@@ -318,7 +327,7 @@ Work through these in order. Parts A and B run without Obsidian. Part C is the h
 
 ```bash
 npm run typecheck          # no output means no type errors
-npm run test:plugin        # 21 tests: inline suggestions, word-level fixes, sentence splitting
+npm run test:plugin        # 23 tests: inline suggestions, word-level fixes, sentence splitting
 npm run test:course        # 11 tests: course chunking, indexing, search
 npm run test:llm           # 9 tests: note preprocessing, extraction prompt
 npm test                   # 28 tests: retrieval
@@ -346,7 +355,7 @@ Expected, give or take wording:
 
 | Claim                                              | Verdict   | Evidence                                  |
 | -------------------------------------------------- | --------- | ----------------------------------------- |
-| Second normal form removes transitive dependencies | Refuted   | course: Week 3 - Normalisation, § 3NF and § 2NF |
+| Second normal form removes transitive dependencies | Refuted   | course: Week 3 - Normalisation, § 3NF and § 2NF, or Wikipedia if course verification is inconclusive |
 | Read Committed prevents dirty reads                | Supported | course: Week 5 - Transactions             |
 | The Treaty of Versailles was signed in 1920        | Refuted   | wikipedia: Treaty of Versailles           |
 
@@ -358,7 +367,7 @@ Run it a second time. The first line should say `0 file(s) embedded`, which show
 
 1. Build and install the plugin (Getting started, steps 2 and 3) into a **test vault**.
 2. Copy the folder `src/course/testdata/sample-course` into the vault as `Courses/Databases`.
-3. In NoteCheck's settings, set the model, the Wikimedia User-Agent, **Course materials folder** = `Courses/Databases`, and turn on **Enable live fact-checking**.
+3. In NoteCheck's settings, set the model, the Wikimedia User-Agent, **Course materials folder** = `Courses`, and turn on **Enable live fact-checking**.
 4. Open the developer console (`Ctrl+Shift+I` on Windows/Linux, `Cmd+Option+I` on macOS). NoteCheck logs lines starting with `[NoteCheck Live]` and `[NoteCheck course]`, which help when something looks wrong.
 5. Create a new note called `Test` **outside** the course folder.
 
@@ -401,7 +410,7 @@ Thresholds are tuned on a small development set first. The test set is not used 
 
 ### Planned changes after instructor feedback
 
-These come from the review of our proposal. The owners below are proposed and the team should confirm them.
+These come from the review of our proposal. The orchestrator with retry and the claim card contract are built. Which of the rest are done is tracked in [Project status](#project-status). The owners below are proposed and the team should confirm them.
 
 | Step                                                                   | In plain English                                                                                                                                                                | Owner                           | Where it lives             |
 | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | -------------------------- |
@@ -440,8 +449,21 @@ Checkpoint due **18 October 2026**.
 | RAG over the user's course materials, with Wikipedia as fallback      | **Done** — `src/course/`, 11 tests, live smoke test passes. Score threshold not tuned yet |
 | Cache Wikipedia articles and passage embeddings between checks        | **Done** — 1 hour article cache, embedding cache                                          |
 | Live checking with inline, word-level suggestions                     | **Done** — 21 tests. Needs the hands-on checks in [Testing it yourself](#testing-it-yourself) |
+| Ghost text (grey inline autocomplete, Tab to accept)                  | **Done** — 120 tests, mutation score 86.96% (Stryker, three review rounds). Hands-on check in Obsidian still to do |
+| Choosing between meanings of an ambiguous name                        | **Done** — 59 tests, mutation score 98.53% (Stryker, two passes), live smoke test on Mercury passes. Chooses by word overlap only, weights set by hand |
 | Course RAG evaluation on our own notes, per model size                | Not started                                                                                 |
 | Prefix caching, multi-session, Ollama keep-alive settings             | Not started                                                                                 |
+
+**Evaluation still to run before submission**
+
+| Target                                                                | State                                                       |
+| --------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Verdicts with RAG against the no-RAG baseline on FEVER dev            | Not run yet (the no-RAG baseline is done)                   |
+| Bespoke-MiniCheck baseline                                            | Built, not run yet                                          |
+| Held-out test run (once, after thresholds are fixed on dev)           | Not run yet                                                 |
+| Evidence quality rating by two people                                 | Not done                                                    |
+| Claims from our own notes, labelled and split into dev and test       | Not done                                                    |
+| Claude-generated false claims (`tools/claim-generator/`)              | Not done                                                    |
 
 Stubbed components will be listed here as they appear.
 
@@ -523,10 +545,19 @@ Separate folders stop most conflicts before they start. These habits handle the 
 | Notes leave the device during Claude review                      | Local by default. The Claude review is opt-in and clearly labelled.                                       |
 | Wikipedia content licensing                                      | Evidence is attributed with links, as CC BY-SA requires                                                   |
 | Weak hardware limits model quality                               | Models are configurable and we report results per model size                                              |
+| The local model gets a verdict or an explanation wrong           | Every verdict shows its evidence and revision link. Not Enough Info is allowed. Results are measured against FEVER labels and a no-RAG baseline |
+| Text in a Wikipedia page or a note tries to steer the model      | The model only returns a label, an explanation and a fix. It has no tools and cannot change files. Edits happen only when the user clicks Accept or Tab |
+| AI-written code hides bugs or weak tests                         | Tests are written first. Mutation testing (Stryker) checks that tests fail when code is broken. A second model from a different family reviews the code and tests, and a teammate approves every pull request |
+| Ghost text inserts a wrong or odd suggestion                     | Off by default. Local model only. Nothing is written until the user presses Tab. It is skipped inside code, headings, tables and frontmatter |
 
 ## AI use disclosure
 
-We use AI tools during development and track that use in [`docs/ai-use-log.md`](docs/ai-use-log.md), as the course requires.
+We use AI tools during development and track that use in [`docs/ai-use-log.md`](docs/ai-use-log.md), as the course requires. Each member also keeps a short note about their own work in their `NAME.md` file at the repository root.
+
+- **In the product:** only local models run through Ollama (Qwen for claims and verdicts, a small Qwen for ghost text, `nomic-embed-text` for embeddings). Claude is used only if a user opts in to the Claude review.
+- **During development:** Claude, Groq-hosted open models and Grok in Cursor help write code, tests and reviews. They are development tools only. They never run inside the product and never score our final results.
+- **Planned uses still to be logged when they happen:** generating false claims for evaluation data, a reviewer model that judges our verdicts (from a different model family than the one being judged), and any data used for fine-tuning.
+- **Checks on AI-written code:** tests first, mutation testing, review by a second model, and a teammate's approval on each pull request.
 
 ## Acknowledgements
 
