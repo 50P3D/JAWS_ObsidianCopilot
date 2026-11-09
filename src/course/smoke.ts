@@ -5,9 +5,9 @@
  *   npm run smoke:course
  *   NOTECHECK_COURSE_DIR=path/to/your/course npm run smoke:course
  *
- * Expected on the sample course: the 2NF claim is Refuted by the course notes, the
- * isolation-level claim is Supported by them, and the Versailles claim is not in the course,
- * so it falls back to Wikipedia.
+ * Expected on the sample course: the 2NF claim is Refuted, the isolation-level claim is
+ * Supported, and the Versailles claim is not in the course and falls back to Wikipedia.
+ * If course verification is inconclusive, that claim also falls back to Wikipedia.
  */
 
 import { tmpdir } from "node:os";
