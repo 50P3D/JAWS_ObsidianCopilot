@@ -20,7 +20,8 @@
     "build:plugin": "node src/plugin/esbuild.config.mjs",
     "test:course": "tsx --test src/course/course.test.ts",
     "smoke:course": "tsx src/course/smoke.ts",
-    "test:plugin": "tsx --test src/plugin/liveText.test.ts src/plugin/inlineDecorations.test.ts"
+    "test:plugin": "tsx --test src/plugin/liveText.test.ts src/plugin/inlineDecorations.test.ts src/plugin/ghostText.test.ts",
+    "test:ghost": "tsx --test src/plugin/ghostText.test.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
