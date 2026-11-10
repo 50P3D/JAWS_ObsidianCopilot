@@ -440,7 +440,7 @@ Checkpoint due **18 October 2026**.
 | MCP server exposing `fact_check`                                                                      | **Done** — wired to real pipeline               |
 | First evaluation round on 50 FEVER claims with failures documented                                      | **Done** — no-RAG baseline run (macro-F1 0.429) |
 | Setup README and commits from every member                                                              | **Done**                                         |
-| AI use disclosure log                                                                                   | See [`docs/ai-use-log.md`](docs/ai-use-log.md)        |
+| AI use disclosure log                                                                                   | One file per member in [`ai-log/`](ai-log/). See [AI use disclosure](#ai-use-disclosure) |
 
 **After the checkpoint (instructor feedback)**
 
@@ -485,7 +485,9 @@ notecheck/
 ├── eval/                # Nathanael: harness, baselines, datasets, results
 ├── tools/
 │   └── claim-generator/ # Aadhavan: Claude-generated test claims
-├── docs/                # Shared: architecture.png, ai-use-log.md (see rules below)
+├── ai-log/              # Each member: their own AI use log, one file per person (edit only your own)
+├── docs/                # Shared: architecture.png, short AI use summary, status and change notes
+├── NAME.md              # Each member: progress log with an AI disclaimer (ANNA, JONATHAN, MEDAPATI, STEVEN)
 ├── .github/CODEOWNERS   # Tells GitHub who must review each folder
 └── README.md            # Shared: changes through a pull request
 ```
@@ -500,6 +502,7 @@ Separate folders stop most conflicts before they start. These habits handle the 
 
 - Edit only your own folders. If you need a change in someone else's folder, ask them or open a pull request that they approve.
 - The shared files are `src/contract/`, `README.md`, `package.json`, `package-lock.json` and `docs/`. Tell the group chat before you change one, and keep the change small.
+- `ai-log/` has one file per member. Edit only your own, and commit each entry together with the work it describes.
 
 **Branches and pull requests**
 
@@ -552,7 +555,32 @@ Separate folders stop most conflicts before they start. These habits handle the 
 
 ## AI use disclosure
 
-We use AI tools during development and track that use in [`docs/ai-use-log.md`](docs/ai-use-log.md), as the course requires. Each member also keeps a short note about their own work in their `NAME.md` file at the repository root.
+We use AI tools during development and track that use, as the course requires. The disclosure is kept in one place: the [`ai-log/`](ai-log/) folder, with one file per member. Each entry covers one task and records the tool and model, the files, what was asked for, how the output was checked, and whether it was kept, changed or rejected. Earlier entries were moved there from the shared table on 2026-11-10, and details the table did not record (such as the model) are marked "not recorded".
+
+| Member                  | AI use log                                         |
+| ----------------------- | -------------------------------------------------- |
+| Anna Aadhavan           | [`ai-log/aadhavan.md`](ai-log/aadhavan.md)           |
+| Jonathan Ho             | [`ai-log/jonathan.md`](ai-log/jonathan.md)           |
+| Nathanael Steven Chiang | [`ai-log/steven-chiang.md`](ai-log/steven-chiang.md) |
+| Medapati Williams Smith | [`ai-log/medapati.md`](ai-log/medapati.md)           |
+
+### Shorter or more detailed views
+
+The `ai-log/` files are the main record. The same work is also described at other levels of detail:
+
+- **Shorter:** [`docs/ai-use-log.md`](docs/ai-use-log.md) is the original shared table, one row per use, covering uses up to 2026-11-09.
+- **More detailed, per member:**
+
+  | Member                  | Progress log and AI disclaimer | Checkpoint status (18 Oct)                                   | Other notes |
+  | ----------------------- | ------------------------------ | ------------------------------------------------------------ | ----------- |
+  | Anna Aadhavan           | [`ANNA.md`](ANNA.md)           | None                                                         | Specs with the decisions between Claude and Grok: [`src/plugin/GHOST-TEXT.md`](src/plugin/GHOST-TEXT.md), [`src/crosscheck/CROSSCHECK.md`](src/crosscheck/CROSSCHECK.md) |
+  | Jonathan Ho             | [`JONATHAN.md`](JONATHAN.md)   | [`docs/JONATHAN-STATUS.md`](docs/JONATHAN-STATUS.md)         | Test runs in [`src/llm/benchmarks/`](src/llm/benchmarks/) |
+  | Nathanael Steven Chiang | [`STEVEN.md`](STEVEN.md)       | [`docs/STEVEN-STATUS.md`](docs/STEVEN-STATUS.md)             | Changes since the checkpoint: [`docs/STEVEN-CHANGES.md`](docs/STEVEN-CHANGES.md) |
+  | Medapati Williams Smith | [`MEDAPATI.md`](MEDAPATI.md)   | [`docs/MEDAPATI-STATUS.md`](docs/MEDAPATI-STATUS.md)         | None |
+
+- **Whole team at the checkpoint:** [`docs/CHECKPOINT-STATUS.md`](docs/CHECKPOINT-STATUS.md).
+
+What the tools are used for:
 
 - **In the product:** only local models run through Ollama (Qwen for claims and verdicts, a small Qwen for ghost text, `nomic-embed-text` for embeddings). Claude is used only if a user opts in to the Claude review.
 - **During development:** Claude, Groq-hosted open models and Grok in Cursor help write code, tests and reviews. They are development tools only. They never run inside the product and never score our final results.

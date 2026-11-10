@@ -158,7 +158,8 @@ export class NoteCheckSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("Course materials folder")
       .setDesc(
-        "Vault folder with your lecture notes, slides (as markdown) and readings. " +
+        "Vault folder (or a single file) with your lecture notes, slides and readings as " +
+        "markdown or PDF. Subfolders are included. PDFs need a text layer; scanned pages are skipped. " +
         "Claims are checked against these first, and Wikipedia is only used when " +
         "the course does not cover a claim. Leave empty to use Wikipedia only."
       )
@@ -180,7 +181,13 @@ export class NoteCheckSettingTab extends PluginSettingTab {
           btn.setDisabled(true).setButtonText("Indexing…");
           try {
             const r = await this.plugin.syncCourseIndex();
-            new Notice(`NoteCheck: Course index has ${r.passages} passages.`);
+            const { files } = await this.plugin.courseIndex.stats();
+            new Notice(
+              files === 0
+                ? `NoteCheck: No .md or .pdf files found at "${this.plugin.settings.courseFolder.trim()}". ` +
+                  "Use a path inside this vault, such as Courses/SE201."
+                : `NoteCheck: Course index has ${r.passages} passages from ${files} files.`
+            );
           } catch (err) {
             new Notice(`NoteCheck: Indexing failed: ${err instanceof Error ? err.message : String(err)}`);
           } finally {

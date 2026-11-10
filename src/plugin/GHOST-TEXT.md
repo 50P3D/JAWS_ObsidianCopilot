@@ -72,7 +72,7 @@ Called when the user types characters. If `typed` is an exact, case-sensitive st
 ### `fetchCompletion({ before, model, ollamaUrl, opts?, signal?, fetchFn? }) -> Promise<string>`
 Asks Ollama for a suggestion and returns the cleaned text. `fetchFn` defaults to the global `fetch` and exists so tests can fake it.
 1. Sends a POST to `<ollamaUrl>/api/generate`. A trailing slash on the URL is tolerated.
-2. The JSON body has the model name, the prompt from `buildPrompt`, `stream: false`, `think: false`, a stop sequence of a newline, and a token limit between 1 and 40 (`maxTokens` is clamped to that range).
+2. The JSON body has the model name, the prompt from `buildPrompt`, `stream: false`, `think: false`, a stop sequence of a newline, a token limit between 1 and 40 (`maxTokens` is clamped to that range), and a context window (`num_ctx`) of 2048. The small context keeps the model small enough in memory to stay loaded next to the fact-check model.
 3. The abort signal is passed on to `fetch`.
 4. If the signal is already aborted, `fetch` is not called and the result is an empty string.
 5. If the request is aborted, the result is an empty string and nothing is thrown.
@@ -102,7 +102,7 @@ The ghost updates on its own:
 
 ## Data flow
 
-In `main.ts`, an editor update listener ignores everything except typed input (not paste, not accepting a suggestion) and skips when a ghost is already showing. Typing stops for `ghostDebounceMs`, then `shouldSuggest`, then `fetchCompletion` (earlier request aborted if the user typed again), then `showGhost`. Tab runs `acceptGhost`. Esc runs `dismissGhost`.
+In `main.ts`, an editor update listener ignores everything except typed input (not paste, not accepting a suggestion) and skips when a ghost is already showing. Typing stops for `ghostDebounceMs`, then `shouldSuggest`, then `fetchCompletion` (earlier request aborted if the user typed again), then `showGhost`. If a live check is running when the pause ends, the request is not dropped: it is tried again every 500 ms until the live check is done, unless the user types or moves the cursor first. Tab runs `acceptGhost`. Esc runs `dismissGhost`.
 
 ## Test layout
 

@@ -185,6 +185,9 @@ export interface FetchCompletionArgs {
   fetchFn?: typeof fetch;
 }
 
+/** Context window asked of Ollama for a suggestion. */
+const GHOST_NUM_CTX = 2048;
+
 const isAbort = (e: unknown): boolean => (e as { name?: string } | null)?.name === "AbortError";
 
 /** Ask Ollama for a suggestion. Returns the cleaned text, or "" if the request was aborted. */
@@ -207,7 +210,14 @@ export async function fetchCompletion(args: FetchCompletionArgs): Promise<string
         // qwen models return an empty answer unless thinking is switched off
         think: false,
         keep_alive: "10m",
-        options: { temperature: 0.2, num_predict: Math.min(40, Math.max(1, Math.round(o.maxTokens))), stop: ["\n"] },
+        options: {
+          temperature: 0.2,
+          num_predict: Math.min(40, Math.max(1, Math.round(o.maxTokens))),
+          stop: ["\n"],
+          // the prompt is at most a few hundred tokens; a small context keeps the model small in
+          // memory, so it can stay loaded next to the fact-check model instead of being swapped out
+          num_ctx: GHOST_NUM_CTX,
+        },
       }),
     });
   } catch (e) {

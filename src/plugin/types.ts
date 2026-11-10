@@ -49,7 +49,8 @@ export interface NoteCheckSettings {
   liveCheckDebounceMs: number;
 
   /**
-   * Vault folder holding course materials (lecture notes, readings), for example "Courses/SE201".
+   * Vault folder (or single file) holding course materials as .md or .pdf, for example "Courses/SE201".
+   * Matched case-insensitively; an absolute path inside the vault also works.
    * Claims are checked against these files before Wikipedia. Empty turns course checking off.
    */
   courseFolder: string;
